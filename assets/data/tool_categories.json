@@ -1,0 +1,632 @@
+{
+  "categories": {
+    "land_preparation": {
+      "category_name": "Land Preparation",
+      "category_id": "land_prep",
+      "icon": "agriculture",
+      "description": "Tools used for preparing land for cultivation",
+      "tools": [
+        {
+          "id": 1,
+          "name": "Tractor",
+          "type": "Heavy Equipment",
+          "description": "Multi-purpose farm vehicle for various agricultural operations",
+          "specifications": {
+            "power_range": "25-75 HP",
+            "fuel_type": "Diesel",
+            "transmission": "Manual/Automatic",
+            "pto_available": true
+          },
+          "rental_price": {
+            "per_hour": 800,
+            "per_day": 5000,
+            "per_week": 30000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Daily oil level check",
+            "Weekly air filter cleaning",
+            "Monthly hydraulic fluid check",
+            "Seasonal servicing"
+          ],
+          "suitable_for": ["Plowing", "Cultivating", "Harvesting", "Transportation"],
+          "availability": "High",
+          "training_required": true
+        },
+        {
+          "id": 2,
+          "name": "Disc Plough",
+          "type": "Tillage Equipment",
+          "description": "Primary tillage implement for breaking and turning soil",
+          "specifications": {
+            "working_width": "1.5-3.0 meters",
+            "disc_diameter": "24-32 inches",
+            "number_of_discs": "3-8",
+            "required_power": "35-65 HP"
+          },
+          "rental_price": {
+            "per_day": 1500,
+            "per_week": 8000,
+            "per_month": 25000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Regular disc sharpening",
+            "Bearing lubrication",
+            "Bolt tightening",
+            "Rust prevention"
+          ],
+          "suitable_for": ["Primary tillage", "Stubble breaking", "Weed burial"],
+          "availability": "High",
+          "training_required": false
+        },
+        {
+          "id": 3,
+          "name": "Cultivator",
+          "type": "Tillage Equipment",
+          "description": "Secondary tillage implement for soil preparation and weed control",
+          "specifications": {
+            "working_width": "1.5-4.0 meters",
+            "tyne_type": "Rigid/Spring loaded",
+            "number_of_tynes": "7-21",
+            "required_power": "25-50 HP"
+          },
+          "rental_price": {
+            "per_day": 1200,
+            "per_week": 6000,
+            "per_month": 20000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Tyne replacement",
+            "Frame inspection",
+            "Hydraulic system check",
+            "Point sharpening"
+          ],
+          "suitable_for": ["Secondary tillage", "Weed control", "Seedbed preparation"],
+          "availability": "High",
+          "training_required": false
+        },
+        {
+          "id": 4,
+          "name": "Rotavator",
+          "type": "Tillage Equipment",
+          "description": "Rotary tillage implement for fine soil preparation",
+          "specifications": {
+            "working_width": "1.2-2.5 meters",
+            "rotor_diameter": "300-400 mm",
+            "blade_type": "L-shaped/C-shaped",
+            "required_power": "30-60 HP"
+          },
+          "rental_price": {
+            "per_day": 2000,
+            "per_week": 10000,
+            "per_month": 35000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Blade replacement",
+            "Gearbox oil change",
+            "Belt tension check",
+            "Bearing maintenance"
+          ],
+          "suitable_for": ["Fine tillage", "Seedbed preparation", "Stubble incorporation"],
+          "availability": "Medium",
+          "training_required": true
+        }
+      ]
+    },
+    "planting_seeding": {
+      "category_name": "Planting & Seeding",
+      "category_id": "planting",
+      "icon": "eco",
+      "description": "Equipment for sowing seeds and planting crops",
+      "tools": [
+        {
+          "id": 5,
+          "name": "Seed Drill",
+          "type": "Seeding Equipment",
+          "description": "Precision seeding machine for row crops",
+          "specifications": {
+            "number_of_rows": "7-23",
+            "row_spacing": "150-225 mm",
+            "seed_metering": "Fluted roller/Cell wheel",
+            "required_power": "35-75 HP"
+          },
+          "rental_price": {
+            "per_day": 2500,
+            "per_week": 12000,
+            "per_month": 40000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Seed tube cleaning",
+            "Metering mechanism check",
+            "Furrow opener maintenance",
+            "Calibration verification"
+          ],
+          "suitable_for": ["Wheat", "Barley", "Mustard", "Chickpea"],
+          "availability": "High",
+          "training_required": true
+        },
+        {
+          "id": 6,
+          "name": "Planter",
+          "type": "Seeding Equipment",
+          "description": "Precision planting machine for large seeds",
+          "specifications": {
+            "number_of_rows": "4-12",
+            "row_spacing": "300-750 mm",
+            "seed_metering": "Pneumatic/Mechanical",
+            "required_power": "40-80 HP"
+          },
+          "rental_price": {
+            "per_day": 3000,
+            "per_week": 15000,
+            "per_month": 50000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Seed plate inspection",
+            "Vacuum system check",
+            "Depth wheel adjustment",
+            "Fertilizer system maintenance"
+          ],
+          "suitable_for": ["Maize", "Cotton", "Soybean", "Sunflower"],
+          "availability": "Medium",
+          "training_required": true
+        },
+        {
+          "id": 7,
+          "name": "Broadcasting Machine",
+          "type": "Seeding Equipment",
+          "description": "Equipment for broadcasting seeds over large areas",
+          "specifications": {
+            "hopper_capacity": "200-500 kg",
+            "spreading_width": "8-24 meters",
+            "drive_type": "PTO/Ground driven",
+            "required_power": "25-45 HP"
+          },
+          "rental_price": {
+            "per_day": 1000,
+            "per_week": 5000,
+            "per_month": 18000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Spinner disc cleaning",
+            "Flow rate calibration",
+            "Hopper inspection",
+            "Drive mechanism check"
+          ],
+          "suitable_for": ["Rice", "Grass seeds", "Fertilizer broadcasting"],
+          "availability": "High",
+          "training_required": false
+        }
+      ]
+    },
+    "irrigation": {
+      "category_name": "Irrigation Equipment",
+      "category_id": "irrigation",
+      "icon": "water_drop",
+      "description": "Water management and irrigation systems",
+      "tools": [
+        {
+          "id": 8,
+          "name": "Submersible Pump",
+          "type": "Water Pump",
+          "description": "Electric pump for deep well water extraction",
+          "specifications": {
+            "power_rating": "3-15 HP",
+            "discharge_capacity": "1000-5000 LPH",
+            "head_range": "50-200 meters",
+            "voltage": "230V/415V"
+          },
+          "rental_price": {
+            "per_day": 500,
+            "per_week": 3000,
+            "per_month": 10000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Motor winding check",
+            "Impeller inspection",
+            "Cable insulation test",
+            "Water level monitoring"
+          ],
+          "suitable_for": ["Deep well irrigation", "Domestic water supply"],
+          "availability": "High",
+          "training_required": true
+        },
+        {
+          "id": 9,
+          "name": "Drip Irrigation Kit",
+          "type": "Irrigation System",
+          "description": "Complete drip irrigation system for efficient water use",
+          "specifications": {
+            "coverage_area": "1-10 acres",
+            "dripper_spacing": "30-60 cm",
+            "flow_rate": "2-8 LPH per dripper",
+            "filtration": "Screen/Disc filters"
+          },
+          "rental_price": {
+            "per_month": 5000,
+            "per_season": 15000,
+            "per_year": 40000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Filter cleaning",
+            "Dripper unclogging",
+            "Pressure monitoring",
+            "System flushing"
+          ],
+          "suitable_for": ["Vegetables", "Orchards", "Row crops"],
+          "availability": "Medium",
+          "training_required": true
+        },
+        {
+          "id": 10,
+          "name": "Sprinkler System",
+          "type": "Irrigation System",
+          "description": "Overhead irrigation system for uniform water distribution",
+          "specifications": {
+            "coverage_radius": "6-30 meters",
+            "pressure_requirement": "2-4 kg/cm²",
+            "nozzle_size": "3-12 mm",
+            "application_rate": "10-25 mm/hour"
+          },
+          "rental_price": {
+            "per_day": 800,
+            "per_week": 4000,
+            "per_month": 12000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Nozzle cleaning",
+            "Pressure regulator check",
+            "Pipe joint inspection",
+            "Sprinkler head alignment"
+          ],
+          "suitable_for": ["Field crops", "Lawn irrigation", "Frost protection"],
+          "availability": "High",
+          "training_required": false
+        }
+      ]
+    },
+    "harvesting": {
+      "category_name": "Harvesting Equipment",
+      "category_id": "harvesting",
+      "icon": "agriculture",
+      "description": "Machines for crop harvesting and post-harvest operations",
+      "tools": [
+        {
+          "id": 11,
+          "name": "Combine Harvester",
+          "type": "Harvesting Machine",
+          "description": "Multi-function harvesting machine for cereals",
+          "specifications": {
+            "cutting_width": "3-7 meters",
+            "engine_power": "100-300 HP",
+            "grain_tank_capacity": "4000-10000 liters",
+            "threshing_system": "Axial flow/Conventional"
+          },
+          "rental_price": {
+            "per_hour": 2000,
+            "per_day": 15000,
+            "per_week": 80000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Cutting blade sharpening",
+            "Concave clearance adjustment",
+            "Sieve cleaning",
+            "Engine servicing"
+          ],
+          "suitable_for": ["Wheat", "Rice", "Barley", "Maize"],
+          "availability": "Medium",
+          "training_required": true
+        },
+        {
+          "id": 12,
+          "name": "Reaper",
+          "type": "Harvesting Machine",
+          "description": "Crop cutting machine for manual harvesting",
+          "specifications": {
+            "cutting_width": "1-2 meters",
+            "engine_power": "8-15 HP",
+            "cutting_height": "Adjustable",
+            "fuel_type": "Petrol/Diesel"
+          },
+          "rental_price": {
+            "per_day": 2000,
+            "per_week": 10000,
+            "per_month": 30000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Blade sharpening",
+            "Engine maintenance",
+            "Belt replacement",
+            "Lubrication"
+          ],
+          "suitable_for": ["Small farms", "Irregular fields", "Multiple crops"],
+          "availability": "High",
+          "training_required": true
+        },
+        {
+          "id": 13,
+          "name": "Thresher",
+          "type": "Post-harvest Equipment",
+          "description": "Machine for separating grain from harvested crops",
+          "specifications": {
+            "capacity": "500-2000 kg/hour",
+            "power_requirement": "15-25 HP",
+            "cleaning_system": "Fan and sieves",
+            "feed_rate": "Manual/Mechanical"
+          },
+          "rental_price": {
+            "per_day": 1500,
+            "per_week": 8000,
+            "per_month": 25000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Cylinder bar replacement",
+            "Concave adjustment",
+            "Fan blade balancing",
+            "Sieve cleaning"
+          ],
+          "suitable_for": ["Wheat", "Rice", "Pulses", "Oilseeds"],
+          "availability": "High",
+          "training_required": false
+        }
+      ]
+    },
+    "crop_protection": {
+      "category_name": "Crop Protection",
+      "category_id": "protection",
+      "icon": "pest_control",
+      "description": "Equipment for pest control and crop protection",
+      "tools": [
+        {
+          "id": 14,
+          "name": "Boom Sprayer",
+          "type": "Spraying Equipment",
+          "description": "Tractor-mounted sprayer for large area coverage",
+          "specifications": {
+            "boom_width": "6-24 meters",
+            "tank_capacity": "400-2000 liters",
+            "nozzle_spacing": "50 cm",
+            "required_power": "35-75 HP"
+          },
+          "rental_price": {
+            "per_day": 2500,
+            "per_week": 12000,
+            "per_month": 40000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Nozzle cleaning",
+            "Filter replacement",
+            "Pump maintenance",
+            "Tank cleaning"
+          ],
+          "suitable_for": ["Herbicide application", "Fungicide spraying", "Insecticide treatment"],
+          "availability": "Medium",
+          "training_required": true
+        },
+        {
+          "id": 15,
+          "name": "Knapsack Sprayer",
+          "type": "Manual Spraying",
+          "description": "Portable manual sprayer for small areas",
+          "specifications": {
+            "tank_capacity": "16-20 liters",
+            "pressure_type": "Manual pump",
+            "spray_range": "8-12 meters",
+            "material": "HDPE/Stainless steel"
+          },
+          "rental_price": {
+            "per_day": 100,
+            "per_week": 500,
+            "per_month": 1500,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Nozzle cleaning",
+            "Pump seal replacement",
+            "Tank washing",
+            "Hose inspection"
+          ],
+          "suitable_for": ["Small plots", "Targeted spraying", "Vegetable crops"],
+          "availability": "High",
+          "training_required": false
+        },
+        {
+          "id": 16,
+          "name": "Power Sprayer",
+          "type": "Motorized Spraying",
+          "description": "Engine-powered sprayer for medium coverage",
+          "specifications": {
+            "engine_power": "2-5 HP",
+            "tank_capacity": "50-200 liters",
+            "pressure_range": "15-40 kg/cm²",
+            "fuel_type": "Petrol/Diesel"
+          },
+          "rental_price": {
+            "per_day": 800,
+            "per_week": 4000,
+            "per_month": 12000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Engine servicing",
+            "Pump diaphragm check",
+            "Filter cleaning",
+            "Fuel system maintenance"
+          ],
+          "suitable_for": ["Medium farms", "Orchard spraying", "Dense vegetation"],
+          "availability": "High",
+          "training_required": true
+        }
+      ]
+    },
+    "specialty_equipment": {
+      "category_name": "Specialty Equipment",
+      "category_id": "specialty",
+      "icon": "precision_manufacturing",
+      "description": "Specialized farming equipment for specific operations",
+      "tools": [
+        {
+          "id": 17,
+          "name": "Laser Land Leveler",
+          "type": "Land Development",
+          "description": "Precision land leveling equipment using laser technology",
+          "specifications": {
+            "working_width": "3-6 meters",
+            "leveling_accuracy": "±2 cm",
+            "required_power": "75-120 HP",
+            "laser_range": "300-600 meters"
+          },
+          "rental_price": {
+            "per_day": 5000,
+            "per_week": 25000,
+            "per_month": 80000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Laser calibration",
+            "Hydraulic system check",
+            "Blade maintenance",
+            "Control system updates"
+          ],
+          "suitable_for": ["Precision farming", "Water management", "Land development"],
+          "availability": "Low",
+          "training_required": true
+        },
+        {
+          "id": 18,
+          "name": "Mulch Layer",
+          "type": "Specialty Equipment",
+          "description": "Machine for laying plastic mulch film",
+          "specifications": {
+            "film_width": "1-2 meters",
+            "laying_speed": "2-5 km/hour",
+            "film_thickness": "25-50 microns",
+            "required_power": "25-45 HP"
+          },
+          "rental_price": {
+            "per_day": 2000,
+            "per_week": 10000,
+            "per_month": 30000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Film feeding mechanism",
+            "Soil covering discs",
+            "Pressure wheels adjustment",
+            "Frame alignment"
+          ],
+          "suitable_for": ["Vegetable cultivation", "Weed control", "Moisture conservation"],
+          "availability": "Low",
+          "training_required": true
+        },
+        {
+          "id": 19,
+          "name": "Transplanter",
+          "type": "Planting Equipment",
+          "description": "Machine for transplanting seedlings",
+          "specifications": {
+            "number_of_rows": "4-8",
+            "plant_spacing": "12-30 cm",
+            "planting_depth": "2-8 cm",
+            "required_power": "20-35 HP"
+          },
+          "rental_price": {
+            "per_day": 3000,
+            "per_week": 15000,
+            "per_month": 45000,
+            "currency": "INR"
+          },
+          "maintenance_requirements": [
+            "Planting mechanism cleaning",
+            "Depth wheel adjustment",
+            "Seedling tray inspection",
+            "Hydraulic system check"
+          ],
+          "suitable_for": ["Rice", "Vegetables", "Tobacco", "Nursery crops"],
+          "availability": "Low",
+          "training_required": true
+        }
+      ]
+    }
+  },
+  "rental_guidelines": {
+    "booking_process": [
+      "Check tool availability",
+      "Verify user credentials",
+      "Complete rental agreement",
+      "Pay security deposit",
+      "Receive training if required",
+      "Tool delivery/pickup"
+    ],
+    "payment_terms": {
+      "advance_payment": "20-50% of rental amount",
+      "security_deposit": "10-25% of tool value",
+      "payment_methods": ["Cash", "Bank transfer", "Digital payments"],
+      "refund_policy": "Deposit refunded after tool return in good condition"
+    },
+    "terms_conditions": [
+      "User must have valid driving license for motorized equipment",
+      "Insurance coverage available at additional cost",
+      "Maintenance during rental period is user's responsibility",
+      "Damage or loss will be charged to user",
+      "24/7 technical support available",
+      "Training mandatory for complex equipment"
+    ],
+    "availability_seasons": {
+      "high_demand": {
+        "months": ["March", "April", "October", "November"],
+        "equipment": ["Tractors", "Harvesters", "Seed drills"],
+        "booking_advance": "15-30 days"
+      },
+      "medium_demand": {
+        "months": ["February", "May", "September", "December"],
+        "equipment": ["Sprayers", "Cultivators", "Irrigation equipment"],
+        "booking_advance": "7-15 days"
+      },
+      "low_demand": {
+        "months": ["January", "June", "July", "August"],
+        "equipment": ["Specialty equipment", "Land preparation tools"],
+        "booking_advance": "1-7 days"
+      }
+    }
+  },
+  "maintenance_tips": {
+    "daily_checks": [
+      "Engine oil level",
+      "Fuel level",
+      "Hydraulic fluid",
+      "Tire pressure",
+      "Belt tension",
+      "Safety systems"
+    ],
+    "weekly_maintenance": [
+      "Air filter cleaning",
+      "Grease points lubrication",
+      "Battery terminals check",
+      "Coolant level",
+      "Implement adjustment",
+      "Wear parts inspection"
+    ],
+    "seasonal_storage": [
+      "Thorough cleaning",
+      "Fuel system treatment",
+      "Battery maintenance",
+      "Implement protection",
+      "Covered storage",
+      "Periodic operation"
+    ]
+  }
+}

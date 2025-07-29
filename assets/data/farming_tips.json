@@ -1,0 +1,349 @@
+{
+  "categories": {
+    "soil_management": {
+      "title": "Soil Management",
+      "icon": "soil",
+      "tips": [
+        {
+          "id": 1,
+          "title": "Soil Testing",
+          "description": "Test your soil every 2-3 years to determine pH, nutrient levels, and organic matter content.",
+          "detailed_info": "Regular soil testing helps farmers make informed decisions about fertilizer application, lime requirements, and crop selection. Test for pH, nitrogen, phosphorus, potassium, and organic matter content. Ideal pH for most crops is 6.0-7.0.",
+          "benefits": ["Optimized fertilizer use", "Better crop yields", "Cost savings", "Environmental protection"],
+          "implementation_steps": [
+            "Collect soil samples from different areas",
+            "Send to certified laboratory",
+            "Analyze results with expert",
+            "Plan fertilizer and amendment application"
+          ],
+          "season": "Before planting season",
+          "difficulty": "Easy",
+          "cost": "Low",
+          "time_required": "1-2 weeks for results"
+        },
+        {
+          "id": 2,
+          "title": "Organic Matter Addition",
+          "description": "Add compost, farmyard manure, or green manure to improve soil structure and fertility.",
+          "detailed_info": "Organic matter improves soil structure, water retention, nutrient availability, and beneficial microbial activity. Apply 2-5 tons per acre annually depending on soil condition and crop requirements.",
+          "benefits": ["Improved soil structure", "Better water retention", "Increased nutrient availability", "Enhanced microbial activity"],
+          "implementation_steps": [
+            "Prepare or source organic matter",
+            "Apply before land preparation",
+            "Mix thoroughly with soil",
+            "Allow decomposition time"
+          ],
+          "season": "Before sowing",
+          "difficulty": "Moderate",
+          "cost": "Medium",
+          "time_required": "2-3 weeks for decomposition"
+        },
+        {
+          "id": 3,
+          "title": "Crop Rotation",
+          "description": "Rotate crops to maintain soil health and break pest cycles.",
+          "detailed_info": "Practice crop rotation with legumes, cereals, and cash crops to maintain soil fertility, reduce pest and disease pressure, and optimize land use. Include nitrogen-fixing crops in rotation.",
+          "benefits": ["Improved soil fertility", "Reduced pest pressure", "Better disease management", "Diversified income"],
+          "implementation_steps": [
+            "Plan 3-4 year rotation cycle",
+            "Include leguminous crops",
+            "Consider market demand",
+            "Monitor soil health improvements"
+          ],
+          "season": "Year-round planning",
+          "difficulty": "Moderate",
+          "cost": "Variable",
+          "time_required": "Multi-year commitment"
+        }
+      ]
+    },
+    "water_management": {
+      "title": "Water Management",
+      "icon": "water_drop",
+      "tips": [
+        {
+          "id": 4,
+          "title": "Drip Irrigation",
+          "description": "Install drip irrigation systems for efficient water use and better crop yields.",
+          "detailed_info": "Drip irrigation delivers water directly to plant roots, reducing water waste by 30-50% compared to flood irrigation. Suitable for row crops, orchards, and vegetables.",
+          "benefits": ["Water savings up to 50%", "Reduced weed growth", "Precise fertilizer application", "Higher yields"],
+          "implementation_steps": [
+            "Design irrigation layout",
+            "Install main and sub-main lines",
+            "Place drippers at plant locations",
+            "Set up filtration and fertigation systems"
+          ],
+          "season": "Install before planting",
+          "difficulty": "Moderate to Hard",
+          "cost": "High initial, low operational",
+          "time_required": "1-2 weeks installation"
+        },
+        {
+          "id": 5,
+          "title": "Rainwater Harvesting",
+          "description": "Construct farm ponds and check dams to harvest and store rainwater.",
+          "detailed_info": "Rainwater harvesting helps store monsoon water for use during dry periods. Farm ponds can store water for irrigation, livestock, and fish farming.",
+          "benefits": ["Water security", "Groundwater recharge", "Additional income from fish", "Flood control"],
+          "implementation_steps": [
+            "Select appropriate site",
+            "Design pond capacity",
+            "Excavate and line pond",
+            "Install inlet and outlet structures"
+          ],
+          "season": "Before monsoon",
+          "difficulty": "Hard",
+          "cost": "High",
+          "time_required": "1-2 months"
+        },
+        {
+          "id": 6,
+          "title": "Mulching",
+          "description": "Use organic mulch to conserve soil moisture and suppress weeds.",
+          "detailed_info": "Apply crop residues, straw, or other organic materials around plants to reduce evaporation, suppress weeds, and improve soil temperature regulation.",
+          "benefits": ["Reduced water loss", "Weed suppression", "Soil temperature regulation", "Organic matter addition"],
+          "implementation_steps": [
+            "Collect organic materials",
+            "Apply 2-4 inch layer around plants",
+            "Keep mulch away from plant stems",
+            "Refresh as needed"
+          ],
+          "season": "After planting",
+          "difficulty": "Easy",
+          "cost": "Low",
+          "time_required": "Few hours per acre"
+        }
+      ]
+    },
+    "pest_disease_management": {
+      "title": "Pest & Disease Management",
+      "icon": "bug_report",
+      "tips": [
+        {
+          "id": 7,
+          "title": "Integrated Pest Management",
+          "description": "Use combination of biological, cultural, and chemical methods for pest control.",
+          "detailed_info": "IPM focuses on long-term prevention through biological control, habitat manipulation, and resistant varieties. Chemical control is used only when necessary and in targeted manner.",
+          "benefits": ["Reduced chemical use", "Cost effective", "Environmentally friendly", "Sustainable pest control"],
+          "implementation_steps": [
+            "Monitor pest levels regularly",
+            "Use economic threshold levels",
+            "Apply biological control first",
+            "Use chemicals as last resort"
+          ],
+          "season": "Throughout growing season",
+          "difficulty": "Moderate",
+          "cost": "Medium",
+          "time_required": "Ongoing monitoring"
+        },
+        {
+          "id": 8,
+          "title": "Beneficial Insects",
+          "description": "Encourage beneficial insects like ladybugs, parasitic wasps, and predatory mites.",
+          "detailed_info": "Beneficial insects provide natural pest control by preying on harmful pests. Create habitat by planting diverse crops and maintaining field margins.",
+          "benefits": ["Natural pest control", "Reduced chemical inputs", "Biodiversity enhancement", "Cost savings"],
+          "implementation_steps": [
+            "Plant diverse flowering plants",
+            "Maintain field margins",
+            "Avoid broad-spectrum pesticides",
+            "Monitor beneficial insect populations"
+          ],
+          "season": "Year-round",
+          "difficulty": "Easy to Moderate",
+          "cost": "Low",
+          "time_required": "Ongoing habitat management"
+        },
+        {
+          "id": 9,
+          "title": "Disease Prevention",
+          "description": "Prevent plant diseases through proper sanitation and cultural practices.",
+          "detailed_info": "Disease prevention through crop rotation, resistant varieties, proper spacing, and sanitation is more effective and economical than treatment.",
+          "benefits": ["Reduced crop losses", "Lower treatment costs", "Better quality produce", "Sustainable farming"],
+          "implementation_steps": [
+            "Use certified disease-free seeds",
+            "Practice crop rotation",
+            "Maintain proper plant spacing",
+            "Remove infected plant debris"
+          ],
+          "season": "Throughout growing season",
+          "difficulty": "Easy to Moderate",
+          "cost": "Low to Medium",
+          "time_required": "Regular monitoring and maintenance"
+        }
+      ]
+    },
+    "crop_nutrition": {
+      "title": "Crop Nutrition",
+      "icon": "eco",
+      "tips": [
+        {
+          "id": 10,
+          "title": "Balanced Fertilization",
+          "description": "Apply fertilizers based on soil test results and crop requirements.",
+          "detailed_info": "Balanced fertilization ensures optimal plant nutrition while avoiding over-application. Consider N-P-K ratios, secondary nutrients, and micronutrients based on crop needs.",
+          "benefits": ["Optimal plant nutrition", "Cost effective", "Environmental protection", "Better yields"],
+          "implementation_steps": [
+            "Conduct soil testing",
+            "Calculate nutrient requirements",
+            "Select appropriate fertilizers",
+            "Apply at right time and method"
+          ],
+          "season": "Before and during growing season",
+          "difficulty": "Moderate",
+          "cost": "Medium",
+          "time_required": "Planning and multiple applications"
+        },
+        {
+          "id": 11,
+          "title": "Foliar Feeding",
+          "description": "Apply liquid fertilizers through leaves for quick nutrient uptake.",
+          "detailed_info": "Foliar feeding provides rapid nutrient uptake, especially for micronutrients. Apply during early morning or evening to avoid leaf burn.",
+          "benefits": ["Quick nutrient uptake", "Efficient micronutrient delivery", "Stress recovery", "Supplement soil application"],
+          "implementation_steps": [
+            "Select appropriate foliar fertilizer",
+            "Mix according to recommendations",
+            "Apply during cool hours",
+            "Ensure good spray coverage"
+          ],
+          "season": "During growing season",
+          "difficulty": "Easy",
+          "cost": "Medium",
+          "time_required": "Few hours per application"
+        }
+      ]
+    },
+    "sustainable_practices": {
+      "title": "Sustainable Practices",
+      "icon": "nature",
+      "tips": [
+        {
+          "id": 12,
+          "title": "Cover Cropping",
+          "description": "Plant cover crops during off-season to protect and improve soil.",
+          "detailed_info": "Cover crops prevent soil erosion, add organic matter, fix nitrogen (legumes), and suppress weeds. Choose species based on primary crop and local conditions.",
+          "benefits": ["Soil protection", "Organic matter addition", "Nitrogen fixation", "Weed suppression"],
+          "implementation_steps": [
+            "Select appropriate cover crop",
+            "Plant after main crop harvest",
+            "Manage growth and termination",
+            "Incorporate into soil before next crop"
+          ],
+          "season": "Off-season",
+          "difficulty": "Easy to Moderate",
+          "cost": "Low to Medium",
+          "time_required": "Seasonal management"
+        },
+        {
+          "id": 13,
+          "title": "Agroforestry",
+          "description": "Integrate trees with crops for multiple benefits and income sources.",
+          "detailed_info": "Agroforestry combines trees with agricultural crops to provide multiple benefits including soil conservation, microclimate improvement, and additional income sources.",
+          "benefits": ["Diversified income", "Soil conservation", "Carbon sequestration", "Microclimate improvement"],
+          "implementation_steps": [
+            "Select appropriate tree species",
+            "Plan tree-crop spacing",
+            "Plant trees at field boundaries",
+            "Manage tree-crop interactions"
+          ],
+          "season": "Monsoon for tree planting",
+          "difficulty": "Moderate",
+          "cost": "Medium to High",
+          "time_required": "Long-term commitment"
+        }
+      ]
+    },
+    "technology_adoption": {
+      "title": "Technology Adoption",
+      "icon": "smartphone",
+      "tips": [
+        {
+          "id": 14,
+          "title": "Weather Monitoring",
+          "description": "Use weather apps and stations to plan farming activities.",
+          "detailed_info": "Weather monitoring helps in planning irrigation, fertilizer application, pest control, and harvesting. Use local weather stations and mobile apps for accurate forecasts.",
+          "benefits": ["Better planning", "Risk reduction", "Optimal timing", "Resource efficiency"],
+          "implementation_steps": [
+            "Install weather monitoring app",
+            "Set up location-specific alerts",
+            "Plan activities based on forecast",
+            "Maintain weather records"
+          ],
+          "season": "Year-round",
+          "difficulty": "Easy",
+          "cost": "Low",
+          "time_required": "Daily monitoring"
+        },
+        {
+          "id": 15,
+          "title": "Precision Agriculture",
+          "description": "Use GPS and sensors for precise application of inputs.",
+          "detailed_info": "Precision agriculture uses technology to optimize field-level management regarding crop farming. GPS guidance, variable rate application, and yield mapping improve efficiency.",
+          "benefits": ["Input optimization", "Increased yields", "Cost reduction", "Environmental benefits"],
+          "implementation_steps": [
+            "Assess field variability",
+            "Install GPS guidance systems",
+            "Use variable rate technology",
+            "Analyze yield maps"
+          ],
+          "season": "Implementation before season",
+          "difficulty": "Hard",
+          "cost": "High",
+          "time_required": "Season-long implementation"
+        }
+      ]
+    }
+  },
+  "quick_tips": [
+    {
+      "tip": "Always test soil pH before planting",
+      "category": "soil_management"
+    },
+    {
+      "tip": "Water early morning or late evening",
+      "category": "water_management"
+    },
+    {
+      "tip": "Monitor crops weekly for pests",
+      "category": "pest_disease_management"
+    },
+    {
+      "tip": "Apply organic matter annually",
+      "category": "soil_management"
+    },
+    {
+      "tip": "Use certified seeds only",
+      "category": "crop_nutrition"
+    },
+    {
+      "tip": "Keep farm records updated",
+      "category": "technology_adoption"
+    },
+    {
+      "tip": "Practice crop rotation",
+      "category": "sustainable_practices"
+    },
+    {
+      "tip": "Check weather forecast daily",
+      "category": "technology_adoption"
+    }
+  ],
+  "seasonal_focus": {
+    "monsoon": [
+      "Ensure proper drainage",
+      "Monitor for fungal diseases",
+      "Apply split fertilizer doses",
+      "Harvest rainwater"
+    ],
+    "winter": [
+      "Protect crops from frost",
+      "Reduce irrigation frequency",
+      "Plan summer crop preparation",
+      "Maintain equipment"
+    ],
+    "summer": [
+      "Focus on water conservation",
+      "Provide shade for livestock",
+      "Prepare monsoon crops",
+      "Soil health improvement"
+    ]
+  }
+}

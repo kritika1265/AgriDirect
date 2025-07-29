@@ -1,0 +1,307 @@
+{
+  "seasonal_calendar": {
+    "kharif": {
+      "season_name": "Kharif (Monsoon Season)",
+      "months": ["June", "July", "August", "September", "October"],
+      "crops": [
+        {
+          "name": "Rice",
+          "sowing_time": "June-July",
+          "harvesting_time": "September-October",
+          "duration_days": 120,
+          "water_requirement": "High",
+          "soil_type": "Clay, loamy",
+          "temperature_range": "20-35°C",
+          "rainfall_requirement": "1000-2000mm",
+          "fertilizer_schedule": [
+            {"stage": "Sowing", "fertilizer": "DAP", "quantity": "50kg/acre"},
+            {"stage": "Tillering", "fertilizer": "Urea", "quantity": "25kg/acre"},
+            {"stage": "Panicle", "fertilizer": "Potash", "quantity": "20kg/acre"}
+          ]
+        },
+        {
+          "name": "Cotton",
+          "sowing_time": "May-June",
+          "harvesting_time": "October-December",
+          "duration_days": 180,
+          "water_requirement": "Medium",
+          "soil_type": "Black cotton soil",
+          "temperature_range": "25-35°C",
+          "rainfall_requirement": "500-1000mm",
+          "fertilizer_schedule": [
+            {"stage": "Sowing", "fertilizer": "Complex", "quantity": "100kg/acre"},
+            {"stage": "Flowering", "fertilizer": "Urea", "quantity": "50kg/acre"}
+          ]
+        },
+        {
+          "name": "Sugarcane",
+          "sowing_time": "February-April",
+          "harvesting_time": "December-March",
+          "duration_days": 365,
+          "water_requirement": "Very High",
+          "soil_type": "Deep fertile soil",
+          "temperature_range": "20-30°C",
+          "rainfall_requirement": "1500-2500mm",
+          "fertilizer_schedule": [
+            {"stage": "Planting", "fertilizer": "FYM", "quantity": "10 tons/acre"},
+            {"stage": "45 days", "fertilizer": "Urea", "quantity": "100kg/acre"},
+            {"stage": "90 days", "fertilizer": "DAP", "quantity": "75kg/acre"}
+          ]
+        },
+        {
+          "name": "Maize",
+          "sowing_time": "June-July",
+          "harvesting_time": "September-October",
+          "duration_days": 90,
+          "water_requirement": "Medium",
+          "soil_type": "Well-drained loamy",
+          "temperature_range": "18-27°C",
+          "rainfall_requirement": "600-1200mm",
+          "fertilizer_schedule": [
+            {"stage": "Sowing", "fertilizer": "DAP", "quantity": "50kg/acre"},
+            {"stage": "Knee high", "fertilizer": "Urea", "quantity": "100kg/acre"}
+          ]
+        }
+      ]
+    },
+    "rabi": {
+      "season_name": "Rabi (Winter Season)",
+      "months": ["November", "December", "January", "February", "March"],
+      "crops": [
+        {
+          "name": "Wheat",
+          "sowing_time": "November-December",
+          "harvesting_time": "March-April",
+          "duration_days": 120,
+          "water_requirement": "Medium",
+          "soil_type": "Well-drained loamy",
+          "temperature_range": "10-25°C",
+          "rainfall_requirement": "300-400mm",
+          "fertilizer_schedule": [
+            {"stage": "Sowing", "fertilizer": "DAP", "quantity": "100kg/acre"},
+            {"stage": "First irrigation", "fertilizer": "Urea", "quantity": "100kg/acre"},
+            {"stage": "Crown root", "fertilizer": "Urea", "quantity": "50kg/acre"}
+          ]
+        },
+        {
+          "name": "Barley",
+          "sowing_time": "November-December",
+          "harvesting_time": "March-April",
+          "duration_days": 110,
+          "water_requirement": "Low",
+          "soil_type": "Sandy loam",
+          "temperature_range": "12-22°C",
+          "rainfall_requirement": "200-300mm",
+          "fertilizer_schedule": [
+            {"stage": "Sowing", "fertilizer": "DAP", "quantity": "75kg/acre"},
+            {"stage": "Tillering", "fertilizer": "Urea", "quantity": "50kg/acre"}
+          ]
+        },
+        {
+          "name": "Mustard",
+          "sowing_time": "October-November",
+          "harvesting_time": "February-March",
+          "duration_days": 120,
+          "water_requirement": "Low",
+          "soil_type": "Sandy loam to clay",
+          "temperature_range": "15-25°C",
+          "rainfall_requirement": "200-400mm",
+          "fertilizer_schedule": [
+            {"stage": "Sowing", "fertilizer": "DAP", "quantity": "50kg/acre"},
+            {"stage": "Flowering", "fertilizer": "Urea", "quantity": "25kg/acre"}
+          ]
+        },
+        {
+          "name": "Chickpea",
+          "sowing_time": "October-November",
+          "harvesting_time": "February-March",
+          "duration_days": 120,
+          "water_requirement": "Low",
+          "soil_type": "Deep black cotton soil",
+          "temperature_range": "15-25°C",
+          "rainfall_requirement": "300-400mm",
+          "fertilizer_schedule": [
+            {"stage": "Sowing", "fertilizer": "DAP", "quantity": "50kg/acre"},
+            {"stage": "Flowering", "fertilizer": "Potash", "quantity": "25kg/acre"}
+          ]
+        }
+      ]
+    },
+    "zaid": {
+      "season_name": "Zaid (Summer Season)",
+      "months": ["March", "April", "May", "June"],
+      "crops": [
+        {
+          "name": "Watermelon",
+          "sowing_time": "February-March",
+          "harvesting_time": "May-June",
+          "duration_days": 90,
+          "water_requirement": "High",
+          "soil_type": "Sandy loam",
+          "temperature_range": "25-35°C",
+          "rainfall_requirement": "Irrigation required",
+          "fertilizer_schedule": [
+            {"stage": "Sowing", "fertilizer": "FYM", "quantity": "10 tons/acre"},
+            {"stage": "Flowering", "fertilizer": "Complex", "quantity": "50kg/acre"}
+          ]
+        },
+        {
+          "name": "Fodder Maize",
+          "sowing_time": "March-April",
+          "harvesting_time": "June-July",
+          "duration_days": 70,
+          "water_requirement": "High",
+          "soil_type": "Well-drained fertile",
+          "temperature_range": "20-30°C",
+          "rainfall_requirement": "Irrigation required",
+          "fertilizer_schedule": [
+            {"stage": "Sowing", "fertilizer": "Urea", "quantity": "100kg/acre"},
+            {"stage": "30 days", "fertilizer": "DAP", "quantity": "50kg/acre"}
+          ]
+        }
+      ]
+    }
+  },
+  "monthly_activities": {
+    "January": {
+      "activities": [
+        "Wheat crop management and irrigation",
+        "Harvest rabi vegetables",
+        "Prepare land for summer crops",
+        "Pruning of fruit trees"
+      ],
+      "weather_considerations": "Cold wave protection for crops",
+      "irrigation_schedule": "Moderate irrigation for rabi crops"
+    },
+    "February": {
+      "activities": [
+        "Chickpea and mustard harvesting",
+        "Summer crop land preparation",
+        "Vegetable sowing",
+        "Fruit tree care"
+      ],
+      "weather_considerations": "Late frost protection",
+      "irrigation_schedule": "Increase irrigation frequency"
+    },
+    "March": {
+      "activities": [
+        "Wheat harvesting begins",
+        "Summer crop sowing",
+        "Orchard management",
+        "Pest control measures"
+      ],
+      "weather_considerations": "Rising temperatures",
+      "irrigation_schedule": "Regular irrigation required"
+    },
+    "April": {
+      "activities": [
+        "Complete wheat harvesting",
+        "Summer vegetable care",
+        "Fodder crop sowing",
+        "Equipment maintenance"
+      ],
+      "weather_considerations": "Hot weather stress management",
+      "irrigation_schedule": "Frequent irrigation"
+    },
+    "May": {
+      "activities": [
+        "Summer crop management",
+        "Land preparation for kharif",
+        "Water conservation",
+        "Livestock management"
+      ],
+      "weather_considerations": "Heat wave protection",
+      "irrigation_schedule": "Daily irrigation may be needed"
+    },
+    "June": {
+      "activities": [
+        "Kharif crop sowing",
+        "Monsoon preparation",
+        "Rice nursery preparation",
+        "Drainage system check"
+      ],
+      "weather_considerations": "Pre-monsoon showers",
+      "irrigation_schedule": "Reduce irrigation with rains"
+    },
+    "July": {
+      "activities": [
+        "Rice transplanting",
+        "Weed management",
+        "Pest monitoring",
+        "Fertilizer application"
+      ],
+      "weather_considerations": "Heavy rainfall management",
+      "irrigation_schedule": "Monsoon dependent"
+    },
+    "August": {
+      "activities": [
+        "Crop growth monitoring",
+        "Disease management",
+        "Fertilizer top dressing",
+        "Water logging prevention"
+      ],
+      "weather_considerations": "Flood protection measures",
+      "irrigation_schedule": "Drainage more important"
+    },
+    "September": {
+      "activities": [
+        "Kharif crop flowering stage",
+        "Pest control",
+        "Early variety harvesting",
+        "Post-monsoon care"
+      ],
+      "weather_considerations": "Post-monsoon diseases",
+      "irrigation_schedule": "Supplemental irrigation"
+    },
+    "October": {
+      "activities": [
+        "Kharif harvesting",
+        "Rabi land preparation",
+        "Storage preparation",
+        "Equipment servicing"
+      ],
+      "weather_considerations": "Dry weather utilization",
+      "irrigation_schedule": "Pre-rabi irrigation"
+    },
+    "November": {
+      "activities": [
+        "Rabi crop sowing",
+        "Wheat sowing",
+        "Vegetable planting",
+        "Organic matter incorporation"
+      ],
+      "weather_considerations": "Cool weather crops",
+      "irrigation_schedule": "Regular irrigation for establishment"
+    },
+    "December": {
+      "activities": [
+        "Rabi crop establishment",
+        "Winter vegetable care",
+        "Fruit tree management",
+        "Year-end planning"
+      ],
+      "weather_considerations": "Frost protection",
+      "irrigation_schedule": "Moderate irrigation"
+    }
+  },
+  "reminders": {
+    "fertilizer_application": {
+      "basal_dose": "Apply at sowing time",
+      "first_top_dress": "30-45 days after sowing",
+      "second_top_dress": "60-75 days after sowing",
+      "foliar_spray": "During flowering/fruiting"
+    },
+    "pest_control": {
+      "monitoring": "Weekly pest monitoring",
+      "preventive": "Use organic methods first",
+      "chemical": "Use as last resort with proper dosage",
+      "beneficial_insects": "Encourage natural predators"
+    },
+    "water_management": {
+      "critical_stages": "Germination, flowering, grain filling",
+      "conservation": "Mulching and drip irrigation",
+      "quality": "Test water quality regularly",
+      "timing": "Early morning or evening irrigation"
+    }
+  }
+}
