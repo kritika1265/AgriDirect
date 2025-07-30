@@ -163,7 +163,7 @@ class CropRecommendation {
       cropId: json['crop_id'] ?? '',
       cropName: json['crop_name'] ?? '',
       suitabilityScore: (json['suitability_score'] ?? 0).toDouble(),
-      reasons: List<String>.from(json['reasons'] ?? []),
+      reasons: List<String>.from((json['reasons'] ?? []) as Iterable),
       soilRequirements: json['soil_requirements'] ?? {},
       climateRequirements: json['climate_requirements'] ?? {},
       season: json['season'] ?? '',

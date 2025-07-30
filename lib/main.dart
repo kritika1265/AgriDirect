@@ -14,6 +14,8 @@ import 'providers/connectivity_provider.dart';
 import 'services/notification_service.dart';
 import 'utils/app_router.dart';
 import 'utils/colors.dart';
+// Import the generated firebase options
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,10 +23,13 @@ void main() async {
   // Load environment variables
   await dotenv.load(fileName: ".env");
   
-  // Initialize Firebase
+  // Initialize Firebase with proper options
   await Firebase.initializeApp(
-    options: FirebaseConfig.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Initialize Firebase config instance
+  await FirebaseConfig().initialize();
   
   // Initialize notifications
   await NotificationService.initialize();
@@ -65,12 +70,12 @@ class AgriDirectApp extends StatelessWidget {
             title: AppConfig.appName,
             debugShowCheckedModeBanner: false,
             theme: _buildTheme(themeProvider.isDarkMode),
-            routerConfig: AppRouter.router,
+            routerConfig: AppRouter().router,
             builder: (context, child) {
               return MediaQuery(
                 data: MediaQuery.of(context).copyWith(
                   textScaler: TextScaler.linear(
-                    MediaQuery.of(context).textScaleFactor.clamp(0.8, 1.2),
+                    MediaQuery.textScalerOf(context).scale(1.0).clamp(0.8, 1.2),
                   ),
                 ),
                 child: child!,
@@ -125,7 +130,7 @@ class AgriDirectApp extends StatelessWidget {
           ),
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -137,7 +142,7 @@ class AgriDirectApp extends StatelessWidget {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colorScheme.surfaceVariant.withOpacity(0.3),
+        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -158,7 +163,7 @@ class AgriDirectApp extends StatelessWidget {
         elevation: 8,
         backgroundColor: colorScheme.surface,
         selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.onSurface.withOpacity(0.6),
+        unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: const TextStyle(
           fontSize: 12,

@@ -127,3 +127,19 @@ class AppConfig {
   static const String instagramUrl = 'https://instagram.com/agridirect';
   static const String youtubeUrl = 'https://youtube.com/agridirect';
 }
+
+// ApiConfig class for backward compatibility with ApiService
+class ApiConfig {
+  // Base URL for your main API (uses backendApiBaseUrl from AppConfig)
+  static String get baseUrl => AppConfig.backendApiBaseUrl.isNotEmpty 
+      ? AppConfig.backendApiBaseUrl 
+      : 'https://your-api-domain.com/api/v1';
+  
+  // API Key for main backend authentication
+  static String get apiKey => dotenv.env['BACKEND_API_KEY'] ?? dotenv.env['API_KEY'] ?? '';
+  
+  // Other configuration constants
+  static const int defaultTimeout = 30;
+  static const String defaultLanguage = 'en';
+  static const String defaultUnits = 'metric';
+}

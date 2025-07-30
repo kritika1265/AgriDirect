@@ -1,0 +1,148 @@
+MIT License
+
+Copyright (c) 2025 AgriDirect Development Team
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+
+ADDITIONAL TERMS AND CONDITIONS
+
+1. AGRICULTURAL DATA USAGE
+   - This software is designed specifically for agricultural and farming purposes
+   - Any use of the machine learning models and algorithms should comply with 
+     local agricultural regulations and guidelines
+   - Users are responsible for verifying AI-generated recommendations with 
+     qualified agricultural experts
+
+2. THIRD-PARTY INTEGRATIONS
+   - This software integrates with various third-party services including but 
+     not limited to:
+     * Firebase (Google Cloud Platform)
+     * Weather API services
+     * Maps and location services
+     * Payment processing services
+   - Users must comply with the terms of service of these third-party providers
+   - The license holder is not responsible for changes in third-party service 
+     availability or terms
+
+3. MACHINE LEARNING MODELS
+   - The AI models included in this software are provided for educational and 
+     agricultural assistance purposes
+   - Model predictions should not be considered as definitive agricultural advice
+   - Users should consult with agricultural experts for critical farming decisions
+   - The accuracy of AI predictions may vary based on image quality, environmental 
+     conditions, and regional factors
+
+4. DATA PRIVACY AND SECURITY
+   - This software collects and processes agricultural data, location information,
+     and user-generated content
+   - Users are responsible for complying with local data protection regulations
+     (GDPR, CCPA, etc.)
+   - Any modifications to the software must maintain the same level of data 
+     security and privacy protection
+
+5. COMMERCIAL USE
+   - Commercial use of this software is permitted under the MIT license terms
+   - However, commercial users must:
+     * Provide proper attribution to the original authors
+     * Ensure compliance with agricultural regulations in their jurisdiction
+     * Maintain the open-source nature of any modifications (if redistributed)
+     * Not misrepresent the software's capabilities or accuracy
+
+6. DISCLAIMER OF WARRANTIES
+   - This software is provided for agricultural assistance and educational purposes
+   - The authors make no warranties regarding the accuracy of agricultural 
+     recommendations, weather forecasts, or AI predictions
+   - Users assume all risks associated with farming decisions based on software 
+     recommendations
+   - The software should be used as a supplementary tool alongside traditional 
+     agricultural knowledge and expertise
+
+7. LIMITATION OF LIABILITY
+   - In no event shall the authors or copyright holders be liable for any 
+     agricultural losses, crop damage, or economic losses resulting from the use 
+     of this software
+   - Users are solely responsible for their farming decisions and any consequences 
+     thereof
+   - The maximum liability of the authors shall not exceed the cost of the software 
+     license (which is free in this case)
+
+8. CONTRIBUTION GUIDELINES
+   - Contributions to this project are welcome and should follow the established 
+     coding standards
+   - Contributors must ensure their additions do not compromise the agricultural
+     focus or safety of the software
+   - All contributions become subject to this license
+
+9. EXPORT RESTRICTIONS
+   - This software may be subject to export control laws and regulations
+   - Users are responsible for complying with applicable export control laws
+   - The software should not be used in countries or regions where prohibited by law
+
+10. UPDATES AND MODIFICATIONS
+    - The license holders reserve the right to update these terms for future 
+      versions of the software
+    - Existing installations will continue to be governed by the license terms
+      under which they were originally distributed
+    - Users are encouraged to update to the latest version to benefit from 
+      security updates and improvements
+
+================================================================================
+
+ATTRIBUTION REQUIREMENTS
+
+When using, modifying, or distributing this software, please include the 
+following attribution:
+
+"This application uses AgriDirect technology, an open-source agricultural 
+assistance platform. Original software developed by the AgriDirect Development 
+Team. Available at: https://github.com/yourusername/agridirect"
+
+================================================================================
+
+CONTACT INFORMATION
+
+For questions about this license or the software:
+- Email: legal@agridirect.com
+- GitHub: https://github.com/yourusername/agridirect
+- Website: https://www.agridirect.com
+
+For agricultural or technical support:
+- Email: support@agridirect.com
+- Documentation: https://docs.agridirect.com
+
+================================================================================
+
+OPEN SOURCE ACKNOWLEDGMENTS
+
+This software makes use of various open-source packages and libraries. 
+Full attribution and licenses for these components can be found in the 
+ACKNOWLEDGMENTS.md file included with this distribution.
+
+Major open-source components include:
+- Flutter SDK (BSD License)
+- Firebase SDK (Apache License 2.0)
+- TensorFlow Lite (Apache License 2.0)
+- Various Dart/Flutter packages (see pubspec.yaml for details)
+
+================================================================================
+
+Last Updated: January 15, 2025
+License Version: 1.0

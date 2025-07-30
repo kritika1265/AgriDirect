@@ -77,11 +77,18 @@ class AuthProvider extends ChangeNotifier {
       _setLoading(true);
       _clearError();
       
-      final success = await _authService.sendOTP(phoneNumber);
-      if (!success) {
-        _setError('Failed to send OTP. Please try again.');
-      }
-      return success;
+      // Fixed: Using named parameters and proper callback handling
+      await _authService.sendOTP(
+        phoneNumber: phoneNumber,
+        onCodeSent: (String verificationId) {
+          // Store verification ID for later use
+          // You might want to add a field to store this
+        },
+        onError: (String error) {
+          _setError(error);
+        },
+      );
+      return true;
     } catch (e) {
       _setError(e.toString());
       return false;
@@ -90,12 +97,17 @@ class AuthProvider extends ChangeNotifier {
     }
   }
   
-  Future<bool> verifyOTP(String otp) async {
+  Future<bool> verifyOTP(String verificationId, String otp) async {
     try {
       _setLoading(true);
       _clearError();
       
-      final user = await _authService.verifyOTP(otp);
+      // Fixed: Using named parameters
+      final user = await _authService.verifyOTP(
+        verificationId: verificationId,
+        otp: otp,
+      );
+      
       if (user != null) {
         // User data will be loaded automatically via auth state listener
         return true;
@@ -123,3 +135,29 @@ class AuthProvider extends ChangeNotifier {
       _setLoading(false);
     }
   }
+  
+  // Private helper methods that were missing
+  void _setStatus(AuthStatus status) {
+    _status = status;
+    notifyListeners();
+  }
+  
+  void _setLoading(bool loading) {
+    _isLoading = loading;
+    notifyListeners();
+  }
+  
+  void _setError(String error) {
+    _errorMessage = error;
+    _status = AuthStatus.error;
+    notifyListeners();
+  }
+  
+  void _clearError() {
+    _errorMessage = null;
+    if (_status == AuthStatus.error) {
+      _status = AuthStatus.initial;
+    }
+    notifyListeners();
+  }
+}

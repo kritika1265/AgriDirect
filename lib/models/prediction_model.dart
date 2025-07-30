@@ -219,4 +219,111 @@ class MLPredictionHistory {
   factory MLPredictionHistory.fromJson(Map<String, dynamic> json) {
     return MLPredictionHistory(
       cropPredictions: (json['cropPredictions'] as List<dynamic>?)
-          ?.map((p) => CropPrediction.fromJson
+          ?.map((p) => CropPrediction.fromJson(p as Map<String, dynamic>))
+          .toList() ?? [],
+      soilAnalyses: (json['soilAnalyses'] as List<dynamic>?)
+          ?.map((s) => SoilAnalysis.fromJson(s as Map<String, dynamic>))
+          .toList() ?? [],
+      lastUpdated: DateTime.parse(json['lastUpdated'] ?? DateTime.now().toIso8601String()),
+    );
+  }
+
+  // Helper methods
+  CropPrediction? get latestCropPrediction => 
+      cropPredictions.isNotEmpty ? cropPredictions.last : null;
+
+  SoilAnalysis? get latestSoilAnalysis => 
+      soilAnalyses.isNotEmpty ? soilAnalyses.last : null;
+
+  int get totalPredictions => cropPredictions.length + soilAnalyses.length;
+
+  bool get hasData => cropPredictions.isNotEmpty || soilAnalyses.isNotEmpty;
+
+  // Get predictions from a specific date range
+  List<CropPrediction> getCropPredictionsInRange(DateTime start, DateTime end) {
+    return cropPredictions.where((prediction) =>
+        prediction.predictedAt.isAfter(start) && prediction.predictedAt.isBefore(end)
+    ).toList();
+  }
+
+  List<SoilAnalysis> getSoilAnalysesInRange(DateTime start, DateTime end) {
+    return soilAnalyses.where((analysis) =>
+        analysis.analyzedAt.isAfter(start) && analysis.analyzedAt.isBefore(end)
+    ).toList();
+  }
+}
+
+// Additional utility classes for ML predictions
+class PredictionRequest {
+  final Map<String, dynamic> inputData;
+  final String predictionType; // 'crop' or 'soil'
+  final String location;
+  final DateTime requestedAt;
+
+  PredictionRequest({
+    required this.inputData,
+    required this.predictionType,
+    required this.location,
+    required this.requestedAt,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'inputData': inputData,
+      'predictionType': predictionType,
+      'location': location,
+      'requestedAt': requestedAt.toIso8601String(),
+    };
+  }
+
+  factory PredictionRequest.fromJson(Map<String, dynamic> json) {
+    return PredictionRequest(
+      inputData: Map<String, dynamic>.from(json['inputData'] ?? {}),
+      predictionType: json['predictionType'] ?? '',
+      location: json['location'] ?? '',
+      requestedAt: DateTime.parse(json['requestedAt'] ?? DateTime.now().toIso8601String()),
+    );
+  }
+}
+
+class MLModelInfo {
+  final String modelId;
+  final String modelName;
+  final String version;
+  final double accuracy;
+  final DateTime trainedAt;
+  final String description;
+
+  MLModelInfo({
+    required this.modelId,
+    required this.modelName,
+    required this.version,
+    required this.accuracy,
+    required this.trainedAt,
+    required this.description,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'modelId': modelId,
+      'modelName': modelName,
+      'version': version,
+      'accuracy': accuracy,
+      'trainedAt': trainedAt.toIso8601String(),
+      'description': description,
+    };
+  }
+
+  factory MLModelInfo.fromJson(Map<String, dynamic> json) {
+    return MLModelInfo(
+      modelId: json['modelId'] ?? '',
+      modelName: json['modelName'] ?? '',
+      version: json['version'] ?? '',
+      accuracy: (json['accuracy'] ?? 0.0).toDouble(),
+      trainedAt: DateTime.parse(json['trainedAt'] ?? DateTime.now().toIso8601String()),
+      description: json['description'] ?? '',
+    );
+  }
+
+  String get accuracyPercentage => '${(accuracy * 100).toStringAsFixed(1)}%';
+}

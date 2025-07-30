@@ -14,7 +14,7 @@ dependencies:
   # UI & Icons
   cupertino_icons: ^1.0.6
   flutter_svg: ^2.0.7
-  lottie: ^3.3.1
+  lottie: ^3.3.0
 
   # State Management
   provider: ^6.0.5
@@ -29,6 +29,8 @@ dependencies:
   cloud_firestore: ^6.0.0
   firebase_storage: ^13.0.0
   firebase_messaging: ^16.0.0
+  firebase_analytics: ^12.0.0
+  firebase_crashlytics: ^5.0.0
 
   # Networking
   http: ^1.1.0
@@ -48,11 +50,11 @@ dependencies:
   # Camera & Image
   image_picker: ^1.0.4
   camera: ^0.11.2
-  image: ^4.5.4
+  image: ^4.5.4  # Back to latest version
 
   # ML & AI
   tflite_flutter: ^0.11.0
-  tflite_flutter_helper: ^0.2.0 # ⚠️ Discontinued — migrate soon
+  # Note: tflite_flutter_helper removed due to conflicts and discontinuation
 
   # Permissions
   permission_handler: ^12.0.1

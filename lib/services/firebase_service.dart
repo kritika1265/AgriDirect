@@ -1,14 +1,15 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../models/user_model.dart';
-import '../models/crop_model.dart';
-import '../models/tool_model.dart';
-import '../models/rental_model.dart';
-import '../models/disease_model.dart';
-import '../models/prediction_model.dart';
+// import '../models/crop_model.dart';
+// import '../models/tool_model.dart';
+// import '../models/rental_model.dart';
+// import '../models/disease_model.dart';
+// import '../models/prediction_model.dart';
 
 class FirebaseService {
   static final FirebaseService _instance = FirebaseService._internal();
@@ -51,6 +52,34 @@ class FirebaseService {
     }
   }
 
+  // Methods needed by AuthProvider
+  Future<Map<String, dynamic>?> getUserData(String uid) async {
+    try {
+      final doc = await _firestore
+          .collection(_usersCollection)
+          .doc(uid)
+          .get();
+      
+      if (doc.exists) {
+        return doc.data();
+      }
+      return null;
+    } catch (e) {
+      throw FirebaseException('Failed to get user data: ${e.toString()}');
+    }
+  }
+  
+  Future<void> createUserData(String uid, Map<String, dynamic> userData) async {
+    try {
+      await _firestore
+          .collection(_usersCollection)
+          .doc(uid)
+          .set(userData, SetOptions(merge: true));
+    } catch (e) {
+      throw FirebaseException('Failed to create user data: ${e.toString()}');
+    }
+  }
+
   Future<void> createOrUpdateUser(UserModel userModel) async {
     try {
       await _firestore
@@ -79,18 +108,18 @@ class FirebaseService {
   }
 
   // Crop Management
-  Future<void> saveCropData(CropModel crop) async {
+  Future<void> saveCropData(Map<String, dynamic> cropData) async {
     try {
       await _firestore
           .collection(_cropsCollection)
-          .doc(crop.id)
-          .set(crop.toMap());
+          .doc(cropData['id'])
+          .set(cropData);
     } catch (e) {
       throw FirebaseException('Failed to save crop data: ${e.toString()}');
     }
   }
 
-  Future<List<CropModel>> getUserCrops(String userId) async {
+  Future<List<Map<String, dynamic>>> getUserCrops(String userId) async {
     try {
       final snapshot = await _firestore
           .collection(_cropsCollection)
@@ -99,7 +128,7 @@ class FirebaseService {
           .get();
 
       return snapshot.docs
-          .map((doc) => CropModel.fromMap(doc.data()))
+          .map((doc) => doc.data())
           .toList();
     } catch (e) {
       throw FirebaseException('Failed to get user crops: ${e.toString()}');
@@ -121,18 +150,18 @@ class FirebaseService {
   }
 
   // Disease Detection History
-  Future<void> saveDiseaseDetection(DiseaseModel disease) async {
+  Future<void> saveDiseaseDetection(Map<String, dynamic> diseaseData) async {
     try {
       await _firestore
           .collection(_diseasesCollection)
-          .doc(disease.id)
-          .set(disease.toMap());
+          .doc(diseaseData['id'])
+          .set(diseaseData);
     } catch (e) {
       throw FirebaseException('Failed to save disease detection: ${e.toString()}');
     }
   }
 
-  Future<List<DiseaseModel>> getUserDiseaseHistory(String userId) async {
+  Future<List<Map<String, dynamic>>> getUserDiseaseHistory(String userId) async {
     try {
       final snapshot = await _firestore
           .collection(_diseasesCollection)
@@ -142,7 +171,7 @@ class FirebaseService {
           .get();
 
       return snapshot.docs
-          .map((doc) => DiseaseModel.fromMap(doc.data()))
+          .map((doc) => doc.data())
           .toList();
     } catch (e) {
       throw FirebaseException('Failed to get disease history: ${e.toString()}');
@@ -150,18 +179,18 @@ class FirebaseService {
   }
 
   // Prediction History
-  Future<void> savePredictionResult(PredictionModel prediction) async {
+  Future<void> savePredictionResult(Map<String, dynamic> predictionData) async {
     try {
       await _firestore
           .collection(_predictionsCollection)
-          .doc(prediction.id)
-          .set(prediction.toMap());
+          .doc(predictionData['id'])
+          .set(predictionData);
     } catch (e) {
       throw FirebaseException('Failed to save prediction: ${e.toString()}');
     }
   }
 
-  Future<List<PredictionModel>> getUserPredictions(String userId) async {
+  Future<List<Map<String, dynamic>>> getUserPredictions(String userId) async {
     try {
       final snapshot = await _firestore
           .collection(_predictionsCollection)
@@ -171,7 +200,7 @@ class FirebaseService {
           .get();
 
       return snapshot.docs
-          .map((doc) => PredictionModel.fromMap(doc.data()))
+          .map((doc) => doc.data())
           .toList();
     } catch (e) {
       throw FirebaseException('Failed to get predictions: ${e.toString()}');
@@ -179,18 +208,18 @@ class FirebaseService {
   }
 
   // Tool Rental Management
-  Future<void> saveToolRental(RentalModel rental) async {
+  Future<void> saveToolRental(Map<String, dynamic> rentalData) async {
     try {
       await _firestore
           .collection(_rentalsCollection)
-          .doc(rental.id)
-          .set(rental.toMap());
+          .doc(rentalData['id'])
+          .set(rentalData);
     } catch (e) {
       throw FirebaseException('Failed to save rental: ${e.toString()}');
     }
   }
 
-  Future<List<RentalModel>> getUserRentals(String userId) async {
+  Future<List<Map<String, dynamic>>> getUserRentals(String userId) async {
     try {
       final snapshot = await _firestore
           .collection(_rentalsCollection)
@@ -199,7 +228,7 @@ class FirebaseService {
           .get();
 
       return snapshot.docs
-          .map((doc) => RentalModel.fromMap(doc.data()))
+          .map((doc) => doc.data())
           .toList();
     } catch (e) {
       throw FirebaseException('Failed to get rentals: ${e.toString()}');
@@ -221,7 +250,7 @@ class FirebaseService {
   }
 
   // Tools Management
-  Future<List<ToolModel>> getAvailableTools({
+  Future<List<Map<String, dynamic>>> getAvailableTools({
     String? category,
     double? maxDistance,
     GeoPoint? userLocation,
@@ -236,19 +265,20 @@ class FirebaseService {
       }
 
       final snapshot = await query.get();
-      List<ToolModel> tools = snapshot.docs
-          .map((doc) => ToolModel.fromMap(doc.data() as Map<String, dynamic>))
+      List<Map<String, dynamic>> tools = snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
           .toList();
 
       // Filter by distance if location is provided
       if (userLocation != null && maxDistance != null) {
         tools = tools.where((tool) {
-          if (tool.location != null) {
+          final toolLocation = tool['location'] as GeoPoint?;
+          if (toolLocation != null) {
             final distance = _calculateDistance(
               userLocation.latitude,
               userLocation.longitude,
-              tool.location!.latitude,
-              tool.location!.longitude,
+              toolLocation.latitude,
+              toolLocation.longitude,
             );
             return distance <= maxDistance;
           }
@@ -464,17 +494,17 @@ class FirebaseService {
     final double dLon = _degreesToRadians(lon2 - lon1);
     
     final double a = 
-        (dLat / 2).sin() * (dLat / 2).sin() +
-        (lat1 * (3.14159265359 / 180)).cos() * (lat2 * (3.14159265359 / 180)).cos() *
-        (dLon / 2).sin() * (dLon / 2).sin();
+        sin(dLat / 2) * sin(dLat / 2) +
+        cos(_degreesToRadians(lat1)) * cos(_degreesToRadians(lat2)) *
+        sin(dLon / 2) * sin(dLon / 2);
     
-    final double c = 2 * (a.sqrt()).asin();
+    final double c = 2 * asin(sqrt(a));
     
     return earthRadius * c;
   }
 
   double _degreesToRadians(double degrees) {
-    return degrees * (3.14159265359 / 180);
+    return degrees * (pi / 180);
   }
 
   // Batch operations
