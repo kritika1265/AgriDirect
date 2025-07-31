@@ -29,7 +29,12 @@ class ThemeProvider extends ChangeNotifier {
   /// Whether dark mode is currently active
   bool get isDarkMode {
     if (_themeMode == ThemeMode.system) {
-      return WidgetsBinding.instance.platformDispatcher.platformBrightness == Brightness.dark;
+      // Fixed: Use MediaQuery or check if binding is available
+      final binding = WidgetsBinding.instance;
+      if (binding.platformDispatcher.views.isNotEmpty) {
+        return binding.platformDispatcher.platformBrightness == Brightness.dark;
+      }
+      return false; // Default fallback
     }
     return _themeMode == ThemeMode.dark;
   }
@@ -41,21 +46,32 @@ class ThemeProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       
-      // Load theme mode
+      // Load theme mode with bounds check
       final themeIndex = prefs.getInt(_themePreferenceKey) ?? ThemeMode.system.index;
-      _themeMode = ThemeMode.values[themeIndex];
+      if (themeIndex >= 0 && themeIndex < ThemeMode.values.length) {
+        _themeMode = ThemeMode.values[themeIndex];
+      }
       
       // Load accent color
       final colorValue = prefs.getInt(_accentColorKey) ?? _accentColor.value;
       _accentColor = Color(colorValue);
       
-      // Load font size scale
-      _fontSizeScale = prefs.getDouble(_fontSizeKey) ?? 1.0;
+      // Load font size scale with validation
+      final savedScale = prefs.getDouble(_fontSizeKey) ?? 1.0;
+      _fontSizeScale = savedScale.clamp(0.8, 1.4);
       
       _isInitialized = true;
+      
+      // Update system UI after initialization
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateSystemUIOverlay();
+      });
+      
       notifyListeners();
     } catch (e) {
       debugPrint('Error initializing theme provider: $e');
+      _isInitialized = true; // Set to true even on error to prevent retry loops
+      notifyListeners();
     }
   }
   
@@ -66,8 +82,10 @@ class ThemeProvider extends ChangeNotifier {
     _themeMode = mode;
     notifyListeners();
     
-    // Update system UI overlay style
-    _updateSystemUIOverlay();
+    // Update system UI overlay with delay to ensure UI is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateSystemUIOverlay();
+    });
     
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -94,9 +112,10 @@ class ThemeProvider extends ChangeNotifier {
   
   /// Set font size scale and persist to preferences
   Future<void> setFontSizeScale(double scale) async {
-    if (_fontSizeScale == scale) return;
+    final clampedScale = scale.clamp(0.8, 1.4);
+    if (_fontSizeScale == clampedScale) return;
     
-    _fontSizeScale = scale.clamp(0.8, 1.4);
+    _fontSizeScale = clampedScale;
     notifyListeners();
     
     try {
@@ -234,16 +253,20 @@ class ThemeProvider extends ChangeNotifier {
   
   /// Update system UI overlay style based on current theme
   void _updateSystemUIOverlay() {
-    final isLight = !isDarkMode;
-    SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
-        statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
-        systemNavigationBarColor: isLight ? Colors.white : Colors.black,
-        systemNavigationBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
-      ),
-    );
+    try {
+      final isLight = !isDarkMode;
+      SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarBrightness: isLight ? Brightness.light : Brightness.dark,
+          statusBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+          systemNavigationBarColor: isLight ? Colors.white : Colors.black,
+          systemNavigationBarIconBrightness: isLight ? Brightness.dark : Brightness.light,
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error updating system UI overlay: $e');
+    }
   }
   
   /// Get predefined accent colors for user selection
@@ -260,10 +283,10 @@ class ThemeProvider extends ChangeNotifier {
   
   /// Get font size options for user selection
   List<FontSizeOption> get fontSizeOptions => [
-    FontSizeOption('Small', 0.8),
-    FontSizeOption('Default', 1.0),
-    FontSizeOption('Large', 1.2),
-    FontSizeOption('Extra Large', 1.4),
+    const FontSizeOption('Small', 0.8),
+    const FontSizeOption('Default', 1.0),
+    const FontSizeOption('Large', 1.2),
+    const FontSizeOption('Extra Large', 1.4),
   ];
   
   /// Reset theme to defaults
@@ -271,6 +294,12 @@ class ThemeProvider extends ChangeNotifier {
     await setThemeMode(ThemeMode.system);
     await setAccentColor(const Color(0xFF4CAF50));
     await setFontSizeScale(1.0);
+  }
+  
+  @override
+  void dispose() {
+    // Clean up resources if needed
+    super.dispose();
   }
 }
 
@@ -290,4 +319,7 @@ class FontSizeOption {
   
   @override
   int get hashCode => scale.hashCode;
+  
+  @override
+  String toString() => 'FontSizeOption(name: $name, scale: $scale)';
 }

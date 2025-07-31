@@ -1,36 +1,46 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 /// Provider for managing network connectivity state throughout the app
 /// Tracks both connectivity status and actual internet access
 class ConnectivityProvider extends ChangeNotifier {
   final Connectivity _connectivity = Connectivity();
-  final InternetConnectionChecker _internetChecker = InternetConnectionChecker();
+  final InternetConnectionChecker _internetChecker = InternetConnectionChecker.instance;
   
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
   late StreamSubscription<InternetConnectionStatus> _internetSubscription;
   
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  List<ConnectivityResult> _connectionStatus = [ConnectivityResult.none];
   bool _hasInternetAccess = false;
   bool _isInitialized = false;
 
   /// Current connectivity result (wifi, mobile, none, etc.)
-  ConnectivityResult get connectionStatus => _connectionStatus;
+  List<ConnectivityResult> get connectionStatus => _connectionStatus;
+  
+  /// Primary connection type for backwards compatibility
+  ConnectivityResult get primaryConnectionType => 
+      _connectionStatus.isNotEmpty ? _connectionStatus.first : ConnectivityResult.none;
   
   /// Whether the device has actual internet access
   bool get hasInternetAccess => _hasInternetAccess;
   
   /// Whether the device is connected to any network
-  bool get isConnected => _connectionStatus != ConnectivityResult.none;
+  bool get isConnected => !_connectionStatus.contains(ConnectivityResult.none) || 
+                          _connectionStatus.any((result) => result != ConnectivityResult.none);
   
   /// Whether the provider has been initialized
   bool get isInitialized => _isInitialized;
   
   /// Human-readable connection status
   String get connectionStatusText {
-    switch (_connectionStatus) {
+    if (_connectionStatus.isEmpty || _connectionStatus.first == ConnectivityResult.none) {
+      return 'No connection';
+    }
+    
+    final primaryConnection = _connectionStatus.first;
+    switch (primaryConnection) {
       case ConnectivityResult.wifi:
         return _hasInternetAccess ? 'Connected via WiFi' : 'WiFi connected, no internet';
       case ConnectivityResult.mobile:
@@ -44,14 +54,15 @@ class ConnectivityProvider extends ChangeNotifier {
       case ConnectivityResult.other:
         return _hasInternetAccess ? 'Connected via Other' : 'Other connection, no internet';
       case ConnectivityResult.none:
-      default:
         return 'No connection';
     }
   }
   
   /// Initialize connectivity monitoring
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    if (_isInitialized) {
+      return;
+    }
     
     try {
       // Get initial connectivity status
@@ -78,8 +89,8 @@ class ConnectivityProvider extends ChangeNotifier {
   }
   
   /// Handle connectivity changes
-  void _onConnectivityChanged(ConnectivityResult result) {
-    _connectionStatus = result;
+  void _onConnectivityChanged(List<ConnectivityResult> results) {
+    _connectionStatus = results;
     notifyListeners();
     
     // Check internet access when connectivity changes
@@ -95,7 +106,7 @@ class ConnectivityProvider extends ChangeNotifier {
   /// Handle connectivity errors
   void _onConnectivityError(dynamic error) {
     debugPrint('Connectivity error: $error');
-    _connectionStatus = ConnectivityResult.none;
+    _connectionStatus = [ConnectivityResult.none];
     _hasInternetAccess = false;
     notifyListeners();
   }
@@ -134,15 +145,16 @@ class ConnectivityProvider extends ChangeNotifier {
   }
   
   /// Check if specific network operations should be allowed
-  bool canPerformNetworkOperation() {
-    return isConnected && hasInternetAccess;
-  }
+  bool canPerformNetworkOperation() => isConnected && hasInternetAccess;
   
   /// Get network quality indicator (rough estimate)
   NetworkQuality getNetworkQuality() {
-    if (!hasInternetAccess) return NetworkQuality.none;
+    if (!hasInternetAccess) {
+      return NetworkQuality.none;
+    }
     
-    switch (_connectionStatus) {
+    final primaryConnection = primaryConnectionType;
+    switch (primaryConnection) {
       case ConnectivityResult.wifi:
         return NetworkQuality.good;
       case ConnectivityResult.mobile:
@@ -164,15 +176,21 @@ class ConnectivityProvider extends ChangeNotifier {
 
 /// Enum for network quality indication
 enum NetworkQuality {
+  /// No network connection available
   none,
+  /// Poor network quality
   poor,
+  /// Moderate network quality
   moderate,
+  /// Good network quality
   good,
+  /// Excellent network quality
   excellent,
 }
 
 /// Extension for NetworkQuality enum
 extension NetworkQualityExtension on NetworkQuality {
+  /// Human-readable display name for network quality
   String get displayName {
     switch (this) {
       case NetworkQuality.none:
@@ -188,6 +206,7 @@ extension NetworkQualityExtension on NetworkQuality {
     }
   }
   
+  /// Color representation for network quality
   Color get color {
     switch (this) {
       case NetworkQuality.none:
@@ -203,16 +222,17 @@ extension NetworkQualityExtension on NetworkQuality {
     }
   }
   
+  /// Icon representation for network quality
   IconData get icon {
     switch (this) {
       case NetworkQuality.none:
         return Icons.signal_wifi_off;
       case NetworkQuality.poor:
-        return Icons.signal_wifi_1_bar;
+        return Icons.network_wifi_1_bar;
       case NetworkQuality.moderate:
-        return Icons.signal_wifi_2_bar;
+        return Icons.network_wifi_2_bar;
       case NetworkQuality.good:
-        return Icons.signal_wifi_3_bar;
+        return Icons.network_wifi_3_bar;
       case NetworkQuality.excellent:
         return Icons.signal_wifi_4_bar;
     }

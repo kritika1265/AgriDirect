@@ -79,7 +79,7 @@ class Crop {
   final double expectedYield; // per hectare
   final Map<String, dynamic> marketPrice;
 
-  Crop({
+  const Crop({
     required this.id,
     required this.name,
     required this.scientificName,
@@ -98,20 +98,20 @@ class Crop {
 
   factory Crop.fromJson(Map<String, dynamic> json) {
     return Crop(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      scientificName: json['scientific_name'] ?? '',
-      category: json['category'] ?? '',
-      imageUrl: json['image_url'] ?? '',
-      description: json['description'] ?? '',
-      seasons: List<String>.from(json['seasons'] ?? []),
-      requirements: json['requirements'] ?? {},
-      growthDuration: json['growth_duration'] ?? 0,
-      careInstructions: Map<String, String>.from(json['care_instructions'] ?? {}),
-      commonDiseases: List<String>.from(json['common_diseases'] ?? []),
-      compatibleCrops: List<String>.from(json['compatible_crops'] ?? []),
-      expectedYield: (json['expected_yield'] ?? 0).toDouble(),
-      marketPrice: json['market_price'] ?? {},
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      scientificName: json['scientific_name']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      imageUrl: json['image_url']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      seasons: _parseStringList(json['seasons']),
+      requirements: json['requirements'] as Map<String, dynamic>? ?? {},
+      growthDuration: _parseInt(json['growth_duration']),
+      careInstructions: _parseStringMap(json['care_instructions']),
+      commonDiseases: _parseStringList(json['common_diseases']),
+      compatibleCrops: _parseStringList(json['compatible_crops']),
+      expectedYield: _parseDouble(json['expected_yield']),
+      marketPrice: json['market_price'] as Map<String, dynamic>? ?? {},
     );
   }
 
@@ -133,6 +133,52 @@ class Crop {
       'market_price': marketPrice,
     };
   }
+
+  // Helper methods for safe parsing
+  static List<String> _parseStringList(dynamic value) {
+    if (value == null) return [];
+    if (value is List) {
+      return value.map((e) => e?.toString() ?? '').where((s) => s.isNotEmpty).toList();
+    }
+    return [];
+  }
+
+  static Map<String, String> _parseStringMap(dynamic value) {
+    if (value == null) return {};
+    if (value is Map) {
+      return value.map((key, val) => MapEntry(key?.toString() ?? '', val?.toString() ?? ''));
+    }
+    return {};
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is int) return value;
+    if (value is double) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Crop &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => 'Crop(id: $id, name: $name)';
 }
 
 class CropRecommendation {
@@ -146,7 +192,7 @@ class CropRecommendation {
   final double estimatedYield;
   final double profitabilityScore;
 
-  CropRecommendation({
+  const CropRecommendation({
     required this.cropId,
     required this.cropName,
     required this.suitabilityScore,
@@ -160,17 +206,44 @@ class CropRecommendation {
 
   factory CropRecommendation.fromJson(Map<String, dynamic> json) {
     return CropRecommendation(
-      cropId: json['crop_id'] ?? '',
-      cropName: json['crop_name'] ?? '',
-      suitabilityScore: (json['suitability_score'] ?? 0).toDouble(),
-      reasons: List<String>.from((json['reasons'] ?? []) as Iterable),
-      soilRequirements: json['soil_requirements'] ?? {},
-      climateRequirements: json['climate_requirements'] ?? {},
-      season: json['season'] ?? '',
-      estimatedYield: (json['estimated_yield'] ?? 0).toDouble(),
-      profitabilityScore: (json['profitability_score'] ?? 0).toDouble(),
+      cropId: json['crop_id']?.toString() ?? '',
+      cropName: json['crop_name']?.toString() ?? '',
+      suitabilityScore: Crop._parseDouble(json['suitability_score']),
+      reasons: Crop._parseStringList(json['reasons']),
+      soilRequirements: json['soil_requirements'] as Map<String, dynamic>? ?? {},
+      climateRequirements: json['climate_requirements'] as Map<String, dynamic>? ?? {},
+      season: json['season']?.toString() ?? '',
+      estimatedYield: Crop._parseDouble(json['estimated_yield']),
+      profitabilityScore: Crop._parseDouble(json['profitability_score']),
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'crop_id': cropId,
+      'crop_name': cropName,
+      'suitability_score': suitabilityScore,
+      'reasons': reasons,
+      'soil_requirements': soilRequirements,
+      'climate_requirements': climateRequirements,
+      'season': season,
+      'estimated_yield': estimatedYield,
+      'profitability_score': profitabilityScore,
+    };
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CropRecommendation &&
+          runtimeType == other.runtimeType &&
+          cropId == other.cropId;
+
+  @override
+  int get hashCode => cropId.hashCode;
+
+  @override
+  String toString() => 'CropRecommendation(cropId: $cropId, cropName: $cropName)';
 }
 
 // lib/models/user_model.dart
@@ -187,7 +260,7 @@ class User {
   final bool isVerified;
   final String role; // farmer, expert, admin
 
-  User({
+  const User({
     required this.id,
     required this.phoneNumber,
     this.name,
@@ -203,18 +276,30 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? '',
-      phoneNumber: json['phone_number'] ?? '',
-      name: json['name'],
-      email: json['email'],
-      profileImageUrl: json['profile_image_url'],
-      createdAt: DateTime.parse(json['created_at'] ?? DateTime.now().toIso8601String()),
-      lastLoginAt: DateTime.parse(json['last_login_at'] ?? DateTime.now().toIso8601String()),
-      profile: json['profile'] != null ? UserProfile.fromJson(json['profile']) : null,
-      preferences: json['preferences'] ?? {},
-      isVerified: json['is_verified'] ?? false,
-      role: json['role'] ?? 'farmer',
+      id: json['id']?.toString() ?? '',
+      phoneNumber: json['phone_number']?.toString() ?? '',
+      name: json['name']?.toString(),
+      email: json['email']?.toString(),
+      profileImageUrl: json['profile_image_url']?.toString(),
+      createdAt: _parseDateTime(json['created_at']),
+      lastLoginAt: _parseDateTime(json['last_login_at']),
+      profile: json['profile'] != null ? UserProfile.fromJson(json['profile'] as Map<String, dynamic>) : null,
+      preferences: json['preferences'] as Map<String, dynamic>? ?? {},
+      isVerified: json['is_verified'] == true,
+      role: json['role']?.toString() ?? 'farmer',
     );
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value == null) return DateTime.now();
+    if (value is String) {
+      try {
+        return DateTime.parse(value);
+      } catch (e) {
+        return DateTime.now();
+      }
+    }
+    return DateTime.now();
   }
 
   Map<String, dynamic> toJson() {
@@ -256,6 +341,19 @@ class User {
       role: role,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is User &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  String toString() => 'User(id: $id, phoneNumber: $phoneNumber, name: $name)';
 }
 
 class UserProfile {
@@ -273,7 +371,7 @@ class UserProfile {
   final List<String> equipmentOwned;
   final String primaryLanguage;
 
-  UserProfile({
+  const UserProfile({
     required this.farmName,
     required this.location,
     required this.latitude,
@@ -291,19 +389,19 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      farmName: json['farm_name'] ?? '',
-      location: json['location'] ?? '',
-      latitude: (json['latitude'] ?? 0).toDouble(),
-      longitude: (json['longitude'] ?? 0).toDouble(),
-      state: json['state'] ?? '',
-      district: json['district'] ?? '',
-      farmSize: (json['farm_size'] ?? 0).toDouble(),
-      cropTypes: List<String>.from(json['crop_types'] ?? []),
-      farmingExperience: json['farming_experience'] ?? 'beginner',
-      soilInfo: json['soil_info'] ?? {},
-      irrigationType: json['irrigation_type'] ?? '',
-      equipmentOwned: List<String>.from(json['equipment_owned'] ?? []),
-      primaryLanguage: json['primary_language'] ?? 'en',
+      farmName: json['farm_name']?.toString() ?? '',
+      location: json['location']?.toString() ?? '',
+      latitude: Crop._parseDouble(json['latitude']),
+      longitude: Crop._parseDouble(json['longitude']),
+      state: json['state']?.toString() ?? '',
+      district: json['district']?.toString() ?? '',
+      farmSize: Crop._parseDouble(json['farm_size']),
+      cropTypes: Crop._parseStringList(json['crop_types']),
+      farmingExperience: json['farming_experience']?.toString() ?? 'beginner',
+      soilInfo: json['soil_info'] as Map<String, dynamic>? ?? {},
+      irrigationType: json['irrigation_type']?.toString() ?? '',
+      equipmentOwned: Crop._parseStringList(json['equipment_owned']),
+      primaryLanguage: json['primary_language']?.toString() ?? 'en',
     );
   }
 
@@ -324,4 +422,50 @@ class UserProfile {
       'primary_language': primaryLanguage,
     };
   }
+
+  UserProfile copyWith({
+    String? farmName,
+    String? location,
+    double? latitude,
+    double? longitude,
+    String? state,
+    String? district,
+    double? farmSize,
+    List<String>? cropTypes,
+    String? farmingExperience,
+    Map<String, dynamic>? soilInfo,
+    String? irrigationType,
+    List<String>? equipmentOwned,
+    String? primaryLanguage,
+  }) {
+    return UserProfile(
+      farmName: farmName ?? this.farmName,
+      location: location ?? this.location,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      state: state ?? this.state,
+      district: district ?? this.district,
+      farmSize: farmSize ?? this.farmSize,
+      cropTypes: cropTypes ?? this.cropTypes,
+      farmingExperience: farmingExperience ?? this.farmingExperience,
+      soilInfo: soilInfo ?? this.soilInfo,
+      irrigationType: irrigationType ?? this.irrigationType,
+      equipmentOwned: equipmentOwned ?? this.equipmentOwned,
+      primaryLanguage: primaryLanguage ?? this.primaryLanguage,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is UserProfile &&
+          runtimeType == other.runtimeType &&
+          farmName == other.farmName &&
+          location == other.location;
+
+  @override
+  int get hashCode => farmName.hashCode ^ location.hashCode;
+
+  @override
+  String toString() => 'UserProfile(farmName: $farmName, location: $location)';
 }
