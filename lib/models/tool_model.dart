@@ -30,18 +30,18 @@ class ToolModel {
 
   factory ToolModel.fromJson(Map<String, dynamic> json) {
     return ToolModel(
-      id: json['id'],
-      name: json['name'],
-      category: json['category'],
-      description: json['description'],
-      pricePerDay: json['pricePerDay'].toDouble(),
-      location: json['location'],
-      imageUrl: json['imageUrl'],
-      ownerName: json['ownerName'],
-      ownerPhone: json['ownerPhone'],
-      isAvailable: json['isAvailable'],
-      rating: json['rating'].toDouble(),
-      totalRatings: json['totalRatings'],
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      pricePerDay: (json['pricePerDay'] as num?)?.toDouble() ?? 0.0,
+      location: json['location']?.toString() ?? '',
+      imageUrl: json['imageUrl']?.toString() ?? '',
+      ownerName: json['ownerName']?.toString() ?? '',
+      ownerPhone: json['ownerPhone']?.toString() ?? '',
+      isAvailable: json['isAvailable'] as bool? ?? false,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      totalRatings: json['totalRatings'] as int? ?? 0,
     );
   }
 
@@ -60,6 +60,36 @@ class ToolModel {
       'rating': rating,
       'totalRatings': totalRatings,
     };
+  }
+
+  ToolModel copyWith({
+    String? id,
+    String? name,
+    String? category,
+    String? description,
+    double? pricePerDay,
+    String? location,
+    String? imageUrl,
+    String? ownerName,
+    String? ownerPhone,
+    bool? isAvailable,
+    double? rating,
+    int? totalRatings,
+  }) {
+    return ToolModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      category: category ?? this.category,
+      description: description ?? this.description,
+      pricePerDay: pricePerDay ?? this.pricePerDay,
+      location: location ?? this.location,
+      imageUrl: imageUrl ?? this.imageUrl,
+      ownerName: ownerName ?? this.ownerName,
+      ownerPhone: ownerPhone ?? this.ownerPhone,
+      isAvailable: isAvailable ?? this.isAvailable,
+      rating: rating ?? this.rating,
+      totalRatings: totalRatings ?? this.totalRatings,
+    );
   }
 }
 
@@ -91,18 +121,28 @@ class RentalModel {
 
   factory RentalModel.fromJson(Map<String, dynamic> json) {
     return RentalModel(
-      id: json['id'],
-      toolId: json['toolId'],
-      toolName: json['toolName'],
-      ownerName: json['ownerName'],
-      startDate: DateTime.parse(json['startDate']),
-      endDate: DateTime.parse(json['endDate']),
-      totalAmount: json['totalAmount'].toDouble(),
-      status: RentalStatus.values.firstWhere(
-        (e) => e.toString() == 'RentalStatus.${json['status']}',
-      ),
-      location: json['location'],
+      id: json['id']?.toString() ?? '',
+      toolId: json['toolId']?.toString() ?? '',
+      toolName: json['toolName']?.toString() ?? '',
+      ownerName: json['ownerName']?.toString() ?? '',
+      startDate: DateTime.tryParse(json['startDate']?.toString() ?? '') ?? DateTime.now(),
+      endDate: DateTime.tryParse(json['endDate']?.toString() ?? '') ?? DateTime.now(),
+      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      status: _parseRentalStatus(json['status']?.toString()),
+      location: json['location']?.toString() ?? '',
     );
+  }
+
+  static RentalStatus _parseRentalStatus(String? statusString) {
+    if (statusString == null) return RentalStatus.pending;
+    
+    try {
+      return RentalStatus.values.firstWhere(
+        (e) => e.toString().split('.').last == statusString.toLowerCase(),
+      );
+    } catch (e) {
+      return RentalStatus.pending;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -117,6 +157,30 @@ class RentalModel {
       'status': status.toString().split('.').last,
       'location': location,
     };
+  }
+
+  RentalModel copyWith({
+    String? id,
+    String? toolId,
+    String? toolName,
+    String? ownerName,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? totalAmount,
+    RentalStatus? status,
+    String? location,
+  }) {
+    return RentalModel(
+      id: id ?? this.id,
+      toolId: toolId ?? this.toolId,
+      toolName: toolName ?? this.toolName,
+      ownerName: ownerName ?? this.ownerName,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      totalAmount: totalAmount ?? this.totalAmount,
+      status: status ?? this.status,
+      location: location ?? this.location,
+    );
   }
 }
 
@@ -146,15 +210,15 @@ class NewsModel {
 
   factory NewsModel.fromJson(Map<String, dynamic> json) {
     return NewsModel(
-      id: json['id'],
-      title: json['title'],
-      content: json['content'],
-      category: json['category'],
-      imageUrl: json['imageUrl'] ?? '',
-      publishedAt: DateTime.parse(json['publishedAt']),
-      source: json['source'],
-      author: json['author'] ?? '',
-      isBookmarked: json['isBookmarked'] ?? false,
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      content: json['content']?.toString() ?? '',
+      category: json['category']?.toString() ?? '',
+      imageUrl: json['imageUrl']?.toString() ?? '',
+      publishedAt: DateTime.tryParse(json['publishedAt']?.toString() ?? '') ?? DateTime.now(),
+      source: json['source']?.toString() ?? '',
+      author: json['author']?.toString() ?? '',
+      isBookmarked: json['isBookmarked'] as bool? ?? false,
     );
   }
 
@@ -221,16 +285,26 @@ class NotificationModel {
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
-      id: json['id'],
-      title: json['title'],
-      body: json['body'],
-      type: NotificationType.values.firstWhere(
-        (e) => e.toString() == 'NotificationType.${json['type']}',
-      ),
-      timestamp: DateTime.parse(json['timestamp']),
-      isRead: json['isRead'] ?? false,
-      data: json['data'],
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      body: json['body']?.toString() ?? '',
+      type: _parseNotificationType(json['type']?.toString()),
+      timestamp: DateTime.tryParse(json['timestamp']?.toString() ?? '') ?? DateTime.now(),
+      isRead: json['isRead'] as bool? ?? false,
+      data: json['data'] as Map<String, dynamic>?,
     );
+  }
+
+  static NotificationType _parseNotificationType(String? typeString) {
+    if (typeString == null) return NotificationType.system;
+    
+    try {
+      return NotificationType.values.firstWhere(
+        (e) => e.toString().split('.').last == typeString.toLowerCase(),
+      );
+    } catch (e) {
+      return NotificationType.system;
+    }
   }
 
   Map<String, dynamic> toJson() {

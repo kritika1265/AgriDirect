@@ -39,27 +39,27 @@ class WeatherModel {
 
   factory WeatherModel.fromMap(Map<String, dynamic> map) {
     return WeatherModel(
-      location: map['location'] ?? '',
-      temperature: (map['temperature'] ?? 0.0).toDouble(),
-      feelsLike: (map['feelsLike'] ?? 0.0).toDouble(),
-      condition: map['condition'] ?? '',
-      description: map['description'] ?? '',
-      icon: map['icon'] ?? '',
-      humidity: map['humidity'] ?? 0,
-      windSpeed: (map['windSpeed'] ?? 0.0).toDouble(),
-      windDirection: map['windDirection'] ?? '',
-      pressure: (map['pressure'] ?? 0.0).toDouble(),
-      visibility: (map['visibility'] ?? 0.0).toDouble(),
-      uvIndex: map['uvIndex'] ?? 0,
-      sunrise: DateTime.parse(map['sunrise']),
-      sunset: DateTime.parse(map['sunset']),
+      location: map['location']?.toString() ?? '',
+      temperature: (map['temperature'] as num?)?.toDouble() ?? 0.0,
+      feelsLike: (map['feelsLike'] as num?)?.toDouble() ?? 0.0,
+      condition: map['condition']?.toString() ?? '',
+      description: map['description']?.toString() ?? '',
+      icon: map['icon']?.toString() ?? '',
+      humidity: (map['humidity'] as num?)?.toInt() ?? 0,
+      windSpeed: (map['windSpeed'] as num?)?.toDouble() ?? 0.0,
+      windDirection: map['windDirection']?.toString() ?? '',
+      pressure: (map['pressure'] as num?)?.toDouble() ?? 0.0,
+      visibility: (map['visibility'] as num?)?.toDouble() ?? 0.0,
+      uvIndex: (map['uvIndex'] as num?)?.toInt() ?? 0,
+      sunrise: DateTime.parse(map['sunrise']?.toString() ?? ''),
+      sunset: DateTime.parse(map['sunset']?.toString() ?? ''),
       hourlyForecast: (map['hourlyForecast'] as List<dynamic>?)
-          ?.map((e) => HourlyWeather.fromMap(e))
+          ?.map((e) => HourlyWeather.fromMap(e as Map<String, dynamic>))
           .toList() ?? [],
       dailyForecast: (map['dailyForecast'] as List<dynamic>?)
-          ?.map((e) => DailyWeather.fromMap(e))
+          ?.map((e) => DailyWeather.fromMap(e as Map<String, dynamic>))
           .toList() ?? [],
-      lastUpdated: DateTime.parse(map['lastUpdated']),
+      lastUpdated: DateTime.parse(map['lastUpdated']?.toString() ?? ''),
     );
   }
 
@@ -152,13 +152,13 @@ class HourlyWeather {
 
   factory HourlyWeather.fromMap(Map<String, dynamic> map) {
     return HourlyWeather(
-      time: DateTime.parse(map['time']),
-      temperature: (map['temperature'] ?? 0.0).toDouble(),
-      condition: map['condition'] ?? '',
-      icon: map['icon'] ?? '',
-      humidity: map['humidity'] ?? 0,
-      windSpeed: (map['windSpeed'] ?? 0.0).toDouble(),
-      rainChance: (map['rainChance'] ?? 0.0).toDouble(),
+      time: DateTime.parse(map['time']?.toString() ?? ''),
+      temperature: (map['temperature'] as num?)?.toDouble() ?? 0.0,
+      condition: map['condition']?.toString() ?? '',
+      icon: map['icon']?.toString() ?? '',
+      humidity: (map['humidity'] as num?)?.toInt() ?? 0,
+      windSpeed: (map['windSpeed'] as num?)?.toDouble() ?? 0.0,
+      rainChance: (map['rainChance'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -204,17 +204,17 @@ class DailyWeather {
 
   factory DailyWeather.fromMap(Map<String, dynamic> map) {
     return DailyWeather(
-      date: DateTime.parse(map['date']),
-      maxTemperature: (map['maxTemperature'] ?? 0.0).toDouble(),
-      minTemperature: (map['minTemperature'] ?? 0.0).toDouble(),
-      condition: map['condition'] ?? '',
-      description: map['description'] ?? '',
-      icon: map['icon'] ?? '',
-      humidity: map['humidity'] ?? 0,
-      windSpeed: (map['windSpeed'] ?? 0.0).toDouble(),
-      rainChance: (map['rainChance'] ?? 0.0).toDouble(),
-      sunrise: DateTime.parse(map['sunrise']),
-      sunset: DateTime.parse(map['sunset']),
+      date: DateTime.parse(map['date']?.toString() ?? ''),
+      maxTemperature: (map['maxTemperature'] as num?)?.toDouble() ?? 0.0,
+      minTemperature: (map['minTemperature'] as num?)?.toDouble() ?? 0.0,
+      condition: map['condition']?.toString() ?? '',
+      description: map['description']?.toString() ?? '',
+      icon: map['icon']?.toString() ?? '',
+      humidity: (map['humidity'] as num?)?.toInt() ?? 0,
+      windSpeed: (map['windSpeed'] as num?)?.toDouble() ?? 0.0,
+      rainChance: (map['rainChance'] as num?)?.toDouble() ?? 0.0,
+      sunrise: DateTime.parse(map['sunrise']?.toString() ?? ''),
+      sunset: DateTime.parse(map['sunset']?.toString() ?? ''),
     );
   }
 
@@ -258,14 +258,14 @@ class WeatherAlert {
 
   factory WeatherAlert.fromMap(Map<String, dynamic> map) {
     return WeatherAlert(
-      id: map['id'] ?? '',
-      title: map['title'] ?? '',
-      description: map['description'] ?? '',
-      severity: map['severity'] ?? 'low',
-      startTime: DateTime.parse(map['startTime']),
-      endTime: DateTime.parse(map['endTime']),
-      areas: List<String>.from(map['areas'] ?? []),
-      type: map['type'] ?? '',
+      id: map['id']?.toString() ?? '',
+      title: map['title']?.toString() ?? '',
+      description: map['description']?.toString() ?? '',
+      severity: map['severity']?.toString() ?? 'low',
+      startTime: DateTime.parse(map['startTime']?.toString() ?? ''),
+      endTime: DateTime.parse(map['endTime']?.toString() ?? ''),
+      areas: List<String>.from((map['areas'] as List<dynamic>?) ?? []),
+      type: map['type']?.toString() ?? '',
     );
   }
 

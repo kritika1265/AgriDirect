@@ -1,15 +1,22 @@
 import 'package:flutter/foundation.dart';
-import '../models/weather_model.dart';
-import '../services/weather_service.dart';
-import '../services/location_service.dart';
 
+import '../models/weather_model.dart' hide WeatherAlert;
+import '../services/location_service.dart';
+import '../services/weather_service.dart';
+
+/// Enum representing different weather loading states
 enum WeatherStatus {
+  /// Initial state before any data is loaded
   initial,
+  /// Currently loading weather data
   loading,
+  /// Weather data successfully loaded
   loaded,
+  /// Error occurred while loading weather data
   error,
 }
 
+/// Provider class for managing weather data and state
 class WeatherProvider extends ChangeNotifier {
   final WeatherService _weatherService = WeatherService();
   final LocationService _locationService = LocationService();
@@ -22,20 +29,36 @@ class WeatherProvider extends ChangeNotifier {
   DateTime? _lastUpdated;
 
   // Getters
+  /// Current weather loading status
   WeatherStatus get status => _status;
+  
+  /// Current weather data, null if not loaded
   WeatherModel? get currentWeather => _currentWeather;
+  
+  /// List of weather alerts for the current location
   List<WeatherAlert> get alerts => _alerts;
+  
+  /// Error message if an error occurred
   String? get errorMessage => _errorMessage;
+  
+  /// Whether weather data is currently being loaded
   bool get isLoading => _isLoading;
+  
+  /// When the weather data was last updated
   DateTime? get lastUpdated => _lastUpdated;
+  
+  /// Whether weather data is available
   bool get hasData => _currentWeather != null;
 
-  // Check if data needs refresh (older than 30 minutes)
+  /// Check if data needs refresh (older than 30 minutes)
   bool get needsRefresh {
-    if (_lastUpdated == null) return true;
+    if (_lastUpdated == null) {
+      return true;
+    }
     return DateTime.now().difference(_lastUpdated!).inMinutes > 30;
   }
 
+  /// Fetches weather data for current location
   Future<void> fetchWeatherData({bool forceRefresh = false}) async {
     if (_isLoading) return;
     
@@ -91,10 +114,12 @@ class WeatherProvider extends ChangeNotifier {
     }
   }
 
+  /// Refreshes weather data by forcing a new fetch
   Future<void> refreshWeatherData() async {
     await fetchWeatherData(forceRefresh: true);
   }
 
+  /// Gets weather data for a specific location
   Future<WeatherModel?> getWeatherForLocation({
     required double latitude,
     required double longitude,
@@ -110,16 +135,15 @@ class WeatherProvider extends ChangeNotifier {
     }
   }
 
+  /// Gets weather forecast for a specific location
   Future<List<WeatherModel>> getWeatherForecast({
     required double latitude,
     required double longitude,
-    int days = 7,
   }) async {
     try {
       return await _weatherService.getWeatherForecast(
         latitude: latitude,
         longitude: longitude,
-        days: days,
       );
     } catch (e) {
       debugPrint('Failed to get weather forecast: $e');
@@ -128,31 +152,43 @@ class WeatherProvider extends ChangeNotifier {
   }
 
   // Weather condition helpers
+  /// Whether current weather conditions include rain
   bool get isRainy {
-    if (_currentWeather == null) return false;
+    if (_currentWeather == null) {
+      return false;
+    }
     return _currentWeather!.condition.toLowerCase().contains('rain') ||
            _currentWeather!.condition.toLowerCase().contains('drizzle');
   }
 
+  /// Whether current weather conditions are sunny/clear
   bool get isSunny {
-    if (_currentWeather == null) return false;
+    if (_currentWeather == null) {
+      return false;
+    }
     return _currentWeather!.condition.toLowerCase().contains('clear') ||
            _currentWeather!.condition.toLowerCase().contains('sunny');
   }
 
+  /// Whether current weather conditions are cloudy
   bool get isCloudy {
-    if (_currentWeather == null) return false;
+    if (_currentWeather == null) {
+      return false;
+    }
     return _currentWeather!.condition.toLowerCase().contains('cloud') ||
            _currentWeather!.condition.toLowerCase().contains('overcast');
   }
 
+  /// Whether current weather conditions include storms
   bool get isStormy {
-    if (_currentWeather == null) return false;
+    if (_currentWeather == null) {
+      return false;
+    }
     return _currentWeather!.condition.toLowerCase().contains('storm') ||
            _currentWeather!.condition.toLowerCase().contains('thunder');
   }
 
-  // Weather advisory for farming
+  /// Provides weather-based farming advice
   String get farmingAdvice {
     if (_currentWeather == null) return 'Weather data not available';
 
@@ -160,7 +196,7 @@ class WeatherProvider extends ChangeNotifier {
     final humidity = _currentWeather!.humidity;
     final windSpeed = _currentWeather!.windSpeed;
 
-    List<String> advice = [];
+    final advice = <String>[];
 
     // Temperature advice
     if (temp > 35) {
@@ -198,7 +234,7 @@ class WeatherProvider extends ChangeNotifier {
         : advice.join('\n');
   }
 
-  // Get weather icon based on condition
+  /// Get weather icon based on current condition
   String getWeatherIcon() {
     if (_currentWeather == null) return '❓';
 
@@ -221,16 +257,13 @@ class WeatherProvider extends ChangeNotifier {
     }
   }
 
-  // Check for severe weather alerts
-  bool get hasSevereAlerts {
-    return _alerts.any((alert) => 
-        alert.severity == 'high' || alert.severity == 'extreme');
-  }
+  /// Check if there are any severe weather alerts
+  bool get hasSevereAlerts => _alerts.any((alert) => 
+      alert.severity == 'high' || alert.severity == 'extreme');
 
-  List<WeatherAlert> get severeAlerts {
-    return _alerts.where((alert) => 
-        alert.severity == 'high' || alert.severity == 'extreme').toList();
-  }
+  /// Get list of severe weather alerts only
+  List<WeatherAlert> get severeAlerts => _alerts.where((alert) => 
+      alert.severity == 'high' || alert.severity == 'extreme').toList();
 
   void _setLoading(bool loading) {
     _isLoading = loading;

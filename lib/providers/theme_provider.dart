@@ -11,7 +11,7 @@ class ThemeProvider extends ChangeNotifier {
   
   ThemeMode _themeMode = ThemeMode.system;
   Color _accentColor = const Color(0xFF4CAF50); // Agricultural green
-  double _fontSizeScale = 1.0;
+  double _fontSizeScale = 1;
   bool _isInitialized = false;
 
   /// Current theme mode (light, dark, or system)
@@ -41,7 +41,9 @@ class ThemeProvider extends ChangeNotifier {
   
   /// Initialize theme provider from saved preferences
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    if (_isInitialized) {
+      return;
+    }
     
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -52,8 +54,8 @@ class ThemeProvider extends ChangeNotifier {
         _themeMode = ThemeMode.values[themeIndex];
       }
       
-      // Load accent color
-      final colorValue = prefs.getInt(_accentColorKey) ?? _accentColor.value;
+      // Load accent color - Fixed: Use toARGB32() instead of deprecated .value
+      final colorValue = prefs.getInt(_accentColorKey) ?? _accentColor.toARGB32();
       _accentColor = Color(colorValue);
       
       // Load font size scale with validation
@@ -77,7 +79,9 @@ class ThemeProvider extends ChangeNotifier {
   
   /// Set theme mode and persist to preferences
   Future<void> setThemeMode(ThemeMode mode) async {
-    if (_themeMode == mode) return;
+    if (_themeMode == mode) {
+      return;
+    }
     
     _themeMode = mode;
     notifyListeners();
@@ -97,14 +101,17 @@ class ThemeProvider extends ChangeNotifier {
   
   /// Set accent color and persist to preferences
   Future<void> setAccentColor(Color color) async {
-    if (_accentColor == color) return;
+    if (_accentColor == color) {
+      return;
+    }
     
     _accentColor = color;
     notifyListeners();
     
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt(_accentColorKey, color.value);
+      // Fixed: Use toARGB32() instead of deprecated .value
+      await prefs.setInt(_accentColorKey, color.toARGB32());
     } catch (e) {
       debugPrint('Error saving accent color: $e');
     }
@@ -113,7 +120,9 @@ class ThemeProvider extends ChangeNotifier {
   /// Set font size scale and persist to preferences
   Future<void> setFontSizeScale(double scale) async {
     final clampedScale = scale.clamp(0.8, 1.4);
-    if (_fontSizeScale == clampedScale) return;
+    if (_fontSizeScale == clampedScale) {
+      return;
+    }
     
     _fontSizeScale = clampedScale;
     notifyListeners();
@@ -135,121 +144,114 @@ class ThemeProvider extends ChangeNotifier {
   }
   
   /// Get light theme data
-  ThemeData get lightTheme {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: _accentColor,
-        brightness: Brightness.light,
+  ThemeData get lightTheme => ThemeData(
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: _accentColor,
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: _accentColor,
+      foregroundColor: Colors.white,
+      elevation: 2,
+      centerTitle: true,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
+    ),
+    // Fixed: Use CardThemeData instead of CardTheme
+    cardTheme: CardThemeData(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      appBarTheme: AppBarTheme(
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
         backgroundColor: _accentColor,
         foregroundColor: Colors.white,
-        elevation: 2,
-        centerTitle: true,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-      ),
-      cardTheme: CardTheme(
-        elevation: 4,
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _accentColor,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-      ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: _accentColor,
-        foregroundColor: Colors.white,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _accentColor, width: 2),
-        ),
       ),
-      textTheme: _getScaledTextTheme(ThemeData.light().textTheme),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        selectedItemColor: _accentColor,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: _accentColor,
+      foregroundColor: Colors.white,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
       ),
-    );
-  }
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: _accentColor, width: 2),
+      ),
+    ),
+    textTheme: _getScaledTextTheme(ThemeData.light().textTheme),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      selectedItemColor: _accentColor,
+      unselectedItemColor: Colors.grey,
+      type: BottomNavigationBarType.fixed,
+    ),
+  );
   
   /// Get dark theme data
-  ThemeData get darkTheme {
-    return ThemeData(
-      useMaterial3: true,
+  ThemeData get darkTheme => ThemeData(
+    useMaterial3: true,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: _accentColor,
       brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: _accentColor,
-        brightness: Brightness.dark,
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.grey[900],
+      foregroundColor: Colors.white,
+      elevation: 2,
+      centerTitle: true,
+      systemOverlayStyle: SystemUiOverlayStyle.light,
+    ),
+    // Fixed: Use CardThemeData instead of CardTheme
+    cardTheme: CardThemeData(
+      elevation: 4,
+      color: Colors.grey[850],
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.grey[900],
-        foregroundColor: Colors.white,
-        elevation: 2,
-        centerTitle: true,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
-      ),
-      cardTheme: CardTheme(
-        elevation: 4,
-        color: Colors.grey[850],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _accentColor,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-      ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
         backgroundColor: _accentColor,
         foregroundColor: Colors.white,
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _accentColor, width: 2),
-        ),
       ),
-      textTheme: _getScaledTextTheme(ThemeData.dark().textTheme),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        selectedItemColor: _accentColor,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.grey[900],
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: _accentColor,
+      foregroundColor: Colors.white,
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
       ),
-    );
-  }
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: _accentColor, width: 2),
+      ),
+    ),
+    textTheme: _getScaledTextTheme(ThemeData.dark().textTheme),
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      selectedItemColor: _accentColor,
+      unselectedItemColor: Colors.grey,
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: Colors.grey[900],
+    ),
+  );
   
   /// Get scaled text theme based on font size preference
-  TextTheme _getScaledTextTheme(TextTheme baseTheme) {
-    return baseTheme.apply(
-      fontSizeFactor: _fontSizeScale,
-    );
-  }
+  TextTheme _getScaledTextTheme(TextTheme baseTheme) => baseTheme.apply(
+    fontSizeFactor: _fontSizeScale,
+  );
   
   /// Update system UI overlay style based on current theme
   void _updateSystemUIOverlay() {
@@ -284,7 +286,7 @@ class ThemeProvider extends ChangeNotifier {
   /// Get font size options for user selection
   List<FontSizeOption> get fontSizeOptions => [
     const FontSizeOption('Small', 0.8),
-    const FontSizeOption('Default', 1.0),
+    const FontSizeOption('Default', 1),
     const FontSizeOption('Large', 1.2),
     const FontSizeOption('Extra Large', 1.4),
   ];
@@ -293,7 +295,7 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> resetToDefaults() async {
     await setThemeMode(ThemeMode.system);
     await setAccentColor(const Color(0xFF4CAF50));
-    await setFontSizeScale(1.0);
+    await setFontSizeScale(1);
   }
   
   @override
@@ -305,10 +307,14 @@ class ThemeProvider extends ChangeNotifier {
 
 /// Data class for font size options
 class FontSizeOption {
-  final String name;
-  final double scale;
-  
+  /// Constructor for FontSizeOption
   const FontSizeOption(this.name, this.scale);
+
+  /// The display name of the font size option
+  final String name;
+  
+  /// The scale factor for the font size
+  final double scale;
   
   @override
   bool operator ==(Object other) =>

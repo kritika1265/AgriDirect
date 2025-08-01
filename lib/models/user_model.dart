@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+
 class UserModel {
   final String id;
   final String phoneNumber;
@@ -101,25 +104,41 @@ class UserModel {
 
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
-      id: map['id'] ?? '',
-      phoneNumber: map['phoneNumber'] ?? '',
-      name: map['name'] ?? '',
-      email: map['email'] ?? '',
-      location: map['location'],
-      farmSize: map['farmSize'],
-      cropTypes: List<String>.from(map['cropTypes'] ?? []),
-      profilePicture: map['profilePicture'],
-      isVerified: map['isVerified'] ?? false,
-      language: map['language'] ?? 'en',
-      notificationsEnabled: map['notificationsEnabled'] ?? true,
-      weatherAlertsEnabled: map['weatherAlertsEnabled'] ?? true,
-      cropRemindersEnabled: map['cropRemindersEnabled'] ?? true,
-      createdAt: DateTime.parse(map['createdAt']),
-      updatedAt: map['updatedAt'] != null ? DateTime.parse(map['updatedAt']) : null,
-      lastLoginAt: map['lastLoginAt'] != null ? DateTime.parse(map['lastLoginAt']) : null,
-      preferences: Map<String, dynamic>.from(map['preferences'] ?? {}),
+      id: map['id']?.toString() ?? '',
+      phoneNumber: map['phoneNumber']?.toString() ?? '',
+      name: map['name']?.toString() ?? '',
+      email: map['email']?.toString() ?? '',
+      location: map['location']?.toString(),
+      farmSize: map['farmSize']?.toString(),
+      cropTypes: map['cropTypes'] != null 
+          ? List<String>.from((map['cropTypes'] as List).map((dynamic x) => x.toString())) 
+          : [],
+      profilePicture: map['profilePicture']?.toString(),
+      isVerified: (map['isVerified'] as bool?) ?? false,
+      language: map['language']?.toString() ?? 'en',
+      notificationsEnabled: (map['notificationsEnabled'] as bool?) ?? true,
+      weatherAlertsEnabled: (map['weatherAlertsEnabled'] as bool?) ?? true,
+      cropRemindersEnabled: (map['cropRemindersEnabled'] as bool?) ?? true,
+      createdAt: map['createdAt'] != null 
+          ? DateTime.parse(map['createdAt'].toString())
+          : DateTime.now(),
+      updatedAt: map['updatedAt'] != null 
+          ? DateTime.parse(map['updatedAt'].toString()) 
+          : null,
+      lastLoginAt: map['lastLoginAt'] != null 
+          ? DateTime.parse(map['lastLoginAt'].toString()) 
+          : null,
+      preferences: map['preferences'] != null 
+          ? Map<String, dynamic>.from(map['preferences'] as Map) 
+          : {},
     );
   }
+
+  // JSON serialization methods
+  String toJson() => jsonEncode(toMap());
+  
+  factory UserModel.fromJson(String source) => 
+      UserModel.fromMap(jsonDecode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
@@ -129,9 +148,46 @@ class UserModel {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is UserModel && other.id == id;
+    return other is UserModel && 
+           other.id == id &&
+           other.phoneNumber == phoneNumber &&
+           other.name == name &&
+           other.email == email &&
+           other.location == location &&
+           other.farmSize == farmSize &&
+           listEquals(other.cropTypes, cropTypes) &&
+           other.profilePicture == profilePicture &&
+           other.isVerified == isVerified &&
+           other.language == language &&
+           other.notificationsEnabled == notificationsEnabled &&
+           other.weatherAlertsEnabled == weatherAlertsEnabled &&
+           other.cropRemindersEnabled == cropRemindersEnabled &&
+           other.createdAt == createdAt &&
+           other.updatedAt == updatedAt &&
+           other.lastLoginAt == lastLoginAt &&
+           mapEquals(other.preferences, preferences);
   }
 
   @override
-  int get hashCode => id.hashCode;
+  int get hashCode {
+    return Object.hash(
+      id,
+      phoneNumber,
+      name,
+      email,
+      location,
+      farmSize,
+      Object.hashAll(cropTypes),
+      profilePicture,
+      isVerified,
+      language,
+      notificationsEnabled,
+      weatherAlertsEnabled,
+      cropRemindersEnabled,
+      createdAt,
+      updatedAt,
+      lastLoginAt,
+      Object.hashAll(preferences.entries),
+    );
+  }
 }
