@@ -6,6 +6,9 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as path;
 
+// Import your CalendarEvent model
+// import '../models/calendar_event_model.dart';
+
 class StorageService {
   static final StorageService _instance = StorageService._internal();
   factory StorageService() => _instance;
@@ -15,7 +18,8 @@ class StorageService {
   Database? _database;
   
   static const String _dbName = 'agridirect.db';
-  static const int _dbVersion = 1;
+  static const int _dbVersion = 2; // Incremented version for calendar events table
+  static const String _calendarEventsKey = 'calendar_events';
 
   /// Initialize storage service
   Future<void> initialize() async {
@@ -120,14 +124,263 @@ class StorageService {
         updated_at TEXT
       )
     ''');
+
+    // Calendar events table
+    await db.execute('''
+      CREATE TABLE calendar_events (
+        id TEXT PRIMARY KEY,
+        user_id TEXT,
+        title TEXT NOT NULL,
+        description TEXT,
+        start_date TEXT NOT NULL,
+        end_date TEXT,
+        category TEXT NOT NULL,
+        crop_type TEXT NOT NULL,
+        is_completed INTEGER DEFAULT 0,
+        has_reminder INTEGER DEFAULT 0,
+        reminder_date TEXT,
+        location TEXT,
+        metadata TEXT,
+        created_at TEXT,
+        updated_at TEXT
+      )
+    ''');
   }
 
   /// Upgrade database schema
   Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
     // Handle database schema upgrades here
     if (oldVersion < 2) {
-      // Add new columns or tables for version 2
+      // Add calendar events table for version 2
+      await db.execute('''
+        CREATE TABLE calendar_events (
+          id TEXT PRIMARY KEY,
+          user_id TEXT,
+          title TEXT NOT NULL,
+          description TEXT,
+          start_date TEXT NOT NULL,
+          end_date TEXT,
+          category TEXT NOT NULL,
+          crop_type TEXT NOT NULL,
+          is_completed INTEGER DEFAULT 0,
+          has_reminder INTEGER DEFAULT 0,
+          reminder_date TEXT,
+          location TEXT,
+          metadata TEXT,
+          created_at TEXT,
+          updated_at TEXT
+        )
+      ''');
     }
+  }
+
+  // CALENDAR EVENTS METHODS (SharedPreferences based)
+
+  /// Get calendar events from storage
+  Future<List<CalendarEvent>> getCalendarEvents() async {
+    try {
+      final eventsJson = _prefs!.getString(_calendarEventsKey);
+      
+      if (eventsJson == null) {
+        return [];
+      }
+      
+      final List<dynamic> eventsList = json.decode(eventsJson);
+      return eventsList
+          .map<CalendarEvent>((eventJson) => CalendarEvent.fromJson(eventJson as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      debugPrint('Error loading calendar events: $e');
+      return [];
+    }
+  }
+
+  /// Save calendar events to storage
+  Future<void> saveCalendarEvents(List<CalendarEvent> events) async {
+    try {
+      final eventsJson = json.encode(events.map((event) => event.toJson()).toList());
+      await _prefs!.setString(_calendarEventsKey, eventsJson);
+    } catch (e) {
+      debugPrint('Error saving calendar events: $e');
+      throw Exception('Failed to save calendar events');
+    }
+  }
+
+  /// Add a single calendar event
+  Future<void> addCalendarEvent(CalendarEvent event) async {
+    final events = await getCalendarEvents();
+    events.add(event);
+    await saveCalendarEvents(events);
+  }
+
+  /// Remove a calendar event by ID
+  Future<void> removeCalendarEvent(String eventId) async {
+    final events = await getCalendarEvents();
+    events.removeWhere((event) => event.id == eventId);
+    await saveCalendarEvents(events);
+  }
+
+  /// Update a calendar event
+  Future<void> updateCalendarEvent(CalendarEvent updatedEvent) async {
+    final events = await getCalendarEvents();
+    final index = events.indexWhere((event) => event.id == updatedEvent.id);
+    if (index != -1) {
+      events[index] = updatedEvent;
+      await saveCalendarEvents(events);
+    }
+  }
+
+  /// Clear all calendar events
+  Future<void> clearCalendarEvents() async {
+    await _prefs!.remove(_calendarEventsKey);
+  }
+
+  // CALENDAR EVENTS METHODS (Database based - Alternative implementation)
+
+  /// Insert calendar event to database
+  Future<int> insertCalendarEventToDb(CalendarEvent event) async {
+    final now = DateTime.now().toIso8601String();
+    final eventData = {
+      'id': event.id,
+      'user_id': event.userId ?? '',
+      'title': event.title,
+      'description': event.description,
+      'start_date': event.startDate.toIso8601String(),
+      'end_date': event.endDate?.toIso8601String(),
+      'category': event.category,
+      'crop_type': event.cropType,
+      'is_completed': event.isCompleted ? 1 : 0,
+      'has_reminder': event.hasReminder ? 1 : 0,
+      'reminder_date': event.reminderDate?.toIso8601String(),
+      'location': event.location,
+      'metadata': event.metadata != null ? json.encode(event.metadata) : null,
+      'created_at': now,
+      'updated_at': now,
+    };
+    
+    return await _database!.insert('calendar_events', eventData,
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  /// Get calendar events from database
+  Future<List<CalendarEvent>> getCalendarEventsFromDb({String? userId}) async {
+    String whereClause = '';
+    List<String> whereArgs = [];
+    
+    if (userId != null) {
+      whereClause = 'user_id = ?';
+      whereArgs = [userId];
+    }
+    
+    final List<Map<String, dynamic>> result = await _database!.query(
+      'calendar_events',
+      where: whereClause.isNotEmpty ? whereClause : null,
+      whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
+      orderBy: 'start_date ASC',
+    );
+    
+    return result.map((eventData) {
+      return CalendarEvent(
+        id: eventData['id'] as String,
+        userId: eventData['user_id'] as String?,
+        title: eventData['title'] as String,
+        description: eventData['description'] as String,
+        startDate: DateTime.parse(eventData['start_date'] as String),
+        endDate: eventData['end_date'] != null 
+            ? DateTime.parse(eventData['end_date'] as String) 
+            : null,
+        category: eventData['category'] as String,
+        cropType: eventData['crop_type'] as String,
+        isCompleted: (eventData['is_completed'] as int) == 1,
+        hasReminder: (eventData['has_reminder'] as int) == 1,
+        reminderDate: eventData['reminder_date'] != null 
+            ? DateTime.parse(eventData['reminder_date'] as String) 
+            : null,
+        location: eventData['location'] as String?,
+        metadata: eventData['metadata'] != null 
+            ? json.decode(eventData['metadata'] as String) as Map<String, dynamic>
+            : null,
+      );
+    }).toList();
+  }
+
+  /// Update calendar event in database
+  Future<int> updateCalendarEventInDb(CalendarEvent event) async {
+    final eventData = {
+      'title': event.title,
+      'description': event.description,
+      'start_date': event.startDate.toIso8601String(),
+      'end_date': event.endDate?.toIso8601String(),
+      'category': event.category,
+      'crop_type': event.cropType,
+      'is_completed': event.isCompleted ? 1 : 0,
+      'has_reminder': event.hasReminder ? 1 : 0,
+      'reminder_date': event.reminderDate?.toIso8601String(),
+      'location': event.location,
+      'metadata': event.metadata != null ? json.encode(event.metadata) : null,
+      'updated_at': DateTime.now().toIso8601String(),
+    };
+    
+    return await _database!.update(
+      'calendar_events',
+      eventData,
+      where: 'id = ?',
+      whereArgs: [event.id],
+    );
+  }
+
+  /// Delete calendar event from database
+  Future<int> deleteCalendarEventFromDb(String eventId) async {
+    return await _database!.delete(
+      'calendar_events',
+      where: 'id = ?',
+      whereArgs: [eventId],
+    );
+  }
+
+  /// Get upcoming calendar events
+  Future<List<CalendarEvent>> getUpcomingEvents({String? userId, int days = 7}) async {
+    final now = DateTime.now();
+    final futureDate = now.add(Duration(days: days));
+    
+    String whereClause = 'start_date BETWEEN ? AND ? AND is_completed = 0';
+    List<String> whereArgs = [now.toIso8601String(), futureDate.toIso8601String()];
+    
+    if (userId != null) {
+      whereClause += ' AND user_id = ?';
+      whereArgs.add(userId);
+    }
+    
+    final List<Map<String, dynamic>> result = await _database!.query(
+      'calendar_events',
+      where: whereClause,
+      whereArgs: whereArgs,
+      orderBy: 'start_date ASC',
+    );
+    
+    return result.map((eventData) {
+      return CalendarEvent(
+        id: eventData['id'] as String,
+        userId: eventData['user_id'] as String?,
+        title: eventData['title'] as String,
+        description: eventData['description'] as String,
+        startDate: DateTime.parse(eventData['start_date'] as String),
+        endDate: eventData['end_date'] != null 
+            ? DateTime.parse(eventData['end_date'] as String) 
+            : null,
+        category: eventData['category'] as String,
+        cropType: eventData['crop_type'] as String,
+        isCompleted: (eventData['is_completed'] as int) == 1,
+        hasReminder: (eventData['has_reminder'] as int) == 1,
+        reminderDate: eventData['reminder_date'] != null 
+            ? DateTime.parse(eventData['reminder_date'] as String) 
+            : null,
+        location: eventData['location'] as String?,
+        metadata: eventData['metadata'] != null 
+            ? json.decode(eventData['metadata'] as String) as Map<String, dynamic>
+            : null,
+      );
+    }).toList();
   }
 
   // SHARED PREFERENCES METHODS
@@ -520,6 +773,10 @@ class StorageService {
       final int diseaseHistoryCount = Sqflite.firstIntValue(
         await _database!.rawQuery('SELECT COUNT(*) FROM disease_history')
       ) ?? 0;
+
+      final int calendarEventsCount = Sqflite.firstIntValue(
+        await _database!.rawQuery('SELECT COUNT(*) FROM calendar_events')
+      ) ?? 0;
       
       return {
         'documents_size': documentsSize,
@@ -528,6 +785,7 @@ class StorageService {
         'total_size': documentsSize + tempSize,
         'crop_records_count': cropRecordsCount,
         'disease_history_count': diseaseHistoryCount,
+        'calendar_events_count': calendarEventsCount,
       };
     } catch (e) {
       debugPrint('Error getting storage stats: $e');
