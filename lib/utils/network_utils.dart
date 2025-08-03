@@ -52,15 +52,17 @@ class NetworkUtils {
     ));
 
     // Add retry interceptor
-    _dio.interceptors.add(RetryInterceptor(
-      dio: _dio,
-      retries: 3,
-      retryDelays: const [
-        Duration(seconds: 1),
-        Duration(seconds: 2),
-        Duration(seconds: 3),
-      ],
-    ));
+    // Uncomment the following lines after adding dio_retry to your pubspec.yaml:
+    // import 'package:dio_retry/dio_retry.dart';
+    // _dio.interceptors.add(RetryInterceptor(
+    //   dio: _dio,
+    //   retries: 3,
+    //   retryDelays: const [
+    //     Duration(seconds: 1),
+    //     Duration(seconds: 2),
+    //     Duration(seconds: 3),
+    //   ],
+    // ));
   }
 
   /// Start monitoring connectivity changes
@@ -242,4 +244,5 @@ class NetworkUtils {
     );
   }
 
-  /// Handle network errors
+    /// Handle network errors
+  }

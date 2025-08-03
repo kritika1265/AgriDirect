@@ -22,12 +22,16 @@ class FeatureCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomCard(
-      onTap: onTap,
-      backgroundColor: backgroundColor ?? Colors.white,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+    return Card(
+      color: backgroundColor ?? Colors.white,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
           Stack(
             children: [
               Container(
@@ -85,10 +89,11 @@ class FeatureCard extends StatelessWidget {
               color: Colors.grey,
             ),
             textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    ),
+        ),
       ),
     );
   }

@@ -4,14 +4,15 @@ import 'package:flutter/services.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../services/notification_service.dart';
 import '../services/storage_service.dart';
+import '../utils/colors.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/loading_widget.dart';
-import '../utils/colors.dart';
 
 /// Screen for managing farming calendar and crop-related reminders
 /// Displays seasonal activities, crop schedules, and farming tips
 class CropCalendarScreen extends StatefulWidget {
+  /// Creates a new crop calendar screen
   const CropCalendarScreen({super.key});
 
   @override
@@ -361,7 +362,7 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
       margin: const EdgeInsets.only(bottom: 16),
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor: AppColors.primaryGreen ?? Colors.green,
+          backgroundColor: AppColors.primary ?? Colors.green,
           child: Text(
             schedule.cropName.substring(0, 1).toUpperCase(),
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -372,8 +373,8 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text('${schedule.activities.length} activities'),
-        children: schedule.activities.map<Widget>((activity) {
-          return ListTile(
+        children: schedule.activities.map<Widget>((activity) =>
+          ListTile(
             leading: Icon(
               _getActivityIcon(activity.activity),
               color: Theme.of(context).primaryColor,
@@ -387,8 +388,7 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
                 fontWeight: FontWeight.w500,
               ),
             ),
-          );
-        }).toList(),
+          )).toList(),
       ),
     );
 
@@ -501,14 +501,17 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
 
 /// Dialog for adding new events
 class AddEventDialog extends StatefulWidget {
-  final DateTime selectedDate;
-  final void Function(CalendarEvent) onEventAdded;
-
+  /// Creates a new add event dialog
   const AddEventDialog({
-    super.key,
     required this.selectedDate,
     required this.onEventAdded,
+    super.key,
   });
+
+  /// Selected date for the event
+  final DateTime selectedDate;
+  /// Callback when event is added
+  final void Function(CalendarEvent) onEventAdded;
 
   @override
   State<AddEventDialog> createState() => _AddEventDialogState();
@@ -663,15 +666,8 @@ class _AddEventDialogState extends State<AddEventDialog> {
 
 /// Calendar event model
 class CalendarEvent {
-  final String id;
-  final String title;
-  final String description;
-  final DateTime date;
-  final EventType type;
-  final bool isReminder;
-  final String? cropName;
-
-  CalendarEvent({
+  /// Creates a calendar event
+  const CalendarEvent({
     required this.id,
     required this.title,
     required this.description,
@@ -681,16 +677,7 @@ class CalendarEvent {
     this.cropName,
   });
 
-  Map<String, dynamic> toJson() => {
-      'id': id,
-      'title': title,
-      'description': description,
-      'date': date.toIso8601String(),
-      'type': type.index,
-      'isReminder': isReminder,
-      'cropName': cropName,
-    };
-
+  /// Creates a calendar event from JSON
   factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent(
       id: json['id'] as String,
       title: json['title'] as String,
@@ -700,17 +687,49 @@ class CalendarEvent {
       isReminder: json['isReminder'] as bool? ?? false,
       cropName: json['cropName'] as String?,
     );
+
+  /// Event ID
+  final String id;
+  /// Event title
+  final String title;
+  /// Event description
+  final String description;
+  /// Event date
+  final DateTime date;
+  /// Event type
+  final EventType type;
+  /// Whether reminder is set
+  final bool isReminder;
+  /// Associated crop name
+  final String? cropName;
+
+  /// Converts event to JSON
+  Map<String, dynamic> toJson() => {
+      'id': id,
+      'title': title,
+      'description': description,
+      'date': date.toIso8601String(),
+      'type': type.index,
+      'isReminder': isReminder,
+      'cropName': cropName,
+    };
 }
 
 /// Event types enum
 enum EventType {
+  /// Crop activity event
   cropActivity,
+  /// Custom event
   custom,
+  /// Reminder event
   reminder,
+  /// Weather event
   weather,
 }
 
+/// Extension for EventType display names
 extension EventTypeExtension on EventType {
+  /// Gets display name for event type
   String get displayName {
     switch (this) {
       case EventType.cropActivity:
@@ -727,62 +746,78 @@ extension EventTypeExtension on EventType {
 
 /// Crop schedule model
 class CropSchedule {
-  final String cropName;
-  final List<ActivitySchedule> activities;
-
-  CropSchedule({
+  /// Creates a crop schedule
+  const CropSchedule({
     required this.cropName,
     required this.activities,
   });
 
+  /// Creates crop schedule from JSON
   factory CropSchedule.fromJson(Map<String, dynamic> json) => CropSchedule(
       cropName: json['crop_name'] as String,
       activities: (json['activities'] as List<dynamic>)
           .map<ActivitySchedule>((activity) => ActivitySchedule.fromJson(activity as Map<String, dynamic>))
           .toList(),
     );
+
+  /// Crop name
+  final String cropName;
+  /// List of activities
+  final List<ActivitySchedule> activities;
 }
 
 /// Activity schedule model
 class ActivitySchedule {
-  final String activity;
-  final String description;
-  final int month;
-  final int day;
-
-  ActivitySchedule({
+  /// Creates an activity schedule
+  const ActivitySchedule({
     required this.activity,
     required this.description,
     required this.month,
     required this.day,
   });
 
+  /// Creates activity schedule from JSON
   factory ActivitySchedule.fromJson(Map<String, dynamic> json) => ActivitySchedule(
       activity: json['activity'] as String,
       description: json['description'] as String,
       month: json['month'] as int,
       day: json['day'] as int,
     );
+
+  /// Activity name
+  final String activity;
+  /// Activity description
+  final String description;
+  /// Month of activity
+  final int month;
+  /// Day of activity
+  final int day;
 }
 
 /// Farming tip model
 class FarmingTip {
-  final String title;
-  final String description;
-  final String category;
-  final String? season;
-
-  FarmingTip({
+  /// Creates a farming tip
+  const FarmingTip({
     required this.title,
     required this.description,
     required this.category,
     this.season,
   });
 
+  /// Creates farming tip from JSON
   factory FarmingTip.fromJson(Map<String, dynamic> json) => FarmingTip(
       title: json['title'] as String,
       description: json['description'] as String,
       category: json['category'] as String,
       season: json['season'] as String?,
     );
+
+  /// Tip title
+  final String title;
+  /// Tip description
+  final String description;
+  /// Tip category
+  final String category;
+  /// Best season for tip
+  final String? season;
 }

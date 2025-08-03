@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
-import '../screens/splash_screen.dart';
 import '../screens/auth_screen.dart';
-import '../screens/home_screen.dart';
-import '../screens/disease_detection_screen.dart';
-import '../screens/crop_prediction_screen.dart';
-import '../screens/weather_screen.dart';
-import '../screens/rent_tools_screen.dart';
-import '../screens/smart_connect_screen.dart';
-import '../screens/feed_screen.dart';
-import '../screens/profile_screen.dart';
-import '../screens/settings_screen.dart';
 import '../screens/crop_calendar_screen.dart';
-import '../screens/marketplace_screen.dart';
+import '../screens/crop_prediction_screen.dart';
+import '../screens/disease_detection_screen.dart';
+import '../screens/feed_screen.dart';
 import '../screens/help_screen.dart';
+import '../screens/home_screen.dart';
+import '../screens/marketplace_screen.dart';
+import '../screens/profile_screen.dart';
+import '../screens/rent_tools_screen.dart';
+import '../screens/settings_screen.dart';
+import '../screens/smart_connect_screen.dart';
+import '../screens/splash_screen.dart';
+import '../screens/weather_screen.dart';
 
+/// Main application router class that handles all navigation routes
 class AppRouter {
+  /// Route constants
   static const String splash = '/';
   static const String auth = '/auth';
   static const String home = '/home';
@@ -25,11 +27,12 @@ class AppRouter {
   static const String smartConnect = '/smart-connect';
   static const String feed = '/feed';
   static const String profile = '/profile';
-  static const String settings = '/settings';
+  static const String settingsRoute = '/settings';
   static const String cropCalendar = '/crop-calendar';
   static const String marketplace = '/marketplace';
   static const String help = '/help';
 
+  /// Generates routes based on route settings
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -60,7 +63,8 @@ class AppRouter {
         final arguments = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => CropPredictionScreen(
-            initialData: arguments?['initialData'],
+            // Remove initialData parameter or make sure it exists in CropPredictionScreen constructor
+            // initialData: arguments?['initialData'],
           ),
           settings: settings,
         );
@@ -69,7 +73,8 @@ class AppRouter {
         final arguments = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => WeatherScreen(
-            location: arguments?['location'],
+            // Remove location parameter or make sure it exists in WeatherScreen constructor
+            // location: arguments?['location'],
           ),
           settings: settings,
         );
@@ -96,12 +101,13 @@ class AppRouter {
         final arguments = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => ProfileScreen(
-            userId: arguments?['userId'],
+            // Remove userId parameter or make sure it exists in ProfileScreen constructor
+            // userId: arguments?['userId'],
           ),
           settings: settings,
         );
 
-      case settings:
+      case settingsRoute:
         return MaterialPageRoute(
           builder: (_) => const SettingsScreen(),
           settings: settings,
@@ -111,7 +117,8 @@ class AppRouter {
         final arguments = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => CropCalendarScreen(
-            selectedDate: arguments?['selectedDate'],
+            // Remove selectedDate parameter or make sure it exists in CropCalendarScreen constructor
+            // selectedDate: arguments?['selectedDate'],
           ),
           settings: settings,
         );
@@ -120,7 +127,8 @@ class AppRouter {
         final arguments = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => MarketplaceScreen(
-            category: arguments?['category'],
+            // Remove category parameter or make sure it exists in MarketplaceScreen constructor
+            // category: arguments?['category'],
           ),
           settings: settings,
         );
@@ -129,7 +137,8 @@ class AppRouter {
         final arguments = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (_) => HelpScreen(
-            section: arguments?['section'],
+            // Remove section parameter or make sure it exists in HelpScreen constructor
+            // section: arguments?['section'],
           ),
           settings: settings,
         );
@@ -143,104 +152,104 @@ class AppRouter {
   }
 
   // Navigation helper methods
+  /// Navigate to a named route
   static Future<void> pushNamed(
     BuildContext context,
     String routeName, {
     Object? arguments,
-  }) {
-    return Navigator.of(context).pushNamed(
-      routeName,
-      arguments: arguments,
-    );
-  }
+  }) =>
+      Navigator.of(context).pushNamed(
+        routeName,
+        arguments: arguments,
+      );
 
+  /// Replace current route with a named route
   static Future<void> pushReplacementNamed(
     BuildContext context,
     String routeName, {
     Object? arguments,
-  }) {
-    return Navigator.of(context).pushReplacementNamed(
-      routeName,
-      arguments: arguments,
-    );
-  }
+  }) =>
+      Navigator.of(context).pushReplacementNamed(
+        routeName,
+        arguments: arguments,
+      );
 
+  /// Navigate to route and remove all previous routes
   static Future<void> pushNamedAndRemoveUntil(
     BuildContext context,
     String routeName, {
     Object? arguments,
     bool Function(Route<dynamic>)? predicate,
-  }) {
-    return Navigator.of(context).pushNamedAndRemoveUntil(
-      routeName,
-      predicate ?? (route) => false,
-      arguments: arguments,
-    );
-  }
+  }) =>
+      Navigator.of(context).pushNamedAndRemoveUntil(
+        routeName,
+        predicate ?? (route) => false,
+        arguments: arguments,
+      );
 
-  static void pop(BuildContext context, [Object? result]) {
-    Navigator.of(context).pop(result);
-  }
+  /// Pop current route
+  static void pop(BuildContext context, [Object? result]) =>
+      Navigator.of(context).pop(result);
 
-  static void popUntil(BuildContext context, String routeName) {
-    Navigator.of(context).popUntil(ModalRoute.withName(routeName));
-  }
+  /// Pop until reaching specified route
+  static void popUntil(BuildContext context, String routeName) =>
+      Navigator.of(context).popUntil(ModalRoute.withName(routeName));
 
   // Custom transitions
+  /// Fade transition for routes
   static Route<T> fadeTransition<T extends Object?>(
     Widget child,
     RouteSettings settings,
-  ) {
-    return PageRouteBuilder<T>(
-      settings: settings,
-      pageBuilder: (context, animation, secondaryAnimation) => child,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return FadeTransition(
+  ) =>
+      PageRouteBuilder<T>(
+        settings: settings,
+        pageBuilder: (context, animation, secondaryAnimation) => child,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+            FadeTransition(
           opacity: animation,
           child: child,
-        );
-      },
-      transitionDuration: const Duration(milliseconds: 300),
-    );
-  }
+        ),
+        transitionDuration: const Duration(milliseconds: 300),
+      );
 
+  /// Slide transition for routes
   static Route<T> slideTransition<T extends Object?>(
     Widget child,
     RouteSettings settings, {
-    Offset begin = const Offset(1.0, 0.0),
+    Offset begin = const Offset(1, 0),
   }) {
+    const end = Offset.zero;
+    const curve = Curves.ease;
+
+    final tween = Tween(begin: begin, end: end).chain(
+      CurveTween(curve: curve),
+    );
+
     return PageRouteBuilder<T>(
       settings: settings,
       pageBuilder: (context, animation, secondaryAnimation) => child,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const end = Offset.zero;
-        const curve = Curves.ease;
-
-        var tween = Tween(begin: begin, end: end).chain(
-          CurveTween(curve: curve),
-        );
-
-        return SlideTransition(
-          position: animation.drive(tween),
-          child: child,
-        );
-      },
+      transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+          SlideTransition(
+        position: animation.drive(tween),
+        child: child,
+      ),
       transitionDuration: const Duration(milliseconds: 300),
     );
   }
 
+  /// Scale transition for routes
   static Route<T> scaleTransition<T extends Object?>(
     Widget child,
     RouteSettings settings,
-  ) {
-    return PageRouteBuilder<T>(
-      settings: settings,
-      pageBuilder: (context, animation, secondaryAnimation) => child,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        return ScaleTransition(
+  ) =>
+      PageRouteBuilder<T>(
+        settings: settings,
+        pageBuilder: (context, animation, secondaryAnimation) => child,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+            ScaleTransition(
           scale: Tween<double>(
-            begin: 0.0,
-            end: 1.0,
+            begin: 0,
+            end: 1,
           ).animate(
             CurvedAnimation(
               parent: animation,
@@ -248,15 +257,16 @@ class AppRouter {
             ),
           ),
           child: child,
-        );
-      },
-      transitionDuration: const Duration(milliseconds: 300),
-    );
-  }
+        ),
+        transitionDuration: const Duration(milliseconds: 300),
+      );
 
   // Deep link handling
+  /// Handle deep links and return appropriate route
   static String? handleDeepLink(String link) {
     final uri = Uri.parse(link);
+    
+    if (uri.pathSegments.isEmpty) return home;
     
     switch (uri.pathSegments.first) {
       case 'disease-detection':
@@ -275,6 +285,7 @@ class AppRouter {
   }
 
   // Route guards
+  /// Check if user can navigate to a specific route
   static bool canNavigateToRoute(String routeName, {bool isAuthenticated = false}) {
     const protectedRoutes = [
       home,
@@ -285,19 +296,16 @@ class AppRouter {
       smartConnect,
       feed,
       profile,
-      settings,
+      settingsRoute,
       cropCalendar,
       marketplace,
     ];
 
-    if (protectedRoutes.contains(routeName) && !isAuthenticated) {
-      return false;
-    }
-
-    return true;
+    return !protectedRoutes.contains(routeName) || isAuthenticated;
   }
 
   // Get route title for app bar
+  /// Get title for route to display in app bar
   static String getRouteTitle(String routeName) {
     switch (routeName) {
       case home:
@@ -316,7 +324,7 @@ class AppRouter {
         return 'News & Updates';
       case profile:
         return 'Profile';
-      case settings:
+      case settingsRoute:
         return 'Settings';
       case cropCalendar:
         return 'Crop Calendar';
@@ -331,44 +339,44 @@ class AppRouter {
 }
 
 // 404 Not Found Screen
+/// Screen displayed when route is not found
 class NotFoundScreen extends StatelessWidget {
-  const NotFoundScreen({Key? key}) : super(key: key);
+  /// Constructor for NotFoundScreen
+  const NotFoundScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Page Not Found'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error,
-              size: 64,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              '404',
-              style: Theme.of(context).textTheme.headlineLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Page Not Found',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                AppRouter.pushReplacementNamed(context, AppRouter.home);
-              },
-              child: const Text('Go Home'),
-            ),
-          ],
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: const Text('Page Not Found'),
         ),
-      ),
-    );
-  }
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error,
+                size: 64,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '404',
+                style: Theme.of(context).textTheme.headlineLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Page Not Found',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  AppRouter.pushReplacementNamed(context, AppRouter.home);
+                },
+                child: const Text('Go Home'),
+              ),
+            ],
+          ),
+        ),
+      );
 }

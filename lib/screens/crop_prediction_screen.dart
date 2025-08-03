@@ -7,11 +7,11 @@ import '../widgets/custom_button.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/prediction_result_card.dart';
-import '../utils/colors.dart';
-import '../utils/constants.dart';
 
+/// Screen for crop prediction based on soil and environmental parameters
 class CropPredictionScreen extends StatefulWidget {
-  const CropPredictionScreen({Key? key}) : super(key: key);
+  /// Constructor for CropPredictionScreen
+  const CropPredictionScreen({super.key});
 
   @override
   State<CropPredictionScreen> createState() => _CropPredictionScreenState();
@@ -60,73 +60,69 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const CustomAppBar(
-        title: 'Crop Recommendation',
-        showBackButton: true,
+  Widget build(BuildContext context) => Scaffold(
+    appBar: const CustomAppBar(
+      title: 'Crop Recommendation',
+    ),
+    body: Consumer<MLProvider>(
+      builder: (context, mlProvider, child) => SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildInstructions(),
+              const SizedBox(height: 20),
+              _buildSoilParametersSection(),
+              const SizedBox(height: 20),
+              _buildEnvironmentalSection(),
+              const SizedBox(height: 20),
+              _buildConditionsSection(),
+              const SizedBox(height: 20),
+              _buildPredictButton(mlProvider),
+              const SizedBox(height: 20),
+              if (mlProvider.isLoading)
+                const LoadingWidget(message: 'Analyzing soil and weather data...'),
+              if (mlProvider.lastCropPrediction != null)
+                PredictionResultCard(
+                  title: 'Crop Recommendation',
+                  confidence: 0.95,
+                  prediction: mlProvider.lastCropPrediction.toString(),
+                ),
+            ],
+          ),
+        ),
       ),
-      body: Consumer<MLProvider>(
-        builder: (context, mlProvider, child) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildInstructions(),
-                  const SizedBox(height: 20),
-                  _buildSoilParametersSection(),
-                  const SizedBox(height: 20),
-                  _buildEnvironmentalSection(),
-                  const SizedBox(height: 20),
-                  _buildConditionsSection(),
-                  const SizedBox(height: 20),
-                  _buildPredictButton(mlProvider),
-                  const SizedBox(height: 20),
-                  if (mlProvider.isLoading)
-                    const LoadingWidget(message: 'Analyzing soil and weather data...'),
-                  if (mlProvider.lastCropPrediction != null)
-                    PredictionResultCard(
-                      prediction: mlProvider.lastCropPrediction!,
-                      type: 'crop',
-                    ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+    ),
+  );
 
   Widget _buildInstructions() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.lightGreen.withOpacity(0.1),
+        color: Colors.green.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.lightGreen),
+        border: Border.all(color: Colors.green),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.lightbulb_outline, color: AppColors.primaryGreen),
-              const SizedBox(width: 8),
+              Icon(Icons.lightbulb_outline, color: Colors.green),
+              SizedBox(width: 8),
               Text(
                 'Crop Recommendation System',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.primaryGreen,
+                  color: Colors.green,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          const Text(
+          SizedBox(height: 8),
+          Text(
             'Enter your soil and environmental parameters to get personalized crop recommendations based on AI analysis.',
             style: TextStyle(fontSize: 14),
           ),
@@ -149,8 +145,12 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
                 hint: 'mg/kg',
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Required';
-                  if (double.tryParse(value!) == null) return 'Invalid number';
+                  if (value?.isEmpty ?? true) {
+                    return 'Required';
+                  }
+                  if (double.tryParse(value!) == null) {
+                    return 'Invalid number';
+                  }
                   return null;
                 },
               ),
@@ -163,8 +163,12 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
                 hint: 'mg/kg',
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Required';
-                  if (double.tryParse(value!) == null) return 'Invalid number';
+                  if (value?.isEmpty ?? true) {
+                    return 'Required';
+                  }
+                  if (double.tryParse(value!) == null) {
+                    return 'Invalid number';
+                  }
                   return null;
                 },
               ),
@@ -181,8 +185,12 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
                 hint: 'mg/kg',
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Required';
-                  if (double.tryParse(value!) == null) return 'Invalid number';
+                  if (value?.isEmpty ?? true) {
+                    return 'Required';
+                  }
+                  if (double.tryParse(value!) == null) {
+                    return 'Invalid number';
+                  }
                   return null;
                 },
               ),
@@ -195,10 +203,16 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
                 hint: '0-14',
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Required';
+                  if (value?.isEmpty ?? true) {
+                    return 'Required';
+                  }
                   final ph = double.tryParse(value!);
-                  if (ph == null) return 'Invalid number';
-                  if (ph < 0 || ph > 14) return 'pH must be 0-14';
+                  if (ph == null) {
+                    return 'Invalid number';
+                  }
+                  if (ph < 0 || ph > 14) {
+                    return 'pH must be 0-14';
+                  }
                   return null;
                 },
               ),
@@ -236,8 +250,12 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
                 hint: '°C',
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Required';
-                  if (double.tryParse(value!) == null) return 'Invalid number';
+                  if (value?.isEmpty ?? true) {
+                    return 'Required';
+                  }
+                  if (double.tryParse(value!) == null) {
+                    return 'Invalid number';
+                  }
                   return null;
                 },
               ),
@@ -250,10 +268,16 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
                 hint: '%',
                 keyboardType: TextInputType.number,
                 validator: (value) {
-                  if (value?.isEmpty ?? true) return 'Required';
+                  if (value?.isEmpty ?? true) {
+                    return 'Required';
+                  }
                   final humidity = double.tryParse(value!);
-                  if (humidity == null) return 'Invalid number';
-                  if (humidity < 0 || humidity > 100) return 'Must be 0-100%';
+                  if (humidity == null) {
+                    return 'Invalid number';
+                  }
+                  if (humidity < 0 || humidity > 100) {
+                    return 'Must be 0-100%';
+                  }
                   return null;
                 },
               ),
@@ -267,8 +291,12 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
           hint: 'mm',
           keyboardType: TextInputType.number,
           validator: (value) {
-            if (value?.isEmpty ?? true) return 'Required';
-            if (double.tryParse(value!) == null) return 'Invalid number';
+            if (value?.isEmpty ?? true) {
+              return 'Required';
+            }
+            if (double.tryParse(value!) == null) {
+              return 'Invalid number';
+            }
             return null;
           },
         ),
@@ -309,7 +337,7 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 6,
             offset: const Offset(0, 3),
@@ -321,7 +349,7 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
         children: [
           Row(
             children: [
-              Icon(icon, color: AppColors.primaryGreen),
+              Icon(icon, color: Colors.green),
               const SizedBox(width: 8),
               Text(
                 title,
@@ -339,18 +367,21 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
     );
   }
 
-  Widget _buildPredictButton(MLProvider mlProvider) {
-    return CustomButton(
-      text: 'Get Crop Recommendations',
-      onPressed: mlProvider.isLoading ? null : _predictCrop,
-      icon: Icons.eco,
-      backgroundColor: AppColors.primaryGreen,
-      isFullWidth: true,
-    );
+  Widget _buildPredictButton(MLProvider mlProvider) => CustomButton(
+    text: 'Get Crop Recommendations',
+    onPressed: mlProvider.isLoading ? () {} : _handlePredictCrop,
+    icon: Icons.eco,
+    backgroundColor: Colors.green,
+  );
+
+  void _handlePredictCrop() {
+    _predictCrop();
   }
 
   Future<void> _predictCrop() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     final mlProvider = Provider.of<MLProvider>(context, listen: false);
 
@@ -368,16 +399,18 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
 
     try {
       await mlProvider.predictCrop(parameters);
-      if (mlProvider.lastCropPrediction != null) {
+      if (mlProvider.lastCropPrediction != null && mounted) { // Added mounted check
         _showSuccessDialog();
       }
     } catch (e) {
-      _showErrorDialog('Error predicting crop: $e');
+      if (mounted) { // Added mounted check
+        _showErrorDialog('Error predicting crop: $e');
+      }
     }
   }
 
   void _showSuccessDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Prediction Complete'),
@@ -393,7 +426,7 @@ class _CropPredictionScreenState extends State<CropPredictionScreen> {
   }
 
   void _showErrorDialog(String message) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Error'),

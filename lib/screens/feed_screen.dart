@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/news_model.dart';
+
+import '../models/news_item.dart';
 import '../services/api_service.dart';
-import '../widgets/custom_app_bar.dart';
-import '../widgets/loading_widget.dart';
 import '../utils/colors.dart';
 import '../utils/constants.dart';
+import '../widgets/custom_app_bar.dart';
+import '../widgets/loading_widget.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({Key? key}) : super(key: key);
@@ -15,8 +16,8 @@ class FeedScreen extends StatefulWidget {
 
 class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<NewsModel> _newsItems = [];
-  List<NewsModel> _tipsItems = [];
+  List<NewsItem> _newsItems = [];
+  List<NewsItem> _tipsItems = [];
   bool _isLoading = true;
   String _selectedCategory = 'All';
 
@@ -34,48 +35,70 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
   }
 
   Future<void> _loadFeedData() async {
-    setState(() => _isLoading = true);
+    if (mounted) {
+      setState(() => _isLoading = true);
+    }
+    
     try {
       // Simulate API calls
-      await Future.delayed(const Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
       
       // Mock data - replace with actual API service calls
-      _newsItems = [
-        NewsModel(
+      final newsItems = [
+        NewsItem(
           id: '1',
           title: 'New Drought-Resistant Wheat Variety Released',
+          description: 'Scientists develop breakthrough wheat variety for harsh conditions',
           content: 'Agricultural scientists have developed a new wheat variety that can withstand prolonged drought conditions...',
           category: 'Research',
           imageUrl: 'assets/images/news/wheat_research.jpg',
           publishedAt: DateTime.now().subtract(const Duration(hours: 2)),
           source: 'AgriNews',
+          url: 'https://example.com/news/1',
+          tags: ['wheat', 'drought', 'research', 'agriculture'],
         ),
-        NewsModel(
+        NewsItem(
           id: '2',
           title: 'Organic Farming Subsidies Increased by 25%',
+          description: 'Government boosts support for sustainable farming practices',
           content: 'Government announces increased subsidies for organic farming practices to promote sustainable agriculture...',
           category: 'Policy',
           imageUrl: 'assets/images/news/organic_farming.jpg',
           publishedAt: DateTime.now().subtract(const Duration(hours: 5)),
           source: 'FarmPolicy Today',
+          url: 'https://example.com/news/2',
+          tags: ['organic', 'subsidies', 'policy', 'government'],
         ),
       ];
 
-      _tipsItems = [
-        NewsModel(
+      final tipsItems = [
+        NewsItem(
           id: '3',
           title: 'Best Practices for Monsoon Crop Protection',
+          description: 'Essential guidelines for protecting crops during heavy rainfall',
           content: 'Essential tips to protect your crops during heavy rainfall and flooding conditions...',
           category: 'Tips',
           imageUrl: 'assets/images/tips/monsoon_tips.jpg',
           publishedAt: DateTime.now().subtract(const Duration(days: 1)),
           source: 'AgriExpert',
+          url: 'https://example.com/tips/1',
+          tags: ['monsoon', 'protection', 'crops', 'weather'],
         ),
       ];
+
+      if (mounted) {
+        setState(() {
+          _newsItems = newsItems;
+          _tipsItems = tipsItems;
+        });
+      }
     } catch (e) {
       // Handle error
+      debugPrint('Error loading feed data: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -105,7 +128,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: AppConstants.newsCategories.map((category) {
+              children: AppConstants.newsCategories.map((String category) {
                 final isSelected = _selectedCategory == category;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
@@ -113,11 +136,13 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
                     label: Text(category),
                     selected: isSelected,
                     onSelected: (selected) {
-                      setState(() {
-                        _selectedCategory = category;
-                      });
+                      if (mounted) {
+                        setState(() {
+                          _selectedCategory = category;
+                        });
+                      }
                     },
-                    selectedColor: AppColors.primaryColor.withOpacity(0.2),
+                    selectedColor: AppColors.primaryColor.withValues(alpha: 0.2),
                     labelStyle: TextStyle(
                       color: isSelected ? AppColors.primaryColor : AppColors.textSecondary,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -159,7 +184,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildNewsList(List<NewsModel> items) {
+  Widget _buildNewsList(List<NewsItem> items) {
     if (items.isEmpty) {
       return _buildEmptyState('No news available');
     }
@@ -177,7 +202,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildTipsList(List<NewsModel> items) {
+  Widget _buildTipsList(List<NewsItem> items) {
     if (items.isEmpty) {
       return _buildEmptyState('No tips available');
     }
@@ -210,7 +235,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildNewsCard(NewsModel item) {
+  Widget _buildNewsCard(NewsItem item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -224,12 +249,26 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
             // Image
             Container(
               height: 180,
+              width: double.infinity,
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
                 color: AppColors.cardBackground,
               ),
-              child: const Center(
-                child: Icon(Icons.image, size: 48, color: Colors.grey),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                child: item.imageUrl.isNotEmpty
+                    ? Image.asset(
+                        item.imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Center(
+                            child: Icon(Icons.image, size: 48, color: Colors.grey),
+                          );
+                        },
+                      )
+                    : const Center(
+                        child: Icon(Icons.image, size: 48, color: Colors.grey),
+                      ),
               ),
             ),
             
@@ -245,7 +284,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryColor.withOpacity(0.1),
+                          color: AppColors.primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
@@ -285,7 +324,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
                   
                   // Content preview
                   Text(
-                    item.content,
+                    item.description,
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 14,
@@ -299,23 +338,28 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
                   // Source and actions
                   Row(
                     children: [
-                      Text(
-                        'Source: ${item.source}',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
+                      Expanded(
+                        child: Text(
+                          'Source: ${item.source}',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Spacer(),
                       IconButton(
-                        icon: const Icon(Icons.share),
+                        icon: const Icon(Icons.share, size: 20),
                         onPressed: () => _shareNews(item),
-                        iconSize: 20,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
+                      const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.bookmark_border),
+                        icon: const Icon(Icons.bookmark_border, size: 20),
                         onPressed: () => _bookmarkNews(item),
-                        iconSize: 20,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
@@ -328,7 +372,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildTipCard(NewsModel item) {
+  Widget _buildTipCard(NewsItem item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
@@ -344,7 +388,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withOpacity(0.1),
+                  color: AppColors.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Icon(
@@ -373,7 +417,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
                     const SizedBox(height: 4),
                     
                     Text(
-                      item.content,
+                      item.description,
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 14,
@@ -414,7 +458,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppColors.primaryColor.withOpacity(0.1),
+                color: AppColors.primaryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(
@@ -451,7 +495,7 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: changeColor.withOpacity(0.1),
+                color: changeColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
@@ -500,29 +544,33 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
       return '${difference.inDays}d ago';
     } else if (difference.inHours > 0) {
       return '${difference.inHours}h ago';
-    } else {
+    } else if (difference.inMinutes > 0) {
       return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
     }
   }
 
   void _showFilterDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Filter by Category'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: AppConstants.newsCategories.map((category) {
+            children: AppConstants.newsCategories.map((String category) {
               return RadioListTile<String>(
                 title: Text(category),
                 value: category,
                 groupValue: _selectedCategory,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedCategory = value!;
-                  });
-                  Navigator.pop(context);
+                onChanged: (String? value) {
+                  if (mounted && value != null) {
+                    setState(() {
+                      _selectedCategory = value;
+                    });
+                    Navigator.pop(context);
+                  }
                 },
               );
             }).toList(),
@@ -532,16 +580,22 @@ class _FeedScreenState extends State<FeedScreen> with SingleTickerProviderStateM
     );
   }
 
-  void _openNewsDetail(NewsModel item) {
+  void _openNewsDetail(NewsItem item) {
     // Navigate to news detail screen
     Navigator.pushNamed(context, '/news-detail', arguments: item);
   }
 
-  void _shareNews(NewsModel item) {
+  void _shareNews(NewsItem item) {
     // Implement share functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Sharing: ${item.title}')),
+    );
   }
 
-  void _bookmarkNews(NewsModel item) {
+  void _bookmarkNews(NewsItem item) {
     // Implement bookmark functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Bookmarked: ${item.title}')),
+    );
   }
 }

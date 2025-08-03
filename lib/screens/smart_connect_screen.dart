@@ -8,6 +8,58 @@ import '../widgets/loading_widget.dart';
 import '../utils/colors.dart';
 import '../utils/constants.dart';
 
+class Expert {
+  final String id;
+  final String name;
+  final String specialization;
+  final String experience;
+  final double rating;
+  final int totalConsultations;
+  final String imageUrl;
+  final bool isOnline;
+  final int consultationFee;
+  final List<String> languages;
+
+  Expert({
+    required this.id,
+    required this.name,
+    required this.specialization,
+    required this.experience,
+    required this.rating,
+    required this.totalConsultations,
+    required this.imageUrl,
+    required this.isOnline,
+    required this.consultationFee,
+    required this.languages,
+  });
+}
+
+class CommunityPost {
+  final String id;
+  final String authorName;
+  final String authorLocation;
+  final String title;
+  final String content;
+  final DateTime timestamp;
+  final int likes;
+  final int replies;
+  final String category;
+  final List<String> images;
+
+  CommunityPost({
+    required this.id,
+    required this.authorName,
+    required this.authorLocation,
+    required this.title,
+    required this.content,
+    required this.timestamp,
+    required this.likes,
+    required this.replies,
+    required this.category,
+    required this.images,
+  });
+}
+
 class SmartConnectScreen extends StatefulWidget {
   const SmartConnectScreen({Key? key}) : super(key: key);
 
@@ -163,6 +215,179 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
     );
   }
 
+  Widget _buildCommunityTab() {
+    List<CommunityPost> filteredPosts = _selectedCategory == 'All'
+        ? _communityPosts
+        : _communityPosts.where((post) => post.category == _selectedCategory).toList();
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 48,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            itemCount: _categories.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemBuilder: (context, index) {
+              final category = _categories[index];
+              final isSelected = _selectedCategory == category;
+              return ChoiceChip(
+                label: Text(category),
+                selected: isSelected,
+                onSelected: (_) {
+                  setState(() {
+                    _selectedCategory = category;
+                  });
+                },
+                selectedColor: AppColors.primaryColor,
+                backgroundColor: Colors.grey[200],
+                labelStyle: TextStyle(
+                  color: isSelected ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
+              );
+            },
+          ),
+        ),
+        Expanded(
+          child: filteredPosts.isEmpty
+              ? const Center(child: Text('No posts found for this category.'))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: filteredPosts.length,
+                  itemBuilder: (context, index) {
+                    return _buildCommunityPostCard(filteredPosts[index]);
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCommunityPostCard(CommunityPost post) {
+    return CustomCard(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.grey[300],
+                  child: const Icon(Icons.person, size: 24, color: Colors.grey),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      post.authorName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    Text(
+                      post.authorLocation,
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  _formatTimestamp(post.timestamp),
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              post.title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              post.content,
+              style: const TextStyle(fontSize: 14),
+            ),
+            if (post.images.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 120,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: post.images.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 8),
+                  itemBuilder: (context, idx) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        post.images[idx],
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.thumb_up_alt_outlined, size: 18, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Text('${post.likes}'),
+                const SizedBox(width: 16),
+                Icon(Icons.chat_bubble_outline, size: 18, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Text('${post.replies}'),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    post.category,
+                    style: TextStyle(
+                      color: AppColors.primaryColor,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else {
+      return '${difference.inDays}d ago';
+    }
+  }
+
   Widget _buildExpertCard(Expert expert) {
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 16),
@@ -298,7 +523,57 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
                   ),
                 ),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: CustomButton(
-                    text: expert.isOnline ? 'Consult Now' : 'Schedule',
-                    onPressed: () => _consult
+                                Expanded(
+                                  child: CustomButton(
+                                    text: expert.isOnline ? 'Consult Now' : 'Schedule',
+                                    onPressed: () => _consult
+                // Add the missing _buildAskQuestionTab method at the end of the class
+                
+                  Widget _buildAskQuestionTab() {
+                    return Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Ask a Question',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          CustomTextField(
+                            controller: _questionController,
+                            hintText: 'Type your question here...',
+                            maxLines: 5,
+                          ),
+                          const SizedBox(height: 16),
+                          _isLoading
+                              ? const LoadingWidget()
+                              : CustomButton(
+                                  text: 'Submit',
+                                  onPressed: _submitQuestion,
+                                  backgroundColor: AppColors.primaryColor,
+                                  textColor: Colors.white,
+                                ),
+                        ],
+                      ),
+                    );
+                  }
+                
+                  void _submitQuestion() {
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    // Simulate a network call
+                    Future.delayed(const Duration(seconds: 2), () {
+                      setState(() {
+                        _isLoading = false;
+                        _questionController.clear();
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Your question has been submitted!')),
+                      );
+                    });
+                  }

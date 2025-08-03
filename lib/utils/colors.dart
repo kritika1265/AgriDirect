@@ -129,7 +129,7 @@ class AppColors {
   static const double highEmphasis = 0.87;
   static const double mediumEmphasis = 0.60;
   static const double lowEmphasis = 0.38;
-  static const double disabled = 0.12;
+  static const double disabledOpacity = 0.12;
   
   // Helper methods
   static Color withOpacity(Color color, double opacity) {

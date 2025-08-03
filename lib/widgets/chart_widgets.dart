@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'custom_card.dart';
 
 class LineChart extends StatelessWidget {
   final List<ChartData> data;
@@ -349,9 +350,9 @@ class EmptyStateWidget extends StatelessWidget {
             ),
             if (buttonText != null && onButtonPressed != null) ...[
               const SizedBox(height: 24),
-              CustomButton(
-                text: buttonText!,
+              ElevatedButton(
                 onPressed: onButtonPressed!,
+                child: Text(buttonText!),
               ),
             ],
           ],

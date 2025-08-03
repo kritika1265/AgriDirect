@@ -1,10 +1,12 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Helper utility functions for AgriDirect app
 class AppHelpers {
@@ -70,29 +72,28 @@ class AppHelpers {
     required String message,
     String confirmText = 'Confirm',
     String cancelText = 'Cancel',
-  }) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(cancelText),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(confirmText),
-          ),
-        ],
-      ),
-    );
-  }
+  }) =>
+      showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(title),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(cancelText),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(confirmText),
+            ),
+          ],
+        ),
+      );
 
   /// Show loading dialog
   static void showLoadingDialog(BuildContext context, {String? message}) {
-    showDialog(
+    showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
@@ -123,7 +124,7 @@ class AppHelpers {
 
   /// Launch URL
   static Future<void> launchURL(String url) async {
-    final Uri uri = Uri.parse(url);
+    final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
@@ -133,7 +134,7 @@ class AppHelpers {
 
   /// Make phone call
   static Future<void> makePhoneCall(String phoneNumber) async {
-    final Uri uri = Uri.parse('tel:$phoneNumber');
+    final uri = Uri.parse('tel:$phoneNumber');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
@@ -143,7 +144,7 @@ class AppHelpers {
 
   /// Send SMS
   static Future<void> sendSMS(String phoneNumber, {String? message}) async {
-    final Uri uri = Uri.parse('sms:$phoneNumber${message != null ? '?body=$message' : ''}');
+    final uri = Uri.parse('sms:$phoneNumber${message != null ? '?body=$message' : ''}');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
@@ -162,19 +163,13 @@ class AppHelpers {
   }
 
   /// Vibrate device
-  static void vibrate() {
-    HapticFeedback.mediumImpact();
-  }
+  static void vibrate() => HapticFeedback.mediumImpact();
 
   /// Light vibration
-  static void lightVibrate() {
-    HapticFeedback.lightImpact();
-  }
+  static void lightVibrate() => HapticFeedback.lightImpact();
 
   /// Heavy vibration
-  static void heavyVibrate() {
-    HapticFeedback.heavyImpact();
-  }
+  static void heavyVibrate() => HapticFeedback.heavyImpact();
 
   /// Generate random string
   static String generateRandomString(int length) {
@@ -192,67 +187,62 @@ class AppHelpers {
       random.nextInt(256),
       random.nextInt(256),
       random.nextInt(256),
-      1.0,
+      1,
     );
   }
 
   /// Check if string is valid email
-  static bool isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-  }
+  static bool isValidEmail(String email) =>
+      RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
 
   /// Check if string is valid phone number (Indian)
-  static bool isValidPhoneNumber(String phone) {
-    return RegExp(r'^[6-9]\d{9}$').hasMatch(phone);
-  }
+  static bool isValidPhoneNumber(String phone) =>
+      RegExp(r'^[6-9]\d{9}$').hasMatch(phone);
 
   /// Calculate distance between two coordinates (Haversine formula)
   static double calculateDistance(
     double lat1, double lon1, double lat2, double lon2) {
     const double earthRadius = 6371; // Earth's radius in kilometers
     
-    double dLat = _toRadians(lat2 - lat1);
-    double dLon = _toRadians(lon2 - lon1);
+    final dLat = _toRadians(lat2 - lat1);
+    final dLon = _toRadians(lon2 - lon1);
     
-    double a = sin(dLat / 2) * sin(dLat / 2) +
+    final a = sin(dLat / 2) * sin(dLat / 2) +
         cos(_toRadians(lat1)) * cos(_toRadians(lat2)) *
         sin(dLon / 2) * sin(dLon / 2);
     
-    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
     
     return earthRadius * c;
   }
 
-  static double _toRadians(double degree) {
-    return degree * (pi / 180);
-  }
+  static double _toRadians(double degree) => degree * (pi / 180);
 
   /// Get file extension
-  static String getFileExtension(String fileName) {
-    return fileName.split('.').last.toLowerCase();
-  }
+  static String getFileExtension(String fileName) =>
+      fileName.split('.').last.toLowerCase();
 
   /// Check if file is image
   static bool isImageFile(String fileName) {
-    final extensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+    const extensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
     return extensions.contains(getFileExtension(fileName));
   }
 
   /// Check if file is video
   static bool isVideoFile(String fileName) {
-    final extensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'];
+    const extensions = ['mp4', 'avi', 'mov', 'wmv', 'flv', 'webm'];
     return extensions.contains(getFileExtension(fileName));
   }
 
   /// Check if file is document
   static bool isDocumentFile(String fileName) {
-    final extensions = ['pdf', 'doc', 'docx', 'txt', 'rtf'];
+    const extensions = ['pdf', 'doc', 'docx', 'txt', 'rtf'];
     return extensions.contains(getFileExtension(fileName));
   }
 
   /// Get initials from name
   static String getInitials(String name) {
-    List<String> names = name.trim().split(' ');
+    final names = name.trim().split(' ');
     if (names.length == 1) {
       return names[0].substring(0, min(2, names[0].length)).toUpperCase();
     } else {
@@ -260,8 +250,10 @@ class AppHelpers {
     }
   }
 
-  /// Debounce function calls
+  /// Debounce timer for function calls
   static Timer? _debounceTimer;
+  
+  /// Debounce function calls
   static void debounce(Duration duration, VoidCallback callback) {
     _debounceTimer?.cancel();
     _debounceTimer = Timer(duration, callback);
@@ -286,8 +278,8 @@ class AppHelpers {
   }
 
   /// Convert hex color to Color
-  static Color hexToColor(String hex) {
-    hex = hex.replaceAll('#', '');
+  static Color hexToColor(String hexValue) {
+    String hex = hexValue.replaceAll('#', '');
     if (hex.length == 6) {
       hex = 'FF$hex';
     }
@@ -295,50 +287,69 @@ class AppHelpers {
   }
 
   /// Convert Color to hex string
-  static String colorToHex(Color color) {
-    return '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
-  }
+  static String colorToHex(Color color) =>
+      '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
 
   /// Format bytes to readable size
   static String formatBytes(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (bytes < 1024) {
+      return '$bytes B';
+    }
+    if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(1)} KB';
+    }
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
   /// Check if app is running in debug mode
   static bool get isDebugMode {
     bool inDebugMode = false;
-    assert(inDebugMode = true);
+    assert(inDebugMode = true, 'Debug mode check');
     return inDebugMode;
   }
 
   /// Get platform name
   static String get platformName {
-    if (Platform.isAndroid) return 'Android';
-    if (Platform.isIOS) return 'iOS';
-    if (Platform.isWindows) return 'Windows';
-    if (Platform.isMacOS) return 'macOS';
-    if (Platform.isLinux) return 'Linux';
+    if (Platform.isAndroid) {
+      return 'Android';
+    }
+    if (Platform.isIOS) {
+      return 'iOS';
+    }
+    if (Platform.isWindows) {
+      return 'Windows';
+    }
+    if (Platform.isMacOS) {
+      return 'macOS';
+    }
+    if (Platform.isLinux) {
+      return 'Linux';
+    }
     return 'Unknown';
   }
 
   /// Capitalize first letter
   static String capitalize(String text) {
-    if (text.isEmpty) return text;
+    if (text.isEmpty) {
+      return text;
+    }
     return text[0].toUpperCase() + text.substring(1);
   }
 
   /// Remove HTML tags from string
   static String removeHtmlTags(String htmlString) {
-    RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+    final exp = RegExp(r'<[^>]*>', multiLine: true, caseSensitive: true);
     return htmlString.replaceAll(exp, '');
   }
 
   /// Truncate string with ellipsis
   static String truncateString(String text, int maxLength) {
-    if (text.length <= maxLength) return text;
+    if (text.length <= maxLength) {
+      return text;
+    }
     return '${text.substring(0, maxLength)}...';
   }
 
@@ -364,9 +375,8 @@ class AppHelpers {
   }
 
   /// Check if dark mode is enabled
-  static bool isDarkMode(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.dark;
-  }
+  static bool isDarkMode(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
 
   /// Get contrast color (black or white) based on background
   static Color getContrastColor(Color backgroundColor) {

@@ -39,8 +39,10 @@ dependencies:
   internet_connection_checker: ^3.0.1
 
   # Local Storage
-  shared_preferences: ^2.2.1
+  shared_preferences: ^2.2.2  # Updated version
   sqflite: ^2.3.0
+  path_provider: ^2.1.1  # Added for file storage
+  path: ^1.8.3  # Added for path operations
 
   # Location & Maps
   geolocator: ^14.0.2
@@ -50,7 +52,7 @@ dependencies:
   # Camera & Image
   image_picker: ^1.0.4
   camera: ^0.11.2
-  image: ^4.5.4  # Back to latest version
+  image: ^4.5.4
 
   # ML & AI
   tflite_flutter: ^0.11.0
@@ -64,6 +66,9 @@ dependencies:
   url_launcher: ^6.1.12
   package_info_plus: ^8.3.0
   device_info_plus: ^11.5.0
+  equatable: ^2.0.5  # Added for model equality comparison
+  uuid: ^4.2.1  # Added for generating unique IDs
+  share_plus: ^7.2.2  # Added for sharing functionality
 
   # Charts & Data Visualization
   fl_chart: ^1.0.0

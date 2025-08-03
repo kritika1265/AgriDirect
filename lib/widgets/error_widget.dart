@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class ErrorDisplayWidget extends StatelessWidget {
   final String title;
   final String message;
@@ -48,11 +50,14 @@ class ErrorDisplayWidget extends StatelessWidget {
             ),
             if (buttonText != null && onRetry != null) ...[
               const SizedBox(height: 24),
-              CustomButton(
-                text: buttonText!,
+              ElevatedButton.icon(
+                icon: const Icon(Icons.refresh),
+                label: Text(buttonText!),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
                 onPressed: onRetry!,
-                backgroundColor: Colors.red,
-                icon: Icons.refresh,
               ),
             ],
           ],

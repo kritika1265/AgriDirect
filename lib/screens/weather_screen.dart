@@ -41,7 +41,6 @@ class _WeatherScreenState extends State<WeatherScreen>
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Weather Forecast',
-        showBackButton: true,
       ),
       body: Consumer<WeatherProvider>(
         builder: (context, weatherProvider, child) {
