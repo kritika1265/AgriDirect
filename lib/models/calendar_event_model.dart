@@ -1,18 +1,44 @@
 import 'package:equatable/equatable.dart';
 
+/// Calendar event model for agricultural activities
 class CalendarEvent extends Equatable {
+  /// Unique identifier for the event
   final String id;
-  final String? userId; // Added userId field for database implementation
+  
+  /// User ID who owns this event (for database implementation)
+  final String? userId;
+  
+  /// Title of the event
   final String title;
+  
+  /// Description of the event
   final String description;
+  
+  /// Start date and time of the event
   final DateTime startDate;
+  
+  /// End date and time of the event (optional)
   final DateTime? endDate;
+  
+  /// Category of the event (e.g., planting, harvesting)
   final String category;
+  
+  /// Type of crop related to this event
   final String cropType;
+  
+  /// Whether the event has been completed
   final bool isCompleted;
+  
+  /// Whether the event has a reminder set
   final bool hasReminder;
+  
+  /// Date and time for the reminder (if enabled)
   final DateTime? reminderDate;
+  
+  /// Location where the event takes place
   final String? location;
+  
+  /// Additional metadata for the event
   final Map<String, dynamic>? metadata;
 
   const CalendarEvent({
@@ -133,6 +159,15 @@ class CalendarEvent extends Equatable {
     return endDate!.difference(startDate);
   }
 
+  /// Get a human-readable status of the event
+  String get status {
+    if (isCompleted) return 'Completed';
+    if (isOverdue) return 'Overdue';
+    if (isToday) return 'Today';
+    if (isUpcoming) return 'Upcoming';
+    return 'Scheduled';
+  }
+
   @override
   List<Object?> get props => [
         id,
@@ -152,7 +187,7 @@ class CalendarEvent extends Equatable {
 
   @override
   String toString() {
-    return 'CalendarEvent(id: $id, userId: $userId, title: $title, startDate: $startDate, category: $category, cropType: $cropType)';
+    return 'CalendarEvent(id: $id, userId: $userId, title: $title, startDate: $startDate, category: $category, cropType: $cropType, status: $status)';
   }
 }
 
@@ -166,15 +201,93 @@ enum EventCategory {
   soilPreparation('soil_preparation'),
   pruning('pruning'),
   weeding('weeding'),
+  monitoring('monitoring'),
+  maintenance('maintenance'),
   other('other');
 
   const EventCategory(this.value);
   final String value;
 
+  /// Convert string to EventCategory
   static EventCategory fromString(String value) {
     return EventCategory.values.firstWhere(
       (category) => category.value == value,
       orElse: () => EventCategory.other,
     );
+  }
+
+  /// Get display name for the category
+  String get displayName {
+    switch (this) {
+      case EventCategory.planting:
+        return 'Planting';
+      case EventCategory.harvesting:
+        return 'Harvesting';
+      case EventCategory.fertilizing:
+        return 'Fertilizing';
+      case EventCategory.irrigation:
+        return 'Irrigation';
+      case EventCategory.pestControl:
+        return 'Pest Control';
+      case EventCategory.soilPreparation:
+        return 'Soil Preparation';
+      case EventCategory.pruning:
+        return 'Pruning';
+      case EventCategory.weeding:
+        return 'Weeding';
+      case EventCategory.monitoring:
+        return 'Monitoring';
+      case EventCategory.maintenance:
+        return 'Maintenance';
+      case EventCategory.other:
+        return 'Other';
+    }
+  }
+}
+
+/// Extension to add utility methods to List<CalendarEvent>
+extension CalendarEventListExtension on List<CalendarEvent> {
+  /// Filter events by category
+  List<CalendarEvent> byCategory(String category) {
+    return where((event) => event.category == category).toList();
+  }
+
+  /// Filter events by crop type
+  List<CalendarEvent> byCropType(String cropType) {
+    return where((event) => event.cropType == cropType).toList();
+  }
+
+  /// Get only completed events
+  List<CalendarEvent> get completed {
+    return where((event) => event.isCompleted).toList();
+  }
+
+  /// Get only pending events
+  List<CalendarEvent> get pending {
+    return where((event) => !event.isCompleted).toList();
+  }
+
+  /// Get overdue events
+  List<CalendarEvent> get overdue {
+    return where((event) => event.isOverdue).toList();
+  }
+
+  /// Get today's events
+  List<CalendarEvent> get today {
+    return where((event) => event.isToday).toList();
+  }
+
+  /// Get upcoming events
+  List<CalendarEvent> get upcoming {
+    return where((event) => event.isUpcoming).toList();
+  }
+
+  /// Sort events by start date
+  List<CalendarEvent> sortedByDate({bool ascending = true}) {
+    final sorted = List<CalendarEvent>.from(this);
+    sorted.sort((a, b) => ascending 
+        ? a.startDate.compareTo(b.startDate)
+        : b.startDate.compareTo(a.startDate));
+    return sorted;
   }
 }

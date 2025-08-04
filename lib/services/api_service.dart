@@ -1,20 +1,49 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import '../config/api_config.dart';
-import '../utils/network_utils.dart';
+
+// You'll need to create these files or classes
+class ApiConfig {
+  static const String baseUrl = 'https://your-api-base-url.com';
+  static const String apiKey = 'your-api-key-here';
+}
+
+class NetworkUtils {
+  static Future<bool> isConnected() async {
+    try {
+      final result = await InternetAddress.lookup('google.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } on SocketException catch (_) {
+      return false;
+    }
+  }
+}
+
+class ApiException implements Exception {
+  final String message;
+  final int statusCode;
+
+  const ApiException(this.message, this.statusCode);
+
+  @override
+  String toString() => 'ApiException: $message (Status: $statusCode)';
+}
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
-  ApiService._internal();
+  ApiService._internal() {
+    _client = http.Client();
+  }
 
   static const int _timeoutDuration = 30;
   late final http.Client _client;
 
-  void initialize() {
-    _client = http.Client();
-  }
+  // Remove the separate initialize method since we initialize in constructor
+  // void initialize() {
+  //   _client = http.Client();
+  // }
 
   Future<Map<String, dynamic>> _makeRequest(
     String method,
@@ -26,17 +55,17 @@ class ApiService {
     try {
       // Check network connectivity
       if (!await NetworkUtils.isConnected()) {
-        throw ApiException('No internet connection', 0);
+        throw const ApiException('No internet connection', 0);
       }
 
       final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint')
           .replace(queryParameters: queryParams);
 
-      final defaultHeaders = {
+      final defaultHeaders = <String, String>{
         'Content-Type': 'application/json',
         'Accept': 'application/json',
         if (ApiConfig.apiKey.isNotEmpty) 'X-API-Key': ApiConfig.apiKey,
-        ...?headers,
+        if (headers != null) ...headers,
       };
 
       http.Response response;
@@ -75,12 +104,14 @@ class ApiService {
       }
 
       return _handleResponse(response);
+    } on TimeoutException {
+      throw const ApiException('Request timeout. Please try again.', 0);
     } on SocketException {
-      throw ApiException('Network error. Please check your connection.', 0);
+      throw const ApiException('Network error. Please check your connection.', 0);
     } on HttpException {
-      throw ApiException('HTTP error occurred.', 0);
+      throw const ApiException('HTTP error occurred.', 0);
     } on FormatException {
-      throw ApiException('Invalid response format.', 0);
+      throw const ApiException('Invalid response format.', 0);
     } catch (e) {
       if (e is ApiException) rethrow;
       throw ApiException('Unexpected error: ${e.toString()}', 0);
@@ -88,19 +119,32 @@ class ApiService {
   }
 
   Map<String, dynamic> _handleResponse(http.Response response) {
+    if (response.body.isEmpty) {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return <String, dynamic>{}; // Return empty map for successful empty responses
+      } else {
+        throw ApiException('Empty response with status ${response.statusCode}', response.statusCode);
+      }
+    }
+
     final Map<String, dynamic> data;
     
     try {
-      data = json.decode(response.body) as Map<String, dynamic>;
+      final decoded = json.decode(response.body);
+      if (decoded is Map<String, dynamic>) {
+        data = decoded;
+      } else {
+        throw const FormatException('Response is not a JSON object');
+      }
     } catch (e) {
-      throw ApiException('Invalid JSON response', response.statusCode);
+      throw ApiException('Invalid JSON response: ${e.toString()}', response.statusCode);
     }
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return data;
     } else {
-      final message = data['message'] ?? 
-                     data['error'] ?? 
+      final message = data['message'] as String? ?? 
+                     data['error'] as String? ?? 
                      'Request failed with status ${response.statusCode}';
       throw ApiException(message, response.statusCode);
     }
@@ -110,8 +154,7 @@ class ApiService {
   Future<Map<String, dynamic>> getCurrentWeather({
     required double latitude,
     required double longitude,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'GET',
       '/weather/current',
       queryParams: {
@@ -120,14 +163,12 @@ class ApiService {
         'units': 'metric',
       },
     );
-  }
 
   Future<Map<String, dynamic>> getWeatherForecast({
     required double latitude,
     required double longitude,
     int days = 7,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'GET',
       '/weather/forecast',
       queryParams: {
@@ -137,15 +178,13 @@ class ApiService {
         'units': 'metric',
       },
     );
-  }
 
   // Crop prediction API methods
   Future<Map<String, dynamic>> predictCrop({
     required Map<String, dynamic> soilData,
     required Map<String, dynamic> weatherData,
     required String location,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'POST',
       '/ml/crop-prediction',
       body: {
@@ -154,14 +193,12 @@ class ApiService {
         'location': location,
       },
     );
-  }
 
   // Disease detection API methods
   Future<Map<String, dynamic>> detectPlantDisease({
     required String imageBase64,
     required String cropType,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'POST',
       '/ml/disease-detection',
       body: {
@@ -169,34 +206,30 @@ class ApiService {
         'crop_type': cropType,
       },
     );
-  }
 
   // News and feed API methods
   Future<Map<String, dynamic>> getAgricultureNews({
     int page = 1,
     int limit = 20,
     String? category,
-    String? language = 'en',
-  }) async {
-    return await _makeRequest(
+    String language = 'en',
+  }) => _makeRequest(
       'GET',
       '/news',
       queryParams: {
         'page': page.toString(),
         'limit': limit.toString(),
         if (category != null) 'category': category,
-        'language': language!,
+        'language': language,
       },
     );
-  }
 
   // Market prices API methods
   Future<Map<String, dynamic>> getMarketPrices({
     String? cropType,
     String? market,
     String? state,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'GET',
       '/market/prices',
       queryParams: {
@@ -205,7 +238,6 @@ class ApiService {
         if (state != null) 'state': state,
       },
     );
-  }
 
   // Tool rental API methods
   Future<Map<String, dynamic>> getAvailableTools({
@@ -213,8 +245,7 @@ class ApiService {
     required double longitude,
     double radiusKm = 50,
     String? toolType,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'GET',
       '/tools/available',
       queryParams: {
@@ -224,15 +255,13 @@ class ApiService {
         if (toolType != null) 'type': toolType,
       },
     );
-  }
 
   Future<Map<String, dynamic>> bookTool({
     required String toolId,
     required String startDate,
     required String endDate,
     required String userId,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'POST',
       '/tools/book',
       body: {
@@ -242,14 +271,12 @@ class ApiService {
         'user_id': userId,
       },
     );
-  }
 
   // Expert consultation API methods
   Future<Map<String, dynamic>> getAvailableExperts({
     String? specialization,
     String? language,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'GET',
       '/experts',
       queryParams: {
@@ -257,15 +284,13 @@ class ApiService {
         if (language != null) 'language': language,
       },
     );
-  }
 
   Future<Map<String, dynamic>> bookConsultation({
     required String expertId,
     required String userId,
     required String preferredTime,
     required String query,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'POST',
       '/experts/book',
       body: {
@@ -275,15 +300,13 @@ class ApiService {
         'query': query,
       },
     );
-  }
 
   // Soil analysis API methods
   Future<Map<String, dynamic>> analyzeSoil({
     required String imageBase64,
     required double latitude,
     required double longitude,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'POST',
       '/soil/analyze',
       body: {
@@ -292,14 +315,12 @@ class ApiService {
         'longitude': longitude,
       },
     );
-  }
 
   // Government schemes API methods
   Future<Map<String, dynamic>> getGovernmentSchemes({
     String? state,
     String? category,
-  }) async {
-    return await _makeRequest(
+  }) => _makeRequest(
       'GET',
       '/schemes',
       queryParams: {
@@ -307,7 +328,6 @@ class ApiService {
         if (category != null) 'category': category,
       },
     );
-  }
 
   // Upload file method for images
   Future<Map<String, dynamic>> uploadFile({
@@ -318,7 +338,7 @@ class ApiService {
   }) async {
     try {
       if (!await NetworkUtils.isConnected()) {
-        throw ApiException('No internet connection', 0);
+        throw const ApiException('No internet connection', 0);
       }
 
       final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
@@ -330,9 +350,15 @@ class ApiService {
         if (ApiConfig.apiKey.isNotEmpty) 'X-API-Key': ApiConfig.apiKey,
       });
 
+      // Check if file exists
+      final file = File(filePath);
+      if (!file.existsSync()) {
+        throw ApiException('File not found: $filePath', 0);
+      }
+
       // Add file
-      final file = await http.MultipartFile.fromPath(fieldName, filePath);
-      request.files.add(file);
+      final multipartFile = await http.MultipartFile.fromPath(fieldName, filePath);
+      request.files.add(multipartFile);
 
       // Add additional fields
       if (additionalFields != null) {
@@ -353,14 +379,4 @@ class ApiService {
   void dispose() {
     _client.close();
   }
-}
-
-class ApiException implements Exception {
-  final String message;
-  final int statusCode;
-
-  ApiException(this.message, this.statusCode);
-
-  @override
-  String toString() => 'ApiException: $message (Status: $statusCode)';
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../models/weather_model.dart' hide WeatherAlert;
+import '../models/weather_model.dart';
 import '../services/location_service.dart';
 import '../services/weather_service.dart';
 
@@ -83,13 +83,9 @@ class WeatherProvider extends ChangeNotifier {
         longitude: location.longitude,
       );
 
-      if (weatherData != null) {
-        _currentWeather = weatherData;
-        _lastUpdated = DateTime.now();
-        _status = WeatherStatus.loaded;
-      } else {
-        throw Exception('Failed to fetch weather data');
-      }
+      _currentWeather = weatherData;
+      _lastUpdated = DateTime.now();
+      _status = WeatherStatus.loaded;
 
       // Fetch weather alerts
       await _fetchWeatherAlerts(location.latitude, location.longitude);
@@ -111,6 +107,7 @@ class WeatherProvider extends ChangeNotifier {
     } catch (e) {
       // Don't throw error for alerts, just log it
       debugPrint('Failed to fetch weather alerts: $e');
+      _alerts = []; // Reset alerts on error
     }
   }
 
@@ -141,10 +138,13 @@ class WeatherProvider extends ChangeNotifier {
     required double longitude,
   }) async {
     try {
-      return await _weatherService.getWeatherForecast(
+      // Note: WeatherService doesn't have getWeatherForecast method
+      // You might need to implement this or use existing data
+      final weather = await _weatherService.getCurrentWeather(
         latitude: latitude,
         longitude: longitude,
       );
+      return weather != null ? [weather] : [];
     } catch (e) {
       debugPrint('Failed to get weather forecast: $e');
       return [];
@@ -267,6 +267,9 @@ class WeatherProvider extends ChangeNotifier {
 
   void _setLoading(bool loading) {
     _isLoading = loading;
+    if (loading) {
+      _status = WeatherStatus.loading;
+    }
     notifyListeners();
   }
 

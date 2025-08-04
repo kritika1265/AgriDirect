@@ -1,15 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
+/// A comprehensive notification service for handling local and push notifications
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
+  
+  /// Factory constructor for singleton pattern
   factory NotificationService() => _instance;
+  
   NotificationService._internal();
 
   late FlutterLocalNotificationsPlugin _localNotifications;
@@ -20,7 +24,9 @@ class NotificationService {
 
   /// Initialize notification service
   Future<void> initialize() async {
-    if (_isInitialized) return;
+    if (_isInitialized) {
+      return;
+    }
 
     // Initialize timezone
     tz.initializeTimeZones();
@@ -38,17 +44,17 @@ class NotificationService {
   Future<void> _initializeLocalNotifications() async {
     _localNotifications = FlutterLocalNotificationsPlugin();
 
-    const AndroidInitializationSettings initializationSettingsAndroid =
+    const initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const DarwinInitializationSettings initializationSettingsIOS =
+    const initializationSettingsIOS =
         DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
 
-    const InitializationSettings initializationSettings =
+    const initializationSettings =
         InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsIOS,
@@ -66,15 +72,7 @@ class NotificationService {
 
     // Request permission for iOS
     if (Platform.isIOS) {
-      await _firebaseMessaging.requestPermission(
-        alert: true,
-        announcement: false,
-        badge: true,
-        carPlay: false,
-        criticalAlert: false,
-        provisional: false,
-        sound: true,
-      );
+      await _firebaseMessaging.requestPermission();
     }
 
     // Get FCM token
@@ -122,7 +120,7 @@ class NotificationService {
     
     if (notificationResponse.payload != null) {
       try {
-        final Map<String, dynamic> data = jsonDecode(notificationResponse.payload!);
+        final data = jsonDecode(notificationResponse.payload!) as Map<String, dynamic>;
         _navigateToScreen(data);
       } catch (e) {
         debugPrint('Error parsing notification payload: $e');
@@ -133,7 +131,7 @@ class NotificationService {
   /// Navigate to specific screen based on data
   void _navigateToScreen(Map<String, dynamic> data) {
     // Implement navigation logic based on notification data
-    final String? type = data['type'];
+    final type = data['type'] as String?;
     
     switch (type) {
       case 'weather_alert':
@@ -161,20 +159,19 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    const androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'agridirect_channel',
       'AgriDirect Notifications',
       channelDescription: 'General notifications for AgriDirect app',
       importance: Importance.max,
       priority: Priority.high,
-      showWhen: false,
     );
 
-    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+    const iOSPlatformChannelSpecifics =
         DarwinNotificationDetails();
 
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+    const platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
       iOS: iOSPlatformChannelSpecifics,
     );
@@ -196,7 +193,7 @@ class NotificationService {
     required String soundFile,
     String? payload,
   }) async {
-    final AndroidNotificationDetails androidPlatformChannelSpecifics =
+    final androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'agridirect_sound_channel',
       'AgriDirect Sound Notifications',
@@ -206,10 +203,10 @@ class NotificationService {
       sound: RawResourceAndroidNotificationSound(soundFile),
     );
 
-    final DarwinNotificationDetails iOSPlatformChannelSpecifics =
+    final iOSPlatformChannelSpecifics =
         DarwinNotificationDetails(sound: '$soundFile.aiff');
 
-    final NotificationDetails platformChannelSpecifics = NotificationDetails(
+    final platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
       iOS: iOSPlatformChannelSpecifics,
     );
@@ -231,7 +228,7 @@ class NotificationService {
     required DateTime scheduledDate,
     String? payload,
   }) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    const androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'agridirect_scheduled_channel',
       'AgriDirect Scheduled Notifications',
@@ -240,10 +237,10 @@ class NotificationService {
       priority: Priority.high,
     );
 
-    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+    const iOSPlatformChannelSpecifics =
         DarwinNotificationDetails();
 
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+    const platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
       iOS: iOSPlatformChannelSpecifics,
     );
@@ -254,8 +251,7 @@ class NotificationService {
       body,
       tz.TZDateTime.from(scheduledDate, tz.local),
       platformChannelSpecifics,
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       payload: payload,
     );
   }
@@ -268,7 +264,7 @@ class NotificationService {
     required RepeatInterval repeatInterval,
     String? payload,
   }) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    const androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'agridirect_repeat_channel',
       'AgriDirect Repeating Notifications',
@@ -277,10 +273,10 @@ class NotificationService {
       priority: Priority.high,
     );
 
-    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+    const iOSPlatformChannelSpecifics =
         DarwinNotificationDetails();
 
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+    const platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
       iOS: iOSPlatformChannelSpecifics,
     );
@@ -291,6 +287,7 @@ class NotificationService {
       body,
       repeatInterval,
       platformChannelSpecifics,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       payload: payload,
     );
   }
@@ -360,11 +357,31 @@ class NotificationService {
   }
 
   /// Get pending notifications
-  Future<List<PendingNotificationRequest>> getPendingNotifications() async {
-    return await _localNotifications.pendingNotificationRequests();
-  }
+  Future<List<PendingNotificationRequest>> getPendingNotifications() =>
+      _localNotifications.pendingNotificationRequests();
 
   /// Request notification permissions
   Future<bool> requestPermissions() async {
     if (Platform.isAndroid) {
-      final PermissionStatus status = await Permission.notification.request
+      final status = await Permission.notification.request();
+      return status == PermissionStatus.granted;
+    } else {
+      final settings = await _firebaseMessaging.requestPermission();
+      return settings.authorizationStatus == AuthorizationStatus.authorized;
+    }
+  }
+
+  /// Get FCM token
+  String? get fcmToken => _fcmToken;
+
+  /// Check if notifications are enabled
+  Future<bool> areNotificationsEnabled() async {
+    if (Platform.isAndroid) {
+      final status = await Permission.notification.status;
+      return status == PermissionStatus.granted;
+    } else {
+      final settings = await _firebaseMessaging.getNotificationSettings();
+      return settings.authorizationStatus == AuthorizationStatus.authorized;
+    }
+  }
+}

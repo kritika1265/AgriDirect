@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class TagWidget extends StatelessWidget {
   final String text;
   final Color? backgroundColor;
@@ -7,23 +9,26 @@ class TagWidget extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   const TagWidget({
-    Key? key,
+    super.key, // Updated from Key? key
     required this.text,
     this.backgroundColor,
     this.textColor,
     this.onTap,
     this.isSelected = false,
     this.padding,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     final bgColor = isSelected
-        ? Theme.of(context).primaryColor
-        : backgroundColor ?? Colors.grey.shade200;
+        ? theme.primaryColor
+        : backgroundColor ?? theme.colorScheme.surface;
+    
     final txtColor = isSelected
-        ? Colors.white
-        : textColor ?? Colors.grey.shade700;
+        ? theme.colorScheme.onPrimary
+        : textColor ?? theme.colorScheme.onSurface;
 
     return GestureDetector(
       onTap: onTap,
@@ -32,7 +37,12 @@ class TagWidget extends StatelessWidget {
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(16),
-          border: isSelected ? null : Border.all(color: Colors.grey.shade300),
+          border: isSelected 
+            ? null 
+            : Border.all(
+                color: theme.colorScheme.outline.withOpacity(0.5),
+                width: 1,
+              ),
         ),
         child: Text(
           text,

@@ -81,7 +81,7 @@ class UserModel {
   }
 
   Map<String, dynamic> toMap() {
-    return {
+    return <String, dynamic>{
       'id': id,
       'phoneNumber': phoneNumber,
       'name': name,
@@ -111,8 +111,10 @@ class UserModel {
       location: map['location']?.toString(),
       farmSize: map['farmSize']?.toString(),
       cropTypes: map['cropTypes'] != null 
-          ? List<String>.from((map['cropTypes'] as List).map((dynamic x) => x.toString())) 
-          : [],
+          ? List<String>.from(
+              (map['cropTypes'] as List<dynamic>).map((dynamic x) => x.toString())
+            )
+          : <String>[],
       profilePicture: map['profilePicture']?.toString(),
       isVerified: (map['isVerified'] as bool?) ?? false,
       language: map['language']?.toString() ?? 'en',
@@ -129,16 +131,15 @@ class UserModel {
           ? DateTime.parse(map['lastLoginAt'].toString()) 
           : null,
       preferences: map['preferences'] != null 
-          ? Map<String, dynamic>.from(map['preferences'] as Map) 
-          : {},
+          ? Map<String, dynamic>.from(map['preferences'] as Map<String, dynamic>) 
+          : <String, dynamic>{},
     );
   }
 
-  // JSON serialization methods
-  String toJson() => jsonEncode(toMap());
-  
+  String toJson() => json.encode(toMap());
+
   factory UserModel.fromJson(String source) => 
-      UserModel.fromMap(jsonDecode(source) as Map<String, dynamic>);
+      UserModel.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
@@ -146,26 +147,26 @@ class UserModel {
   }
 
   @override
-  bool operator ==(Object other) {
+  bool operator ==(covariant UserModel other) {
     if (identical(this, other)) return true;
-    return other is UserModel && 
-           other.id == id &&
-           other.phoneNumber == phoneNumber &&
-           other.name == name &&
-           other.email == email &&
-           other.location == location &&
-           other.farmSize == farmSize &&
-           listEquals(other.cropTypes, cropTypes) &&
-           other.profilePicture == profilePicture &&
-           other.isVerified == isVerified &&
-           other.language == language &&
-           other.notificationsEnabled == notificationsEnabled &&
-           other.weatherAlertsEnabled == weatherAlertsEnabled &&
-           other.cropRemindersEnabled == cropRemindersEnabled &&
-           other.createdAt == createdAt &&
-           other.updatedAt == updatedAt &&
-           other.lastLoginAt == lastLoginAt &&
-           mapEquals(other.preferences, preferences);
+    
+    return other.id == id &&
+        other.phoneNumber == phoneNumber &&
+        other.name == name &&
+        other.email == email &&
+        other.location == location &&
+        other.farmSize == farmSize &&
+        listEquals(other.cropTypes, cropTypes) &&
+        other.profilePicture == profilePicture &&
+        other.isVerified == isVerified &&
+        other.language == language &&
+        other.notificationsEnabled == notificationsEnabled &&
+        other.weatherAlertsEnabled == weatherAlertsEnabled &&
+        other.cropRemindersEnabled == cropRemindersEnabled &&
+        other.createdAt == createdAt &&
+        other.updatedAt == updatedAt &&
+        other.lastLoginAt == lastLoginAt &&
+        mapEquals(other.preferences, preferences);
   }
 
   @override
@@ -187,7 +188,7 @@ class UserModel {
       createdAt,
       updatedAt,
       lastLoginAt,
-      Object.hashAll(preferences.entries),
+      Object.hashAll(preferences.entries.map((e) => Object.hash(e.key, e.value))),
     );
   }
 }

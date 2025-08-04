@@ -123,7 +123,8 @@ class LineChartPainter extends CustomPainter {
 
     for (int i = 0; i < data.length; i++) {
       final x = (i / (data.length - 1)) * size.width;
-      final y = size.height - ((data[i].value - minValue) / range) * size.height;
+      final y =
+          size.height - ((data[i].value - minValue) / range) * size.height;
 
       if (i == 0) {
         path.moveTo(x, y);
@@ -216,28 +217,30 @@ class PieChart extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: data.map((item) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: item.color,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '${item.label}: ${item.value.toStringAsFixed(1)}%',
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )).toList(),
+                  children: data
+                      .map((item) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    color: item.color,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '${item.label}: ${item.value.toStringAsFixed(1)}%',
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ))
+                      .toList(),
                 ),
               ),
             ],

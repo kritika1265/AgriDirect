@@ -1,20 +1,22 @@
 import 'dart:io';
 import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import '../models/user_model.dart';
-// import '../models/crop_model.dart';
-// import '../models/tool_model.dart';
-// import '../models/rental_model.dart';
-// import '../models/disease_model.dart';
-// import '../models/prediction_model.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
+import '../models/user_model.dart';
+
+/// Firebase service class for handling all Firebase operations
 class FirebaseService {
-  static final FirebaseService _instance = FirebaseService._internal();
-  factory FirebaseService() => _instance;
+  /// Private constructor for singleton pattern
   FirebaseService._internal();
+
+  /// Factory constructor that returns the singleton instance
+  factory FirebaseService() => _instance;
+
+  static final FirebaseService _instance = FirebaseService._internal();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -33,26 +35,31 @@ class FirebaseService {
   static const String _notificationsCollection = 'notifications';
 
   // User Management
+  /// Gets the current user data
   Future<UserModel?> getCurrentUser() async {
     try {
       final user = _auth.currentUser;
-      if (user == null) return null;
+      if (user == null) {
+        return null;
+      }
 
       final doc = await _firestore
           .collection(_usersCollection)
           .doc(user.uid)
           .get();
 
-      if (doc.exists) {
+      if (doc.exists && doc.data() != null) {
         return UserModel.fromMap(doc.data()!);
       }
       return null;
     } catch (e) {
-      throw FirebaseException('Failed to get current user: ${e.toString()}');
+      print('Error getting current user: $e');
+      throw FirebaseServiceException('Failed to get current user: ${e.toString()}');
     }
   }
 
   // Methods needed by AuthProvider
+  /// Gets user data by user ID
   Future<Map<String, dynamic>?> getUserData(String uid) async {
     try {
       final doc = await _firestore
@@ -60,37 +67,53 @@ class FirebaseService {
           .doc(uid)
           .get();
       
-      if (doc.exists) {
+      if (doc.exists && doc.data() != null) {
         return doc.data();
       }
       return null;
     } catch (e) {
-      throw FirebaseException('Failed to get user data: ${e.toString()}');
+      print('Error getting user data: $e');
+      throw FirebaseServiceException('Failed to get user data: ${e.toString()}');
     }
   }
   
+  /// Creates user data in Firestore
   Future<void> createUserData(String uid, Map<String, dynamic> userData) async {
     try {
+      // Add server timestamp and validation
+      final dataWithTimestamp = {
+        ...userData,
+        'createdAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
       await _firestore
           .collection(_usersCollection)
           .doc(uid)
-          .set(userData, SetOptions(merge: true));
+          .set(dataWithTimestamp, SetOptions(merge: true));
     } catch (e) {
-      throw FirebaseException('Failed to create user data: ${e.toString()}');
+      print('Error creating user data: $e');
+      throw FirebaseServiceException('Failed to create user data: ${e.toString()}');
     }
   }
 
+  /// Creates or updates user data
   Future<void> createOrUpdateUser(UserModel userModel) async {
     try {
+      final userMap = userModel.toMap();
+      userMap['updatedAt'] = FieldValue.serverTimestamp();
+      
       await _firestore
           .collection(_usersCollection)
           .doc(userModel.id)
-          .set(userModel.toMap(), SetOptions(merge: true));
+          .set(userMap, SetOptions(merge: true));
     } catch (e) {
-      throw FirebaseException('Failed to create/update user: ${e.toString()}');
+      print('Error creating/updating user: $e');
+      throw FirebaseServiceException('Failed to create/update user: ${e.toString()}');
     }
   }
 
+  /// Gets user by ID
   Future<UserModel?> getUserById(String userId) async {
     try {
       final doc = await _firestore
@@ -98,27 +121,38 @@ class FirebaseService {
           .doc(userId)
           .get();
 
-      if (doc.exists) {
+      if (doc.exists && doc.data() != null) {
         return UserModel.fromMap(doc.data()!);
       }
       return null;
     } catch (e) {
-      throw FirebaseException('Failed to get user: ${e.toString()}');
+      print('Error getting user by ID: $e');
+      throw FirebaseServiceException('Failed to get user: ${e.toString()}');
     }
   }
 
   // Crop Management
+  /// Saves crop data to Firestore
   Future<void> saveCropData(Map<String, dynamic> cropData) async {
     try {
+      // Ensure required fields and add timestamps
+      final dataWithTimestamp = {
+        ...cropData,
+        'createdAt': cropData['createdAt'] ?? FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
       await _firestore
           .collection(_cropsCollection)
-          .doc(cropData['id'])
-          .set(cropData);
+          .doc(cropData['id'] as String)
+          .set(dataWithTimestamp);
     } catch (e) {
-      throw FirebaseException('Failed to save crop data: ${e.toString()}');
+      print('Error saving crop data: $e');
+      throw FirebaseServiceException('Failed to save crop data: ${e.toString()}');
     }
   }
 
+  /// Gets user's crops
   Future<List<Map<String, dynamic>>> getUserCrops(String userId) async {
     try {
       final snapshot = await _firestore
@@ -128,13 +162,47 @@ class FirebaseService {
           .get();
 
       return snapshot.docs
-          .map((doc) => doc.data())
+          .map((doc) => {
+            'id': doc.id,
+            ...doc.data(),
+          })
           .toList();
     } catch (e) {
-      throw FirebaseException('Failed to get user crops: ${e.toString()}');
+      print('Error getting user crops: $e');
+      // Handle case where index might not exist
+      if (e.toString().contains('index')) {
+        // Fallback to getting all user crops without ordering
+        try {
+          final snapshot = await _firestore
+              .collection(_cropsCollection)
+              .where('userId', isEqualTo: userId)
+              .get();
+
+          final crops = snapshot.docs
+              .map((doc) => {
+                'id': doc.id,
+                ...doc.data(),
+              })
+              .toList();
+
+          // Sort in memory
+          crops.sort((a, b) {
+            final aTime = a['createdAt'] as Timestamp?;
+            final bTime = b['createdAt'] as Timestamp?;
+            if (aTime == null || bTime == null) return 0;
+            return bTime.compareTo(aTime);
+          });
+
+          return crops;
+        } catch (fallbackError) {
+          throw FirebaseServiceException('Failed to get user crops: ${fallbackError.toString()}');
+        }
+      }
+      throw FirebaseServiceException('Failed to get user crops: ${e.toString()}');
     }
   }
 
+  /// Updates crop status
   Future<void> updateCropStatus(String cropId, String status) async {
     try {
       await _firestore
@@ -145,22 +213,32 @@ class FirebaseService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      throw FirebaseException('Failed to update crop status: ${e.toString()}');
+      print('Error updating crop status: $e');
+      throw FirebaseServiceException('Failed to update crop status: ${e.toString()}');
     }
   }
 
   // Disease Detection History
+  /// Saves disease detection data
   Future<void> saveDiseaseDetection(Map<String, dynamic> diseaseData) async {
     try {
+      final dataWithTimestamp = {
+        ...diseaseData,
+        'detectedAt': diseaseData['detectedAt'] ?? FieldValue.serverTimestamp(),
+        'createdAt': diseaseData['createdAt'] ?? FieldValue.serverTimestamp(),
+      };
+
       await _firestore
           .collection(_diseasesCollection)
-          .doc(diseaseData['id'])
-          .set(diseaseData);
+          .doc(diseaseData['id'] as String)
+          .set(dataWithTimestamp);
     } catch (e) {
-      throw FirebaseException('Failed to save disease detection: ${e.toString()}');
+      print('Error saving disease detection: $e');
+      throw FirebaseServiceException('Failed to save disease detection: ${e.toString()}');
     }
   }
 
+  /// Gets user's disease detection history
   Future<List<Map<String, dynamic>>> getUserDiseaseHistory(String userId) async {
     try {
       final snapshot = await _firestore
@@ -171,25 +249,66 @@ class FirebaseService {
           .get();
 
       return snapshot.docs
-          .map((doc) => doc.data())
+          .map((doc) => {
+            'id': doc.id,
+            ...doc.data(),
+          })
           .toList();
     } catch (e) {
-      throw FirebaseException('Failed to get disease history: ${e.toString()}');
+      print('Error getting disease history: $e');
+      if (e.toString().contains('index')) {
+        // Fallback without ordering
+        try {
+          final snapshot = await _firestore
+              .collection(_diseasesCollection)
+              .where('userId', isEqualTo: userId)
+              .limit(50)
+              .get();
+
+          final diseases = snapshot.docs
+              .map((doc) => {
+                'id': doc.id,
+                ...doc.data(),
+              })
+              .toList();
+
+          // Sort in memory
+          diseases.sort((a, b) {
+            final aTime = a['detectedAt'] as Timestamp?;
+            final bTime = b['detectedAt'] as Timestamp?;
+            if (aTime == null || bTime == null) return 0;
+            return bTime.compareTo(aTime);
+          });
+
+          return diseases;
+        } catch (fallbackError) {
+          throw FirebaseServiceException('Failed to get disease history: ${fallbackError.toString()}');
+        }
+      }
+      throw FirebaseServiceException('Failed to get disease history: ${e.toString()}');
     }
   }
 
   // Prediction History
+  /// Saves prediction result
   Future<void> savePredictionResult(Map<String, dynamic> predictionData) async {
     try {
+      final dataWithTimestamp = {
+        ...predictionData,
+        'createdAt': predictionData['createdAt'] ?? FieldValue.serverTimestamp(),
+      };
+
       await _firestore
           .collection(_predictionsCollection)
-          .doc(predictionData['id'])
-          .set(predictionData);
+          .doc(predictionData['id'] as String)
+          .set(dataWithTimestamp);
     } catch (e) {
-      throw FirebaseException('Failed to save prediction: ${e.toString()}');
+      print('Error saving prediction: $e');
+      throw FirebaseServiceException('Failed to save prediction: ${e.toString()}');
     }
   }
 
+  /// Gets user's predictions
   Future<List<Map<String, dynamic>>> getUserPredictions(String userId) async {
     try {
       final snapshot = await _firestore
@@ -200,25 +319,65 @@ class FirebaseService {
           .get();
 
       return snapshot.docs
-          .map((doc) => doc.data())
+          .map((doc) => {
+            'id': doc.id,
+            ...doc.data(),
+          })
           .toList();
     } catch (e) {
-      throw FirebaseException('Failed to get predictions: ${e.toString()}');
+      print('Error getting predictions: $e');
+      if (e.toString().contains('index')) {
+        try {
+          final snapshot = await _firestore
+              .collection(_predictionsCollection)
+              .where('userId', isEqualTo: userId)
+              .limit(30)
+              .get();
+
+          final predictions = snapshot.docs
+              .map((doc) => {
+                'id': doc.id,
+                ...doc.data(),
+              })
+              .toList();
+
+          predictions.sort((a, b) {
+            final aTime = a['createdAt'] as Timestamp?;
+            final bTime = b['createdAt'] as Timestamp?;
+            if (aTime == null || bTime == null) return 0;
+            return bTime.compareTo(aTime);
+          });
+
+          return predictions;
+        } catch (fallbackError) {
+          throw FirebaseServiceException('Failed to get predictions: ${fallbackError.toString()}');
+        }
+      }
+      throw FirebaseServiceException('Failed to get predictions: ${e.toString()}');
     }
   }
 
   // Tool Rental Management
+  /// Saves tool rental data
   Future<void> saveToolRental(Map<String, dynamic> rentalData) async {
     try {
+      final dataWithTimestamp = {
+        ...rentalData,
+        'createdAt': rentalData['createdAt'] ?? FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
       await _firestore
           .collection(_rentalsCollection)
-          .doc(rentalData['id'])
-          .set(rentalData);
+          .doc(rentalData['id'] as String)
+          .set(dataWithTimestamp);
     } catch (e) {
-      throw FirebaseException('Failed to save rental: ${e.toString()}');
+      print('Error saving rental: $e');
+      throw FirebaseServiceException('Failed to save rental: ${e.toString()}');
     }
   }
 
+  /// Gets user's rentals
   Future<List<Map<String, dynamic>>> getUserRentals(String userId) async {
     try {
       final snapshot = await _firestore
@@ -228,13 +387,44 @@ class FirebaseService {
           .get();
 
       return snapshot.docs
-          .map((doc) => doc.data())
+          .map((doc) => {
+            'id': doc.id,
+            ...doc.data(),
+          })
           .toList();
     } catch (e) {
-      throw FirebaseException('Failed to get rentals: ${e.toString()}');
+      print('Error getting rentals: $e');
+      if (e.toString().contains('index')) {
+        try {
+          final snapshot = await _firestore
+              .collection(_rentalsCollection)
+              .where('userId', isEqualTo: userId)
+              .get();
+
+          final rentals = snapshot.docs
+              .map((doc) => {
+                'id': doc.id,
+                ...doc.data(),
+              })
+              .toList();
+
+          rentals.sort((a, b) {
+            final aTime = a['createdAt'] as Timestamp?;
+            final bTime = b['createdAt'] as Timestamp?;
+            if (aTime == null || bTime == null) return 0;
+            return bTime.compareTo(aTime);
+          });
+
+          return rentals;
+        } catch (fallbackError) {
+          throw FirebaseServiceException('Failed to get rentals: ${fallbackError.toString()}');
+        }
+      }
+      throw FirebaseServiceException('Failed to get rentals: ${e.toString()}');
     }
   }
 
+  /// Updates rental status
   Future<void> updateRentalStatus(String rentalId, String status) async {
     try {
       await _firestore
@@ -245,11 +435,13 @@ class FirebaseService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      throw FirebaseException('Failed to update rental status: ${e.toString()}');
+      print('Error updating rental status: $e');
+      throw FirebaseServiceException('Failed to update rental status: ${e.toString()}');
     }
   }
 
   // Tools Management
+  /// Gets available tools with optional filters
   Future<List<Map<String, dynamic>>> getAvailableTools({
     String? category,
     double? maxDistance,
@@ -265,8 +457,11 @@ class FirebaseService {
       }
 
       final snapshot = await query.get();
-      List<Map<String, dynamic>> tools = snapshot.docs
-          .map((doc) => doc.data() as Map<String, dynamic>)
+      var tools = snapshot.docs
+          .map((doc) => {
+            'id': doc.id,
+            ...doc.data() as Map<String, dynamic>,
+          })
           .toList();
 
       // Filter by distance if location is provided
@@ -288,20 +483,23 @@ class FirebaseService {
 
       return tools;
     } catch (e) {
-      throw FirebaseException('Failed to get available tools: ${e.toString()}');
+      print('Error getting available tools: $e');
+      throw FirebaseServiceException('Failed to get available tools: ${e.toString()}');
     }
   }
 
   // Expert Consultations
-  Future<void> bookConsultation({
+  /// Books a consultation with an expert
+  Future<String> bookConsultation({
     required String expertId,
     required String userId,
     required DateTime preferredTime,
     required String query,
   }) async {
     try {
+      final docRef = _firestore.collection(_consultationsCollection).doc();
       final consultation = {
-        'id': _firestore.collection(_consultationsCollection).doc().id,
+        'id': docRef.id,
         'expertId': expertId,
         'userId': userId,
         'query': query,
@@ -310,15 +508,15 @@ class FirebaseService {
         'createdAt': FieldValue.serverTimestamp(),
       };
 
-      await _firestore
-          .collection(_consultationsCollection)
-          .doc(consultation['id'] as String)
-          .set(consultation);
+      await docRef.set(consultation);
+      return docRef.id;
     } catch (e) {
-      throw FirebaseException('Failed to book consultation: ${e.toString()}');
+      print('Error booking consultation: $e');
+      throw FirebaseServiceException('Failed to book consultation: ${e.toString()}');
     }
   }
 
+  /// Gets user's consultations
   Future<List<Map<String, dynamic>>> getUserConsultations(String userId) async {
     try {
       final snapshot = await _firestore
@@ -327,14 +525,43 @@ class FirebaseService {
           .orderBy('createdAt', descending: true)
           .get();
 
-      return snapshot.docs.map((doc) => doc.data()).toList();
+      return snapshot.docs.map((doc) => {
+        'id': doc.id,
+        ...doc.data(),
+      }).toList();
     } catch (e) {
-      throw FirebaseException('Failed to get consultations: ${e.toString()}');
+      print('Error getting consultations: $e');
+      if (e.toString().contains('index')) {
+        try {
+          final snapshot = await _firestore
+              .collection(_consultationsCollection)
+              .where('userId', isEqualTo: userId)
+              .get();
+
+          final consultations = snapshot.docs.map((doc) => {
+            'id': doc.id,
+            ...doc.data(),
+          }).toList();
+
+          consultations.sort((a, b) {
+            final aTime = a['createdAt'] as Timestamp?;
+            final bTime = b['createdAt'] as Timestamp?;
+            if (aTime == null || bTime == null) return 0;
+            return bTime.compareTo(aTime);
+          });
+
+          return consultations;
+        } catch (fallbackError) {
+          throw FirebaseServiceException('Failed to get consultations: ${fallbackError.toString()}');
+        }
+      }
+      throw FirebaseServiceException('Failed to get consultations: ${e.toString()}');
     }
   }
 
   // Notifications
-  Future<void> saveNotification({
+  /// Saves notification to Firestore
+  Future<String> saveNotification({
     required String userId,
     required String title,
     required String body,
@@ -342,9 +569,8 @@ class FirebaseService {
     Map<String, dynamic>? data,
   }) async {
     try {
-      await _firestore
-          .collection(_notificationsCollection)
-          .add({
+      final docRef = _firestore.collection(_notificationsCollection).doc();
+      await docRef.set({
         'userId': userId,
         'title': title,
         'body': body,
@@ -353,11 +579,14 @@ class FirebaseService {
         'isRead': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
+      return docRef.id;
     } catch (e) {
-      throw FirebaseException('Failed to save notification: ${e.toString()}');
+      print('Error saving notification: $e');
+      throw FirebaseServiceException('Failed to save notification: ${e.toString()}');
     }
   }
 
+  /// Gets user's notifications
   Future<List<Map<String, dynamic>>> getUserNotifications(String userId) async {
     try {
       final snapshot = await _firestore
@@ -372,10 +601,37 @@ class FirebaseService {
         ...doc.data(),
       }).toList();
     } catch (e) {
-      throw FirebaseException('Failed to get notifications: ${e.toString()}');
+      print('Error getting notifications: $e');
+      if (e.toString().contains('index')) {
+        try {
+          final snapshot = await _firestore
+              .collection(_notificationsCollection)
+              .where('userId', isEqualTo: userId)
+              .limit(50)
+              .get();
+
+          final notifications = snapshot.docs.map((doc) => {
+            'id': doc.id,
+            ...doc.data(),
+          }).toList();
+
+          notifications.sort((a, b) {
+            final aTime = a['createdAt'] as Timestamp?;
+            final bTime = b['createdAt'] as Timestamp?;
+            if (aTime == null || bTime == null) return 0;
+            return bTime.compareTo(aTime);
+          });
+
+          return notifications;
+        } catch (fallbackError) {
+          throw FirebaseServiceException('Failed to get notifications: ${fallbackError.toString()}');
+        }
+      }
+      throw FirebaseServiceException('Failed to get notifications: ${e.toString()}');
     }
   }
 
+  /// Marks notification as read
   Future<void> markNotificationAsRead(String notificationId) async {
     try {
       await _firestore
@@ -383,33 +639,37 @@ class FirebaseService {
           .doc(notificationId)
           .update({'isRead': true});
     } catch (e) {
-      throw FirebaseException('Failed to mark notification as read: ${e.toString()}');
+      print('Error marking notification as read: $e');
+      throw FirebaseServiceException('Failed to mark notification as read: ${e.toString()}');
     }
   }
 
   // Feedback and Reviews
-  Future<void> submitFeedback({
+  /// Submits feedback
+  Future<String> submitFeedback({
     required String userId,
     required String type,
     required String content,
     int? rating,
   }) async {
     try {
-      await _firestore
-          .collection(_feedbackCollection)
-          .add({
+      final docRef = _firestore.collection(_feedbackCollection).doc();
+      await docRef.set({
         'userId': userId,
         'type': type,
         'content': content,
         'rating': rating,
         'createdAt': FieldValue.serverTimestamp(),
       });
+      return docRef.id;
     } catch (e) {
-      throw FirebaseException('Failed to submit feedback: ${e.toString()}');
+      print('Error submitting feedback: $e');
+      throw FirebaseServiceException('Failed to submit feedback: ${e.toString()}');
     }
   }
 
   // File Storage
+  /// Uploads image to Firebase Storage
   Future<String> uploadImage({
     required String filePath,
     required String folderName,
@@ -417,61 +677,92 @@ class FirebaseService {
   }) async {
     try {
       final file = File(filePath);
+      
+      // Check if file exists
+      if (!file.existsSync()) {
+        throw FirebaseServiceException('File does not exist: $filePath');
+      }
+
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final name = fileName ?? 'image_$timestamp.jpg';
       
       final ref = _storage.ref().child('$folderName/$name');
-      final uploadTask = ref.putFile(file);
       
+      // Add metadata
+      final metadata = SettableMetadata(
+        contentType: 'image/jpeg',
+        customMetadata: {
+          'uploadedAt': DateTime.now().toIso8601String(),
+        },
+      );
+      
+      final uploadTask = ref.putFile(file, metadata);
       final snapshot = await uploadTask;
       final downloadUrl = await snapshot.ref.getDownloadURL();
       
       return downloadUrl;
     } catch (e) {
-      throw FirebaseException('Failed to upload image: ${e.toString()}');
+      print('Error uploading image: $e');
+      throw FirebaseServiceException('Failed to upload image: ${e.toString()}');
     }
   }
 
+  /// Deletes image from Firebase Storage
   Future<void> deleteImage(String imageUrl) async {
     try {
       final ref = _storage.refFromURL(imageUrl);
       await ref.delete();
     } catch (e) {
-      throw FirebaseException('Failed to delete image: ${e.toString()}');
+      print('Error deleting image: $e');
+      throw FirebaseServiceException('Failed to delete image: ${e.toString()}');
     }
   }
 
   // Real-time listeners
-  Stream<UserModel?> getUserStream(String userId) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .snapshots()
-        .map((doc) => doc.exists ? UserModel.fromMap(doc.data()!) : null);
-  }
+  /// Gets user data stream
+  Stream<UserModel?> getUserStream(String userId) => _firestore
+      .collection(_usersCollection)
+      .doc(userId)
+      .snapshots()
+      .map((doc) {
+        if (doc.exists && doc.data() != null) {
+          return UserModel.fromMap(doc.data()!);
+        }
+        return null;
+      })
+      .handleError((Object error) {
+        print('Error in user stream: $error');
+        throw FirebaseServiceException('Failed to get user stream: ${error.toString()}');
+      });
 
-  Stream<List<Map<String, dynamic>>> getNotificationsStream(String userId) {
-    return _firestore
-        .collection(_notificationsCollection)
-        .where('userId', isEqualTo: userId)
-        .orderBy('createdAt', descending: true)
-        .limit(20)
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map((doc) => {
-          'id': doc.id,
-          ...doc.data(),
-        }).toList());
-  }
+  /// Gets notifications stream
+  Stream<List<Map<String, dynamic>>> getNotificationsStream(String userId) => _firestore
+      .collection(_notificationsCollection)
+      .where('userId', isEqualTo: userId)
+      .orderBy('createdAt', descending: true)
+      .limit(20)
+      .snapshots()
+      .map((snapshot) => snapshot.docs.map((doc) => {
+        'id': doc.id,
+        ...doc.data(),
+      }).toList())
+      .handleError((Object error) {
+        print('Error in notifications stream: $error');
+        throw FirebaseServiceException('Failed to get notifications stream: ${error.toString()}');
+      });
 
   // FCM Token Management
+  /// Gets FCM token
   Future<String?> getFCMToken() async {
     try {
       return await _messaging.getToken();
     } catch (e) {
-      throw FirebaseException('Failed to get FCM token: ${e.toString()}');
+      print('Error getting FCM token: $e');
+      throw FirebaseServiceException('Failed to get FCM token: ${e.toString()}');
     }
   }
 
+  /// Updates user's FCM token
   Future<void> updateUserFCMToken(String userId, String token) async {
     try {
       await _firestore
@@ -482,7 +773,8 @@ class FirebaseService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      throw FirebaseException('Failed to update FCM token: ${e.toString()}');
+      print('Error updating FCM token: $e');
+      throw FirebaseServiceException('Failed to update FCM token: ${e.toString()}');
     }
   }
 
@@ -490,39 +782,38 @@ class FirebaseService {
   double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     const double earthRadius = 6371; // Earth's radius in kilometers
     
-    final double dLat = _degreesToRadians(lat2 - lat1);
-    final double dLon = _degreesToRadians(lon2 - lon1);
+    final dLat = _degreesToRadians(lat2 - lat1);
+    final dLon = _degreesToRadians(lon2 - lon1);
     
-    final double a = 
+    final a = 
         sin(dLat / 2) * sin(dLat / 2) +
         cos(_degreesToRadians(lat1)) * cos(_degreesToRadians(lat2)) *
         sin(dLon / 2) * sin(dLon / 2);
     
-    final double c = 2 * asin(sqrt(a));
+    final c = 2 * asin(sqrt(a));
     
     return earthRadius * c;
   }
 
-  double _degreesToRadians(double degrees) {
-    return degrees * (pi / 180);
-  }
+  double _degreesToRadians(double degrees) => degrees * (pi / 180);
 
   // Batch operations
+  /// Performs batch write operations
   Future<void> batchWrite(List<Map<String, dynamic>> operations) async {
     try {
       final batch = _firestore.batch();
       
       for (final operation in operations) {
         final ref = _firestore
-            .collection(operation['collection'])
-            .doc(operation['docId']);
+            .collection(operation['collection'] as String)
+            .doc(operation['docId'] as String?);
         
-        switch (operation['type']) {
+        switch (operation['type'] as String) {
           case 'set':
-            batch.set(ref, operation['data']);
+            batch.set(ref, operation['data'] as Map<String, dynamic>);
             break;
           case 'update':
-            batch.update(ref, operation['data']);
+            batch.update(ref, operation['data'] as Map<String, dynamic>);
             break;
           case 'delete':
             batch.delete(ref);
@@ -532,16 +823,43 @@ class FirebaseService {
       
       await batch.commit();
     } catch (e) {
-      throw FirebaseException('Batch operation failed: ${e.toString()}');
+      print('Batch operation failed: $e');
+      throw FirebaseServiceException('Batch operation failed: ${e.toString()}');
     }
+  }
+
+  // Connection status
+  /// Checks if connected to Firebase
+  Future<bool> isConnected() async {
+    try {
+      await _firestore.runTransaction((transaction) async {
+        // Simple read operation to check connectivity
+        await transaction.get(_firestore.collection('_connection_test').doc('test'));
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Cleanup method
+  /// Disposes resources
+  Future<void> dispose() async {
+    // Clean up any resources if needed
+    // This is useful for testing or when you need to reset the service
   }
 }
 
-class FirebaseException implements Exception {
+/// Custom exception class for Firebase service errors
+class FirebaseServiceException implements Exception {
+  /// Error message
   final String message;
+  /// Optional error code
+  final String? code;
 
-  FirebaseException(this.message);
+  /// Creates a Firebase service exception
+  FirebaseServiceException(this.message, [this.code]);
 
   @override
-  String toString() => 'FirebaseException: $message';
+  String toString() => 'FirebaseServiceException: $message${code != null ? ' (Code: $code)' : ''}';
 }

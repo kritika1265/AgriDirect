@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 
+/// A reusable widget for picking images from camera or gallery
 class ImagePickerWidget extends StatelessWidget {
+  /// The currently selected image file
   final File? selectedImage;
+  
+  /// Callback when camera button is pressed
   final VoidCallback onCameraPressed;
+  
+  /// Callback when gallery button is pressed
   final VoidCallback onGalleryPressed;
+  
+  /// Optional callback when remove button is pressed
   final VoidCallback? onRemovePressed;
+  
+  /// Placeholder text when no image is selected
   final String? placeholder;
+  
+  /// Height of the image container
   final double? height;
+  
+  /// Width of the image container
   final double? width;
 
+  /// Creates an ImagePickerWidget
   const ImagePickerWidget({
-    Key? key,
+    super.key,
     this.selectedImage,
     required this.onCameraPressed,
     required this.onGalleryPressed,
@@ -19,7 +34,7 @@ class ImagePickerWidget extends StatelessWidget {
     this.placeholder,
     this.height,
     this.width,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -90,20 +105,32 @@ class ImagePickerWidget extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: CustomButton(
-                text: 'Camera',
+              child: ElevatedButton.icon(
                 onPressed: onCameraPressed,
-                icon: Icons.camera_alt,
-                backgroundColor: Colors.blue,
+                icon: const Icon(Icons.camera_alt, color: Colors.white),
+                label: const Text('Camera', style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: CustomButton(
-                text: 'Gallery',
+              child: ElevatedButton.icon(
                 onPressed: onGalleryPressed,
-                icon: Icons.photo_library,
-                backgroundColor: Colors.green,
+                icon: const Icon(Icons.photo_library, color: Colors.white),
+                label: const Text('Gallery', style: TextStyle(color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
             ),
           ],

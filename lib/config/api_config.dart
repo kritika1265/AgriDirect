@@ -1,42 +1,64 @@
 // lib/config/api_config.dart
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConfig {
-  static const String baseUrl = 'https://api.agridirect.com/v1';
-  static const String weatherApiKey = 'your_weather_api_key';
+  // Base URLs - can be environment-specific
+  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'https://api.agridirect.com/v1';
+  
+  // API Keys from environment variables
+  static String get weatherApiKey => dotenv.env['WEATHER_API_KEY'] ?? '';
+  static String get newsApiKey => dotenv.env['NEWS_API_KEY'] ?? '';
+  
+  // Weather API configuration
   static const String weatherBaseUrl = 'https://api.openweathermap.org/data/2.5';
-  static const String newsApiKey = 'your_news_api_key';
+  
+  // News API configuration  
   static const String newsBaseUrl = 'https://newsapi.org/v2';
   
   // ML API endpoints
-  static const String mlServiceUrl = 'https://ml.agridirect.com/v1';
-  static const String diseaseDetectionUrl = '$mlServiceUrl/detect-disease';
-  static const String cropPredictionUrl = '$mlServiceUrl/predict-crop';
-  static const String soilAnalysisUrl = '$mlServiceUrl/analyze-soil';
+  static String get mlServiceUrl => dotenv.env['ML_SERVICE_URL'] ?? 'https://ml.agridirect.com/v1';
+  static String get diseaseDetectionUrl => '$mlServiceUrl/detect-disease';
+  static String get cropPredictionUrl => '$mlServiceUrl/predict-crop';
+  static String get soilAnalysisUrl => '$mlServiceUrl/analyze-soil';
   
   // Marketplace endpoints
-  static const String marketplaceUrl = '$baseUrl/marketplace';
-  static const String toolRentalUrl = '$baseUrl/tools';
+  static String get marketplaceUrl => '$baseUrl/marketplace';
+  static String get toolRentalUrl => '$baseUrl/tools';
   
   // Community endpoints
-  static const String communityUrl = '$baseUrl/community';
-  static const String expertUrl = '$baseUrl/experts';
+  static String get communityUrl => '$baseUrl/community';
+  static String get expertUrl => '$baseUrl/experts';
   
   // Timeout durations
   static const Duration connectionTimeout = Duration(seconds: 30);
   static const Duration receiveTimeout = Duration(seconds: 30);
+  
+  // Validation methods
+  static bool get hasWeatherApiKey => weatherApiKey.isNotEmpty;
+  static bool get hasNewsApiKey => newsApiKey.isNotEmpty;
+  
+  static void validateConfiguration() {
+    if (!hasWeatherApiKey) {
+      throw Exception('WEATHER_API_KEY not found in environment variables');
+    }
+    if (!hasNewsApiKey) {
+      throw Exception('NEWS_API_KEY not found in environment variables');
+    }
+  }
 }
 
-// lib/config/app_config.dart
+
 class AppConfig {
   static const String appName = 'AgriDirect';
   static const String appVersion = '1.0.0';
   static const String packageName = 'com.agridirect.app';
   
-  // Firebase configuration
-  static const String firebaseProjectId = 'agridirect-app';
-  static const String firebaseApiKey = 'your_firebase_api_key';
+  // Firebase configuration from environment
+  static String get firebaseProjectId => dotenv.env['FIREBASE_PROJECT_ID'] ?? 'agridirect-app';
+  static String get firebaseApiKey => dotenv.env['FIREBASE_API_KEY'] ?? '';
   
   // Notification configuration
-  static const String fcmServerKey = 'your_fcm_server_key';
+  static String get fcmServerKey => dotenv.env['FCM_SERVER_KEY'] ?? '';
   
   // Storage configuration
   static const String storagePrefix = 'agridirect_';
@@ -55,11 +77,31 @@ class AppConfig {
   static const Duration cacheExpiry = Duration(hours: 24);
   static const int maxCacheSize = 100 * 1024 * 1024; // 100MB
   
-  // Support configuration
-  static const String supportEmail = 'support@agridirect.com';
-  static const String supportPhone = '+1-800-AGRI-HELP';
-  static const String termsUrl = 'https://agridirect.com/terms';
-  static const String privacyUrl = 'https://agridirect.com/privacy';
+  // Support configuration - can be environment-specific
+  static String get supportEmail => dotenv.env['SUPPORT_EMAIL'] ?? 'support@agridirect.com';
+  static String get supportPhone => dotenv.env['SUPPORT_PHONE'] ?? '+1-800-AGRI-HELP';
+  static String get termsUrl => dotenv.env['TERMS_URL'] ?? 'https://agridirect.com/terms';
+  static String get privacyUrl => dotenv.env['PRIVACY_URL'] ?? 'https://agridirect.com/privacy';
+  
+  // Environment detection
+  static bool get isProduction => dotenv.env['ENVIRONMENT']?.toLowerCase() == 'production';
+  static bool get isDevelopment => dotenv.env['ENVIRONMENT']?.toLowerCase() == 'development';
+  static bool get isStaging => dotenv.env['ENVIRONMENT']?.toLowerCase() == 'staging';
+  
+  // Debug configuration
+  static bool get enableLogging => dotenv.env['ENABLE_LOGGING']?.toLowerCase() == 'true';
+  static bool get enableAnalytics => dotenv.env['ENABLE_ANALYTICS']?.toLowerCase() == 'true';
+  
+  // Validation methods
+  static bool get hasFirebaseApiKey => firebaseApiKey.isNotEmpty;
+  static bool get hasFcmServerKey => fcmServerKey.isNotEmpty;
+  
+  static void validateConfiguration() {
+    if (!hasFirebaseApiKey) {
+      throw Exception('FIREBASE_API_KEY not found in environment variables');
+    }
+    // Add other critical validations as needed
+  }
 }
 
 // lib/models/crop_model.dart

@@ -1,22 +1,28 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:image/image.dart' as img;
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 
+import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+
+/// Service class for handling image operations including picking, compression,
+/// resizing, and other image manipulations.
 class ImageService {
-  static final ImageService _instance = ImageService._internal();
-  factory ImageService() => _instance;
   ImageService._internal();
+  
+  /// Singleton instance
+  factory ImageService() => _instance;
+  static final ImageService _instance = ImageService._internal();
 
   final ImagePicker _picker = ImagePicker();
 
   /// Pick image from camera
   Future<File?> pickImageFromCamera() async {
     try {
-      final XFile? image = await _picker.pickImage(
+      final image = await _picker.pickImage(
         source: ImageSource.camera,
         maxWidth: 1024,
         maxHeight: 1024,
@@ -36,7 +42,7 @@ class ImageService {
   /// Pick image from gallery
   Future<File?> pickImageFromGallery() async {
     try {
-      final XFile? image = await _picker.pickImage(
+      final image = await _picker.pickImage(
         source: ImageSource.gallery,
         maxWidth: 1024,
         maxHeight: 1024,
@@ -56,7 +62,7 @@ class ImageService {
   /// Pick multiple images from gallery
   Future<List<File>> pickMultipleImages() async {
     try {
-      final List<XFile> images = await _picker.pickMultiImage(
+      final images = await _picker.pickMultiImage(
         maxWidth: 1024,
         maxHeight: 1024,
         imageQuality: 85,
@@ -72,8 +78,8 @@ class ImageService {
   /// Compress image to reduce file size
   Future<File?> compressImage(File imageFile, {int quality = 85}) async {
     try {
-      final Uint8List imageBytes = await imageFile.readAsBytes();
-      final img.Image? image = img.decodeImage(imageBytes);
+      final imageBytes = await imageFile.readAsBytes();
+      final image = img.decodeImage(imageBytes);
       
       if (image == null) return null;
 
@@ -87,12 +93,12 @@ class ImageService {
         );
       }
 
-      final List<int> compressedBytes = img.encodeJpg(resized, quality: quality);
+      final compressedBytes = img.encodeJpg(resized, quality: quality);
       
       // Save compressed image
-      final Directory tempDir = await getTemporaryDirectory();
-      final String fileName = 'compressed_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final File compressedFile = File(path.join(tempDir.path, fileName));
+      final tempDir = await getTemporaryDirectory();
+      final fileName = 'compressed_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final compressedFile = File(path.join(tempDir.path, fileName));
       
       await compressedFile.writeAsBytes(compressedBytes);
       return compressedFile;
@@ -105,17 +111,17 @@ class ImageService {
   /// Resize image to specific dimensions
   Future<File?> resizeImage(File imageFile, int width, int height) async {
     try {
-      final Uint8List imageBytes = await imageFile.readAsBytes();
-      final img.Image? image = img.decodeImage(imageBytes);
+      final imageBytes = await imageFile.readAsBytes();
+      final image = img.decodeImage(imageBytes);
       
       if (image == null) return null;
 
-      final img.Image resized = img.copyResize(image, width: width, height: height);
-      final List<int> resizedBytes = img.encodeJpg(resized);
+      final resized = img.copyResize(image, width: width, height: height);
+      final resizedBytes = img.encodeJpg(resized);
       
-      final Directory tempDir = await getTemporaryDirectory();
-      final String fileName = 'resized_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final File resizedFile = File(path.join(tempDir.path, fileName));
+      final tempDir = await getTemporaryDirectory();
+      final fileName = 'resized_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final resizedFile = File(path.join(tempDir.path, fileName));
       
       await resizedFile.writeAsBytes(resizedBytes);
       return resizedFile;
@@ -128,15 +134,15 @@ class ImageService {
   /// Save image to app documents directory
   Future<File?> saveImageToDocuments(File imageFile, String fileName) async {
     try {
-      final Directory appDocDir = await getApplicationDocumentsDirectory();
-      final String imagePath = path.join(appDocDir.path, 'images');
-      final Directory imageDir = Directory(imagePath);
+      final appDocDir = await getApplicationDocumentsDirectory();
+      final imagePath = path.join(appDocDir.path, 'images');
+      final imageDir = Directory(imagePath);
       
-      if (!await imageDir.exists()) {
+      if (!imageDir.existsSync()) {
         await imageDir.create(recursive: true);
       }
       
-      final File savedFile = File(path.join(imagePath, fileName));
+      final savedFile = File(path.join(imagePath, fileName));
       await imageFile.copy(savedFile.path);
       
       return savedFile;
@@ -149,7 +155,7 @@ class ImageService {
   /// Delete image file
   Future<bool> deleteImage(File imageFile) async {
     try {
-      if (await imageFile.exists()) {
+      if (imageFile.existsSync()) {
         await imageFile.delete();
         return true;
       }
@@ -173,7 +179,7 @@ class ImageService {
   /// Convert image to base64 string
   Future<String?> imageToBase64(File imageFile) async {
     try {
-      final Uint8List imageBytes = await imageFile.readAsBytes();
+      final imageBytes = await imageFile.readAsBytes();
       return base64Encode(imageBytes);
     } catch (e) {
       debugPrint('Error converting image to base64: $e');
@@ -184,21 +190,21 @@ class ImageService {
   /// Crop image to square aspect ratio
   Future<File?> cropToSquare(File imageFile) async {
     try {
-      final Uint8List imageBytes = await imageFile.readAsBytes();
-      final img.Image? image = img.decodeImage(imageBytes);
+      final imageBytes = await imageFile.readAsBytes();
+      final image = img.decodeImage(imageBytes);
       
       if (image == null) return null;
 
-      final int size = image.width < image.height ? image.width : image.height;
-      final int x = (image.width - size) ~/ 2;
-      final int y = (image.height - size) ~/ 2;
+      final size = image.width < image.height ? image.width : image.height;
+      final x = (image.width - size) ~/ 2;
+      final y = (image.height - size) ~/ 2;
       
-      final img.Image cropped = img.copyCrop(image, x: x, y: y, width: size, height: size);
-      final List<int> croppedBytes = img.encodeJpg(cropped);
+      final cropped = img.copyCrop(image, x: x, y: y, width: size, height: size);
+      final croppedBytes = img.encodeJpg(cropped);
       
-      final Directory tempDir = await getTemporaryDirectory();
-      final String fileName = 'cropped_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final File croppedFile = File(path.join(tempDir.path, fileName));
+      final tempDir = await getTemporaryDirectory();
+      final fileName = 'cropped_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final croppedFile = File(path.join(tempDir.path, fileName));
       
       await croppedFile.writeAsBytes(croppedBytes);
       return croppedFile;
@@ -211,8 +217,8 @@ class ImageService {
   /// Clean up temporary images
   Future<void> cleanupTempImages() async {
     try {
-      final Directory tempDir = await getTemporaryDirectory();
-      final List<FileSystemEntity> files = tempDir.listSync();
+      final tempDir = await getTemporaryDirectory();
+      final files = tempDir.listSync();
       
       for (final file in files) {
         if (file is File && 
@@ -229,15 +235,15 @@ class ImageService {
 
   /// Validate image file
   bool isValidImageFile(File file) {
-    final String extension = path.extension(file.path).toLowerCase();
+    final extension = path.extension(file.path).toLowerCase();
     return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].contains(extension);
   }
 
   /// Get image dimensions
   Future<Map<String, int>?> getImageDimensions(File imageFile) async {
     try {
-      final Uint8List imageBytes = await imageFile.readAsBytes();
-      final img.Image? image = img.decodeImage(imageBytes);
+      final imageBytes = await imageFile.readAsBytes();
+      final image = img.decodeImage(imageBytes);
       
       if (image == null) return null;
       
