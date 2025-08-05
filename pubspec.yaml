@@ -95,12 +95,12 @@ dev_dependencies:
 
   # Linting & Code Quality
   flutter_lints: ^3.0.1
-  
+
   # Build Tools
   build_runner: ^2.4.7
   json_serializable: ^6.7.1
   flutter_gen: ^5.4.0
-  
+
   # Testing
   test: ^1.24.9
   mockito: ^5.4.2

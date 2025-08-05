@@ -2,6 +2,50 @@ import 'package:equatable/equatable.dart';
 
 /// Calendar event model for agricultural activities
 class CalendarEvent extends Equatable {
+  /// Creates a calendar event
+  const CalendarEvent({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.startDate,
+    required this.category,
+    required this.cropType,
+    this.userId,
+    this.endDate,
+    this.isCompleted = false,
+    this.hasReminder = false,
+    this.reminderDate,
+    this.location,
+    this.metadata,
+    this.type = EventType.cropActivity,
+  });
+
+  /// Creates a calendar event from JSON
+  factory CalendarEvent.fromJson(Map<String, dynamic> json) {
+    return CalendarEvent(
+      id: json['id'] as String,
+      userId: json['userId'] as String?,
+      title: json['title'] as String,
+      description: json['description'] as String,
+      startDate: DateTime.parse(json['startDate'] as String),
+      endDate: json['endDate'] != null 
+          ? DateTime.parse(json['endDate'] as String) 
+          : null,
+      category: json['category'] as String,
+      cropType: json['cropType'] as String,
+      isCompleted: json['isCompleted'] as bool? ?? false,
+      hasReminder: json['hasReminder'] as bool? ?? false,
+      reminderDate: json['reminderDate'] != null 
+          ? DateTime.parse(json['reminderDate'] as String) 
+          : null,
+      location: json['location'] as String?,
+      metadata: json['metadata'] as Map<String, dynamic>?,
+      type: json['type'] != null 
+          ? EventType.values[json['type'] as int]
+          : EventType.cropActivity,
+    );
+  }
+
   /// Unique identifier for the event
   final String id;
   
@@ -41,63 +85,26 @@ class CalendarEvent extends Equatable {
   /// Additional metadata for the event
   final Map<String, dynamic>? metadata;
 
-  const CalendarEvent({
-    required this.id,
-    this.userId,
-    required this.title,
-    required this.description,
-    required this.startDate,
-    this.endDate,
-    required this.category,
-    required this.cropType,
-    this.isCompleted = false,
-    this.hasReminder = false,
-    this.reminderDate,
-    this.location,
-    this.metadata,
-  });
-
-  /// Create CalendarEvent from JSON
-  factory CalendarEvent.fromJson(Map<String, dynamic> json) {
-    return CalendarEvent(
-      id: json['id'] as String,
-      userId: json['userId'] as String?,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      startDate: DateTime.parse(json['startDate'] as String),
-      endDate: json['endDate'] != null 
-          ? DateTime.parse(json['endDate'] as String) 
-          : null,
-      category: json['category'] as String,
-      cropType: json['cropType'] as String,
-      isCompleted: json['isCompleted'] as bool? ?? false,
-      hasReminder: json['hasReminder'] as bool? ?? false,
-      reminderDate: json['reminderDate'] != null 
-          ? DateTime.parse(json['reminderDate'] as String) 
-          : null,
-      location: json['location'] as String?,
-      metadata: json['metadata'] as Map<String, dynamic>?,
-    );
-  }
+  /// Event type
+  final EventType type;
 
   /// Convert CalendarEvent to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'userId': userId,
-      'title': title,
-      'description': description,
-      'startDate': startDate.toIso8601String(),
-      'endDate': endDate?.toIso8601String(),
-      'category': category,
-      'cropType': cropType,
-      'isCompleted': isCompleted,
-      'hasReminder': hasReminder,
-      'reminderDate': reminderDate?.toIso8601String(),
-      'location': location,
-      'metadata': metadata,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'userId': userId,
+        'title': title,
+        'description': description,
+        'startDate': startDate.toIso8601String(),
+        'endDate': endDate?.toIso8601String(),
+        'category': category,
+        'cropType': cropType,
+        'isCompleted': isCompleted,
+        'hasReminder': hasReminder,
+        'reminderDate': reminderDate?.toIso8601String(),
+        'location': location,
+        'metadata': metadata,
+        'type': type.index,
+      };
 
   /// Create a copy of this event with some fields changed
   CalendarEvent copyWith({
@@ -114,23 +121,24 @@ class CalendarEvent extends Equatable {
     DateTime? reminderDate,
     String? location,
     Map<String, dynamic>? metadata,
-  }) {
-    return CalendarEvent(
-      id: id ?? this.id,
-      userId: userId ?? this.userId,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      startDate: startDate ?? this.startDate,
-      endDate: endDate ?? this.endDate,
-      category: category ?? this.category,
-      cropType: cropType ?? this.cropType,
-      isCompleted: isCompleted ?? this.isCompleted,
-      hasReminder: hasReminder ?? this.hasReminder,
-      reminderDate: reminderDate ?? this.reminderDate,
-      location: location ?? this.location,
-      metadata: metadata ?? this.metadata,
-    );
-  }
+    EventType? type,
+  }) =>
+      CalendarEvent(
+        id: id ?? this.id,
+        userId: userId ?? this.userId,
+        title: title ?? this.title,
+        description: description ?? this.description,
+        startDate: startDate ?? this.startDate,
+        endDate: endDate ?? this.endDate,
+        category: category ?? this.category,
+        cropType: cropType ?? this.cropType,
+        isCompleted: isCompleted ?? this.isCompleted,
+        hasReminder: hasReminder ?? this.hasReminder,
+        reminderDate: reminderDate ?? this.reminderDate,
+        location: location ?? this.location,
+        metadata: metadata ?? this.metadata,
+        type: type ?? this.type,
+      );
 
   /// Check if this event is overdue
   bool get isOverdue {
@@ -161,10 +169,18 @@ class CalendarEvent extends Equatable {
 
   /// Get a human-readable status of the event
   String get status {
-    if (isCompleted) return 'Completed';
-    if (isOverdue) return 'Overdue';
-    if (isToday) return 'Today';
-    if (isUpcoming) return 'Upcoming';
+    if (isCompleted) {
+      return 'Completed';
+    }
+    if (isOverdue) {
+      return 'Overdue';
+    }
+    if (isToday) {
+      return 'Today';
+    }
+    if (isUpcoming) {
+      return 'Upcoming';
+    }
     return 'Scheduled';
   }
 
@@ -183,111 +199,39 @@ class CalendarEvent extends Equatable {
         reminderDate,
         location,
         metadata,
+        type,
       ];
 
   @override
-  String toString() {
-    return 'CalendarEvent(id: $id, userId: $userId, title: $title, startDate: $startDate, category: $category, cropType: $cropType, status: $status)';
-  }
+  String toString() =>
+      'CalendarEvent(id: $id, userId: $userId, title: $title, startDate: $startDate, category: $category, cropType: $cropType, status: $status)';
 }
 
-/// Enum for common calendar event categories
-enum EventCategory {
-  planting('planting'),
-  harvesting('harvesting'),
-  fertilizing('fertilizing'),
-  irrigation('irrigation'),
-  pestControl('pest_control'),
-  soilPreparation('soil_preparation'),
-  pruning('pruning'),
-  weeding('weeding'),
-  monitoring('monitoring'),
-  maintenance('maintenance'),
-  other('other');
+/// Event types enum
+enum EventType {
+  /// Crop activity event
+  cropActivity,
+  /// Custom event
+  custom,
+  /// Reminder event
+  reminder,
+  /// Weather event
+  weather,
+}
 
-  const EventCategory(this.value);
-  final String value;
-
-  /// Convert string to EventCategory
-  static EventCategory fromString(String value) {
-    return EventCategory.values.firstWhere(
-      (category) => category.value == value,
-      orElse: () => EventCategory.other,
-    );
-  }
-
-  /// Get display name for the category
+/// Extension for EventType display names
+extension EventTypeExtension on EventType {
+  /// Gets display name for event type
   String get displayName {
     switch (this) {
-      case EventCategory.planting:
-        return 'Planting';
-      case EventCategory.harvesting:
-        return 'Harvesting';
-      case EventCategory.fertilizing:
-        return 'Fertilizing';
-      case EventCategory.irrigation:
-        return 'Irrigation';
-      case EventCategory.pestControl:
-        return 'Pest Control';
-      case EventCategory.soilPreparation:
-        return 'Soil Preparation';
-      case EventCategory.pruning:
-        return 'Pruning';
-      case EventCategory.weeding:
-        return 'Weeding';
-      case EventCategory.monitoring:
-        return 'Monitoring';
-      case EventCategory.maintenance:
-        return 'Maintenance';
-      case EventCategory.other:
-        return 'Other';
+      case EventType.cropActivity:
+        return 'Crop Activity';
+      case EventType.custom:
+        return 'Custom';
+      case EventType.reminder:
+        return 'Reminder';
+      case EventType.weather:
+        return 'Weather';
     }
-  }
-}
-
-/// Extension to add utility methods to List<CalendarEvent>
-extension CalendarEventListExtension on List<CalendarEvent> {
-  /// Filter events by category
-  List<CalendarEvent> byCategory(String category) {
-    return where((event) => event.category == category).toList();
-  }
-
-  /// Filter events by crop type
-  List<CalendarEvent> byCropType(String cropType) {
-    return where((event) => event.cropType == cropType).toList();
-  }
-
-  /// Get only completed events
-  List<CalendarEvent> get completed {
-    return where((event) => event.isCompleted).toList();
-  }
-
-  /// Get only pending events
-  List<CalendarEvent> get pending {
-    return where((event) => !event.isCompleted).toList();
-  }
-
-  /// Get overdue events
-  List<CalendarEvent> get overdue {
-    return where((event) => event.isOverdue).toList();
-  }
-
-  /// Get today's events
-  List<CalendarEvent> get today {
-    return where((event) => event.isToday).toList();
-  }
-
-  /// Get upcoming events
-  List<CalendarEvent> get upcoming {
-    return where((event) => event.isUpcoming).toList();
-  }
-
-  /// Sort events by start date
-  List<CalendarEvent> sortedByDate({bool ascending = true}) {
-    final sorted = List<CalendarEvent>.from(this);
-    sorted.sort((a, b) => ascending 
-        ? a.startDate.compareTo(b.startDate)
-        : b.startDate.compareTo(a.startDate));
-    return sorted;
   }
 }

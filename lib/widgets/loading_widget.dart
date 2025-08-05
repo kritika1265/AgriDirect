@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 
+/// A customizable loading widget with optional message
 class LoadingWidget extends StatelessWidget {
+  /// Optional message to display below the loading indicator
   final String? message;
+  
+  /// Size of the loading indicator
   final double? size;
+  
+  /// Color of the loading indicator and text
   final Color? color;
 
+  /// Creates a loading widget
   const LoadingWidget({
-    Key? key,
+    super.key,
     this.message,
     this.size,
     this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -45,17 +52,32 @@ class LoadingWidget extends StatelessWidget {
   }
 }
 
+/// A loading overlay that can be displayed over any widget
 class LoadingOverlay extends StatelessWidget {
+  /// The child widget to display behind the loading overlay
   final Widget child;
+  
+  /// Whether to show the loading overlay
   final bool isLoading;
+  
+  /// Optional message to display in the loading overlay
   final String? loadingMessage;
+  
+  /// Color of the loading indicator
+  final Color? loadingColor;
+  
+  /// Opacity of the overlay background
+  final double overlayOpacity;
 
+  /// Creates a loading overlay
   const LoadingOverlay({
-    Key? key,
+    super.key,
     required this.child,
     required this.isLoading,
     this.loadingMessage,
-  }) : super(key: key);
+    this.loadingColor,
+    this.overlayOpacity = 0.5,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -64,8 +86,11 @@ class LoadingOverlay extends StatelessWidget {
         child,
         if (isLoading)
           Container(
-            color: Colors.black.withOpacity(0.5),
-            child: LoadingWidget(message: loadingMessage),
+            color: Colors.black.withOpacity(overlayOpacity),
+            child: LoadingWidget(
+              message: loadingMessage,
+              color: loadingColor,
+            ),
           ),
       ],
     );

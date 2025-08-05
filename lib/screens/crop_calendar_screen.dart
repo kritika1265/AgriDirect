@@ -2,12 +2,27 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:table_calendar/table_calendar.dart';
+import '../models/calendar_event_model.dart';
 import '../services/notification_service.dart';
 import '../services/storage_service.dart';
 import '../utils/colors.dart';
 import '../widgets/custom_app_bar.dart';
 import '../widgets/custom_card.dart';
 import '../widgets/loading_widget.dart';
+
+/// Event category enumeration
+enum EventCategory {
+  planting('planting', 'Planting'),
+  harvesting('harvesting', 'Harvesting'),
+  fertilizing('fertilizing', 'Fertilizing'),
+  irrigation('irrigation', 'Irrigation'),
+  pestControl('pest_control', 'Pest Control'),
+  custom('custom', 'Custom');
+
+  const EventCategory(this.value, this.displayName);
+  final String value;
+  final String displayName;
+}
 
 /// Screen for managing farming calendar and crop-related reminders
 /// Displays seasonal activities, crop schedules, and farming tips
@@ -71,13 +86,14 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
           .map<FarmingTip>((tip) => FarmingTip.fromJson(tip as Map<String, dynamic>))
           .toList();
       
-      // Load user's custom events (assuming this method exists or returns empty list)
+      // Load user's custom events
       try {
         final customEvents = await _storageService.getCalendarEvents();
         _events = customEvents;
       } catch (e) {
         // If method doesn't exist, start with empty list
         _events = [];
+        debugPrint('Custom events not available: $e');
       }
       
       // Generate calendar events from crop schedules
@@ -87,7 +103,9 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
       debugPrint('Error loading calendar data: $e');
       _showErrorSnackBar('Failed to load calendar data');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -106,10 +124,10 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
             id: '${schedule.cropName}_${activity.activity}_$currentYear',
             title: '${activity.activity} - ${schedule.cropName}',
             description: activity.description,
-            date: eventDate,
-            type: EventType.cropActivity,
-            isReminder: true,
-            cropName: schedule.cropName,
+            startDate: eventDate,
+            category: activity.activity.toLowerCase(),
+            cropType: schedule.cropName,
+            hasReminder: true,
           ));
         }
       }
@@ -118,7 +136,7 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
 
   /// Get events for a specific day
   List<CalendarEvent> _getEventsForDay(DateTime day) =>
-      _events.where((event) => isSameDay(event.date, day)).toList();
+      _events.where((event) => isSameDay(event.startDate, day)).toList();
 
   /// Show add event dialog
   void _showAddEventDialog() {
@@ -133,11 +151,13 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
 
   /// Add new event
   Future<void> _addEvent(CalendarEvent event) async {
-    setState(() {
-      _events.add(event);
-    });
+    if (mounted) {
+      setState(() {
+        _events.add(event);
+      });
+    }
     
-    // Save to storage (handle if method doesn't exist)
+    // Save to storage
     try {
       await _storageService.saveCalendarEvents(_events);
     } catch (e) {
@@ -145,13 +165,17 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
     }
     
     // Schedule notification if reminder is enabled
-    if (event.isReminder) {
-      await _notificationService.scheduleNotification(
-        id: event.id.hashCode,
-        title: event.title,
-        body: event.description,
-        scheduledDate: event.date,
-      );
+    if (event.hasReminder) {
+      try {
+        await _notificationService.scheduleNotification(
+          id: event.id.hashCode,
+          title: event.title,
+          body: event.description,
+          scheduledDate: event.startDate,
+        );
+      } catch (e) {
+        debugPrint('Failed to schedule notification: $e');
+      }
     }
     
     _showSuccessSnackBar('Event added successfully');
@@ -159,9 +183,11 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
 
   /// Delete event
   Future<void> _deleteEvent(CalendarEvent event) async {
-    setState(() {
-      _events.removeWhere((e) => e.id == event.id);
-    });
+    if (mounted) {
+      setState(() {
+        _events.removeWhere((e) => e.id == event.id);
+      });
+    }
     
     try {
       await _storageService.saveCalendarEvents(_events);
@@ -170,29 +196,37 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
     }
     
     // Cancel notification
-    await _notificationService.cancelNotification(event.id.hashCode);
+    try {
+      await _notificationService.cancelNotification(event.id.hashCode);
+    } catch (e) {
+      debugPrint('Failed to cancel notification: $e');
+    }
     
     _showSuccessSnackBar('Event deleted');
   }
 
   /// Show error snackbar
   void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   /// Show success snackbar
   void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   @override
@@ -261,15 +295,19 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
               ),
             ),
             onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
+              if (mounted) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+              }
             },
             onFormatChanged: (format) {
-              setState(() {
-                _calendarFormat = format;
-              });
+              if (mounted) {
+                setState(() {
+                  _calendarFormat = format;
+                });
+              }
             },
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
@@ -311,9 +349,9 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: _getEventTypeColor(event.type),
+          backgroundColor: _getEventCategoryColor(event.category),
           child: Icon(
-            _getEventTypeIcon(event.type),
+            _getEventCategoryIcon(event.category),
             color: Colors.white,
             size: 20,
           ),
@@ -324,26 +362,38 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(event.description),
-            if (event.cropName != null)
-              Text(
-                'Crop: ${event.cropName}',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.w500,
-                ),
+            Text(
+              'Crop: ${event.cropType}',
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              'Status: ${event.status}',
+              style: TextStyle(
+                color: event.isCompleted ? Colors.green : Colors.orange,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (event.hasReminder)
+              const Icon(Icons.notifications, color: Colors.orange, size: 16),
+            if (event.category == 'custom')
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () => _deleteEvent(event),
               ),
           ],
         ),
-        trailing: event.type == EventType.custom
-            ? IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () => _deleteEvent(event),
-              )
-            : event.isReminder
-                ? const Icon(Icons.notifications, color: Colors.orange)
-                : null,
       ),
     );
 
@@ -362,7 +412,7 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
       margin: const EdgeInsets.only(bottom: 16),
       child: ExpansionTile(
         leading: CircleAvatar(
-          backgroundColor: AppColors.primary ?? Colors.green,
+          backgroundColor: _getAppColorsOrFallback(),
           child: Text(
             schedule.cropName.substring(0, 1).toUpperCase(),
             style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -391,6 +441,15 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
           )).toList(),
       ),
     );
+
+  /// Get AppColors.primary or fallback color
+  Color _getAppColorsOrFallback() {
+    try {
+      return AppColors.primary;
+    } catch (e) {
+      return Colors.green;
+    }
+  }
 
   /// Build tips tab
   Widget _buildTipsTab() => ListView.builder(
@@ -448,31 +507,43 @@ class _CropCalendarScreenState extends State<CropCalendarScreen>
       ),
     );
 
-  /// Get color for event type
-  Color _getEventTypeColor(EventType type) {
-    switch (type) {
-      case EventType.cropActivity:
+  /// Get color for event category
+  Color _getEventCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'planting':
         return Colors.green;
-      case EventType.custom:
-        return Colors.blue;
-      case EventType.reminder:
+      case 'harvesting':
         return Colors.orange;
-      case EventType.weather:
-        return Colors.cyan;
+      case 'fertilizing':
+        return Colors.brown;
+      case 'irrigation':
+        return Colors.blue;
+      case 'pest_control':
+        return Colors.red;
+      case 'custom':
+        return Colors.purple;
+      default:
+        return Colors.grey;
     }
   }
 
-  /// Get icon for event type
-  IconData _getEventTypeIcon(EventType type) {
-    switch (type) {
-      case EventType.cropActivity:
+  /// Get icon for event category
+  IconData _getEventCategoryIcon(String category) {
+    switch (category.toLowerCase()) {
+      case 'planting':
+        return Icons.eco;
+      case 'harvesting':
         return Icons.agriculture;
-      case EventType.custom:
+      case 'fertilizing':
+        return Icons.scatter_plot;
+      case 'irrigation':
+        return Icons.water_drop;
+      case 'pest_control':
+        return Icons.bug_report;
+      case 'custom':
         return Icons.event;
-      case EventType.reminder:
-        return Icons.notifications;
-      case EventType.weather:
-        return Icons.cloud;
+      default:
+        return Icons.task_alt;
     }
   }
 
@@ -521,11 +592,13 @@ class _AddEventDialogState extends State<AddEventDialog> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _cropTypeController = TextEditingController();
+  final _locationController = TextEditingController();
   
   DateTime _selectedDate = DateTime.now();
-  EventType _selectedType = EventType.custom;
-  bool _isReminder = false;
-  String? _selectedCrop;
+  String _selectedCategory = 'custom';
+  bool _hasReminder = false;
+  DateTime? _reminderDate;
 
   @override
   void initState() {
@@ -537,6 +610,8 @@ class _AddEventDialogState extends State<AddEventDialog> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _cropTypeController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
@@ -578,23 +653,46 @@ class _AddEventDialogState extends State<AddEventDialog> {
                 },
               ),
               const SizedBox(height: 16),
-              DropdownButtonFormField<EventType>(
-                value: _selectedType,
+              TextFormField(
+                controller: _cropTypeController,
                 decoration: const InputDecoration(
-                  labelText: 'Event Type',
+                  labelText: 'Crop Type',
                   border: OutlineInputBorder(),
                 ),
-                items: EventType.values.map((type) {
-                  return DropdownMenuItem(
-                    value: type,
-                    child: Text(type.displayName),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    _selectedType = value!;
-                  });
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter crop type';
+                  }
+                  return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: const InputDecoration(
+                  labelText: 'Category',
+                  border: OutlineInputBorder(),
+                ),
+                items: EventCategory.values.map((EventCategory category) => 
+                  DropdownMenuItem<String>(
+                    value: category.value,
+                    child: Text(category.displayName),
+                  )).toList(),
+                onChanged: (String? value) {
+                  if (mounted && value != null) {
+                    setState(() {
+                      _selectedCategory = value;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _locationController,
+                decoration: const InputDecoration(
+                  labelText: 'Location (Optional)',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 16),
               ListTile(
@@ -606,13 +704,31 @@ class _AddEventDialogState extends State<AddEventDialog> {
               const SizedBox(height: 8),
               SwitchListTile(
                 title: const Text('Set Reminder'),
-                value: _isReminder,
+                value: _hasReminder,
                 onChanged: (value) {
-                  setState(() {
-                    _isReminder = value;
-                  });
+                  if (mounted) {
+                    setState(() {
+                      _hasReminder = value;
+                      if (value) {
+                        _reminderDate = _selectedDate.subtract(const Duration(hours: 1));
+                      } else {
+                        _reminderDate = null;
+                      }
+                    });
+                  }
                 },
               ),
+              if (_hasReminder) ...[
+                const SizedBox(height: 8),
+                ListTile(
+                  title: const Text('Reminder Time'),
+                  subtitle: Text(_reminderDate != null 
+                      ? '${_reminderDate!.day}/${_reminderDate!.month}/${_reminderDate!.year} ${_reminderDate!.hour}:${_reminderDate!.minute.toString().padLeft(2, '0')}'
+                      : 'Not set'),
+                  trailing: const Icon(Icons.alarm),
+                  onTap: _selectReminderDateTime,
+                ),
+              ],
             ],
           ),
         ),
@@ -638,10 +754,42 @@ class _AddEventDialogState extends State<AddEventDialog> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     
-    if (date != null) {
+    if (date != null && mounted) {
       setState(() {
         _selectedDate = date;
+        if (_hasReminder) {
+          _reminderDate = _selectedDate.subtract(const Duration(hours: 1));
+        }
       });
+    }
+  }
+
+  /// Select reminder date and time
+  Future<void> _selectReminderDateTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _reminderDate ?? _selectedDate.subtract(const Duration(hours: 1)),
+      firstDate: DateTime.now(),
+      lastDate: _selectedDate,
+    );
+    
+    if (date != null && mounted) {
+      final time = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.fromDateTime(_reminderDate ?? DateTime.now()),
+      );
+      
+      if (time != null && mounted) {
+        setState(() {
+          _reminderDate = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
+          );
+        });
+      }
     }
   }
 
@@ -652,94 +800,16 @@ class _AddEventDialogState extends State<AddEventDialog> {
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         title: _titleController.text,
         description: _descriptionController.text,
-        date: _selectedDate,
-        type: _selectedType,
-        isReminder: _isReminder,
-        cropName: _selectedCrop,
+        startDate: _selectedDate,
+        category: _selectedCategory,
+        cropType: _cropTypeController.text,
+        hasReminder: _hasReminder,
+        reminderDate: _reminderDate,
+        location: _locationController.text.isNotEmpty ? _locationController.text : null,
       );
       
       widget.onEventAdded(event);
       Navigator.of(context).pop();
-    }
-  }
-}
-
-/// Calendar event model
-class CalendarEvent {
-  /// Creates a calendar event
-  const CalendarEvent({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.date,
-    required this.type,
-    this.isReminder = false,
-    this.cropName,
-  });
-
-  /// Creates a calendar event from JSON
-  factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      date: DateTime.parse(json['date'] as String),
-      type: EventType.values[json['type'] as int],
-      isReminder: json['isReminder'] as bool? ?? false,
-      cropName: json['cropName'] as String?,
-    );
-
-  /// Event ID
-  final String id;
-  /// Event title
-  final String title;
-  /// Event description
-  final String description;
-  /// Event date
-  final DateTime date;
-  /// Event type
-  final EventType type;
-  /// Whether reminder is set
-  final bool isReminder;
-  /// Associated crop name
-  final String? cropName;
-
-  /// Converts event to JSON
-  Map<String, dynamic> toJson() => {
-      'id': id,
-      'title': title,
-      'description': description,
-      'date': date.toIso8601String(),
-      'type': type.index,
-      'isReminder': isReminder,
-      'cropName': cropName,
-    };
-}
-
-/// Event types enum
-enum EventType {
-  /// Crop activity event
-  cropActivity,
-  /// Custom event
-  custom,
-  /// Reminder event
-  reminder,
-  /// Weather event
-  weather,
-}
-
-/// Extension for EventType display names
-extension EventTypeExtension on EventType {
-  /// Gets display name for event type
-  String get displayName {
-    switch (this) {
-      case EventType.cropActivity:
-        return 'Crop Activity';
-      case EventType.custom:
-        return 'Custom';
-      case EventType.reminder:
-        return 'Reminder';
-      case EventType.weather:
-        return 'Weather';
     }
   }
 }
