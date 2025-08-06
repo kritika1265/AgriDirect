@@ -1,31 +1,49 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
+/// App color constants for agriculture-themed application
 class AppColors {
+  AppColors._(); // Private constructor to prevent instantiation
+  
   // Primary Colors - Green theme for agriculture
   static const Color primary = Color(0xFF2E7D32); // Deep green
+  static const Color primaryColor = Color(0xFF4CAF50); // Green (alias for compatibility)
   static const Color primaryLight = Color(0xFF4CAF50); // Light green
   static const Color primaryDark = Color(0xFF1B5E20); // Dark green
   
   // Secondary Colors - Earth tones
   static const Color secondary = Color(0xFF8BC34A); // Light green
+  static const Color secondaryColor = Color(0xFF2196F3); // Blue (for compatibility)
   static const Color secondaryLight = Color(0xFFAED581); // Very light green
   static const Color secondaryDark = Color(0xFF689F38); // Medium green
   
   // Accent Colors
   static const Color accent = Color(0xFFFF9800); // Orange for highlights
+  static const Color accentColor = Color(0xFFFF9800); // Orange (alias for compatibility)
   static const Color accentLight = Color(0xFFFFB74D); // Light orange
   static const Color accentDark = Color(0xFFF57C00); // Dark orange
   
   // Background Colors
   static const Color background = Color(0xFFF5F5F5); // Light gray
+  static const Color backgroundColor = Color(0xFFF5F5F5); // Light gray (alias for compatibility)
   static const Color backgroundDark = Color(0xFF121212); // Dark background
   static const Color surface = Color(0xFFFFFFFF); // White surface
+  static const Color surfaceColor = Color(0xFFFFFFFF); // White surface (alias for compatibility)
   static const Color surfaceDark = Color(0xFF1E1E1E); // Dark surface
+  static const Color cardBackground = Color(0xFFFFFFFF); // Card background
   
   // Text Colors
   static const Color textPrimary = Color(0xFF212121); // Dark gray
   static const Color textSecondary = Color(0xFF757575); // Medium gray
   static const Color textLight = Color(0xFFBDBDBD); // Light gray
+  static const Color textHint = Color(0xFF9E9E9E); // Hint text
   static const Color textOnPrimary = Color(0xFFFFFFFF); // White on primary
   static const Color textOnSecondary = Color(0xFF000000); // Black on secondary
   
@@ -34,6 +52,25 @@ class AppColors {
   static const Color warning = Color(0xFFFF9800); // Orange
   static const Color error = Color(0xFFF44336); // Red
   static const Color info = Color(0xFF2196F3); // Blue
+  
+  // Border Colors
+  static const Color border = Color(0xFFE0E0E0); // Light border
+  static const Color borderLight = Color(0xFFE0E0E0); // Light border
+  static const Color borderDark = Color(0xFFBDBDBD); // Dark border
+  
+  // Shadow Colors
+  static const Color shadow = Color(0x1F000000); // Black with opacity
+  static const Color shadowLight = Color(0x1A000000); // Light shadow
+  static const Color shadowDark = Color(0x33000000); // Dark shadow
+  static const Color overlay = Color(0x80000000); // Black with 50% opacity
+  
+  // Disabled Colors
+  static const Color disabled = Color(0xFFBDBDBD); // Gray
+  static const Color disabledText = Color(0xFF9E9E9E); // Disabled text
+  static const Color placeholder = Color(0xFF9E9E9E); // Medium gray
+  
+  // Transparent Colors
+  static const Color transparent = Colors.transparent;
   
   // Weather Colors
   static const Color sunny = Color(0xFFFFEB3B); // Yellow
@@ -113,10 +150,6 @@ class AppColors {
   
   // Semantic Colors
   static const Color divider = Color(0xFFE0E0E0); // Light gray
-  static const Color shadow = Color(0x1F000000); // Black with opacity
-  static const Color overlay = Color(0x80000000); // Black with 50% opacity
-  static const Color disabled = Color(0xFFBDBDBD); // Gray
-  static const Color placeholder = Color(0xFF9E9E9E); // Medium gray
   
   // Notification Colors
   static const Color notificationDefault = Color(0xFF2196F3); // Blue

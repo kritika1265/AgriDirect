@@ -5,8 +5,37 @@ import '../widgets/custom_card.dart';
 import '../utils/colors.dart';
 import '../utils/constants.dart';
 
+// Data models
+class FAQItem {
+  final String category;
+  final String question;
+  final String answer;
+
+  FAQItem({
+    required this.category,
+    required this.question,
+    required this.answer,
+  });
+}
+
+class TutorialItem {
+  final String title;
+  final String description;
+  final String duration;
+  final IconData icon;
+  final String videoUrl;
+
+  TutorialItem({
+    required this.title,
+    required this.description,
+    required this.duration,
+    required this.icon,
+    required this.videoUrl,
+  });
+}
+
 class HelpScreen extends StatefulWidget {
-  const HelpScreen({Key? key}) : super(key: key);
+  const HelpScreen({super.key});
 
   @override
   State<HelpScreen> createState() => _HelpScreenState();
@@ -74,6 +103,69 @@ class _HelpScreenState extends State<HelpScreen> with SingleTickerProviderStateM
         }).toList();
       }
     });
+  }
+
+  // Phone call method
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch phone dialer')),
+        );
+      }
+    }
+  }
+
+  // WhatsApp method
+  Future<void> _openWhatsApp(String phoneNumber) async {
+    final Uri whatsappUri = Uri.parse('https://wa.me/$phoneNumber');
+    if (await canLaunchUrl(whatsappUri)) {
+      await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch WhatsApp')),
+        );
+      }
+    }
+  }
+
+  // Email method
+  Future<void> _sendEmail(String email) async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: email,
+      query: 'subject=AgriDirect Support Request',
+    );
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not launch email client')),
+        );
+      }
+    }
+  }
+
+  // Tutorial method
+  Future<void> _openTutorial(String videoUrl) async {
+    final Uri uri = Uri.parse(videoUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open tutorial')),
+        );
+      }
+    }
   }
 
   @override
@@ -157,7 +249,7 @@ class _HelpScreenState extends State<HelpScreen> with SingleTickerProviderStateM
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(icon, color: color, size: 20),
@@ -239,7 +331,7 @@ class _HelpScreenState extends State<HelpScreen> with SingleTickerProviderStateM
           width: 32,
           height: 32,
           decoration: BoxDecoration(
-            color: AppColors.primaryColor.withOpacity(0.1),
+            color: AppColors.primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Icon(
@@ -323,7 +415,7 @@ class _HelpScreenState extends State<HelpScreen> with SingleTickerProviderStateM
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryColor.withOpacity(0.1),
+                  color: AppColors.primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(25),
                 ),
                 child: Icon(
@@ -449,4 +541,106 @@ class _HelpScreenState extends State<HelpScreen> with SingleTickerProviderStateM
                     'Help us improve AgriDirect by sharing your thoughts and suggestions.',
                     style: TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => _sendEmail(AppConstants.supportEmail),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text('Send Feedback'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactItem(
+    IconData icon,
+    String title,
+    String value,
+    String subtitle,
+    VoidCallback? onTap,
+  ) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Icon(
+                  icon,
+                  color: AppColors.primaryColor,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      value,
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: AppColors.primaryColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (onTap != null)
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: AppColors.textSecondary,
+                  size: 16,
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

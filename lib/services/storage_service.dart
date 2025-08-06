@@ -488,7 +488,7 @@ class StorageService {
     return events.where((event) => event.cropType.toLowerCase() == cropType.toLowerCase()).toList();
   }
 
-  /// Get upcoming events within specified days
+  /// Get upcoming events within specified days (from SharedPreferences)
   Future<List<CalendarEvent>> getUpcomingEventsFromPrefs({int days = 7}) async {
     if (days < 0) {
       throw StorageException('Days parameter cannot be negative');
@@ -639,7 +639,7 @@ class StorageService {
     });
   }
 
-  /// Get upcoming calendar events from database
+  /// Get upcoming calendar events from database (different from SharedPreferences version)
   Future<List<CalendarEvent>> getUpcomingEvents({String? userId, int days = 7}) async {
     if (days < 0) {
       throw StorageException('Days parameter cannot be negative');
@@ -712,8 +712,8 @@ class StorageService {
 
   // SHARED PREFERENCES METHODS with improved error handling
 
-  /// Save string value with validation
-  Future<bool> saveString(String key, String value) async {
+  /// Save string value with validation and explicit return type
+  Future<bool> saveStringWithReturn(String key, String value) async {
     _ensureInitialized();
     
     if (key.trim().isEmpty) {
@@ -727,8 +727,8 @@ class StorageService {
     }
   }
 
-  /// Get string value with improved error handling
-  String? getString(String key, {String? defaultValue}) {
+  /// Get string value with default parameter
+  String? getStringWithDefault(String key, {String? defaultValue}) {
     _ensureInitialized();
     
     if (key.trim().isEmpty) {
@@ -805,8 +805,8 @@ class StorageService {
     }
   }
 
-  /// Save boolean value
-  Future<bool> saveBool(String key, {required bool value}) async {
+  /// Save boolean value with explicit parameter name
+  Future<bool> saveBoolWithReturn(String key, {required bool value}) async {
     _ensureInitialized();
     
     if (key.trim().isEmpty) {
@@ -820,8 +820,8 @@ class StorageService {
     }
   }
 
-  /// Get boolean value with improved error handling
-  bool? getBool(String key, {bool? defaultValue}) {
+  /// Get boolean value with default parameter
+  bool? getBoolWithDefault(String key, {bool? defaultValue}) {
     _ensureInitialized();
     
     if (key.trim().isEmpty) {
@@ -833,6 +833,70 @@ class StorageService {
     } catch (e) {
       debugPrint('Error getting boolean value for key $key: $e');
       return defaultValue;
+    }
+  }
+
+  // SIMPLIFIED METHODS (Fixed to avoid overloading conflicts)
+
+  /// Simple getBool method without parameters
+  bool? getBool(String key) {
+    _ensureInitialized();
+    
+    if (key.trim().isEmpty) {
+      return null;
+    }
+    
+    try {
+      return _prefs!.getBool(key);
+    } catch (e) {
+      debugPrint('Error getting boolean value for key $key: $e');
+      return null;
+    }
+  }
+
+  /// Simple getString method without parameters
+  String? getString(String key) {
+    _ensureInitialized();
+    
+    if (key.trim().isEmpty) {
+      return null;
+    }
+    
+    try {
+      return _prefs!.getString(key);
+    } catch (e) {
+      debugPrint('Error getting string value for key $key: $e');
+      return null;
+    }
+  }
+
+  /// Simple saveBool method
+  Future<void> saveBool(String key, bool value) async {
+    _ensureInitialized();
+    
+    if (key.trim().isEmpty) {
+      throw PreferencesException('Key cannot be empty');
+    }
+    
+    try {
+      await _prefs!.setBool(key, value);
+    } catch (e) {
+      throw PreferencesException('Failed to save boolean value', originalError: e);
+    }
+  }
+
+  /// Simple saveString method
+  Future<void> saveString(String key, String value) async {
+    _ensureInitialized();
+    
+    if (key.trim().isEmpty) {
+      throw PreferencesException('Key cannot be empty');
+    }
+    
+    try {
+      await _prefs!.setString(key, value);
+    } catch (e) {
+      throw PreferencesException('Failed to save string value', originalError: e);
     }
   }
 
@@ -875,7 +939,7 @@ class StorageService {
     
     try {
       final jsonString = jsonEncode(object);
-      return await saveString(key, jsonString);
+      return await saveStringWithReturn(key, jsonString);
     } catch (e) {
       throw PreferencesException('Failed to save object as JSON', originalError: e);
     }

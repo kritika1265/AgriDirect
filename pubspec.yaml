@@ -4,8 +4,8 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
-  flutter: ">=3.10.0"
+  sdk: '>=3.1.0 <4.0.0'
+  flutter: ">=3.16.0"
 
 dependencies:
   flutter:
@@ -15,77 +15,123 @@ dependencies:
 
   # UI & Icons
   cupertino_icons: ^1.0.6
-  flutter_svg: ^2.0.7
+  flutter_svg: ^2.0.10+1
   lottie: ^3.1.2
+  flutter_spinkit: ^5.2.0
+  shimmer: ^3.0.0
+  animated_text_kit: ^4.2.2
 
   # State Management
   provider: ^6.1.2
-  flutter_bloc: ^8.1.3
+  flutter_bloc: ^8.1.6
+  hydrated_bloc: ^9.1.5
 
   # Navigation
-  go_router: ^12.1.3
+  go_router: ^14.2.0
 
   # Firebase
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.15.3
-  cloud_firestore: ^4.13.6
-  firebase_storage: ^11.5.6
-  firebase_messaging: ^14.7.10
-  firebase_analytics: ^10.7.4
-  firebase_crashlytics: ^3.4.9
+  firebase_core: ^2.32.0
+  firebase_auth: ^4.20.0
+  cloud_firestore: ^4.17.5
+  firebase_storage: ^11.7.7
+  firebase_messaging: ^14.9.4
+  firebase_analytics: ^10.10.7
+  firebase_crashlytics: ^3.5.7
+  firebase_remote_config: ^4.4.6
 
   # Networking
-  http: ^1.1.0
-  dio: ^5.4.0
-  connectivity_plus: ^5.0.2
+  http: ^1.2.2
+  dio: ^5.4.3+1
+  connectivity_plus: ^6.0.3
   internet_connection_checker: ^1.0.0+1
+  retry: ^3.1.2
 
-  # Local Storage
-  shared_preferences: ^2.2.2
-  sqflite: ^2.3.0
-  path_provider: ^2.1.1
-  path: ^1.8.3
+  # Local Storage & Database
+  shared_preferences: ^2.2.3
+  sqflite: ^2.3.3+1
+  path_provider: ^2.1.3
+  path: ^1.9.0
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
   # Location & Maps
-  geolocator: ^10.1.0
-  geocoding: ^2.1.1
-  google_maps_flutter: ^2.5.0
+  geolocator: ^12.0.0
+  geocoding: ^3.0.0
+  google_maps_flutter: ^2.6.1
+  flutter_polyline_points: ^2.0.1
 
-  # Camera & Image
-  image_picker: ^1.0.4
-  camera: ^0.10.5+5
-  image: ^4.1.3
+  # Camera & Image Processing
+  image_picker: ^1.1.2
+  camera: ^0.10.6
+  image: ^4.2.0
+  image_cropper: ^5.0.1
+  cached_network_image: ^3.3.1
+  photo_view: ^0.15.0
 
   # ML & AI
   tflite_flutter: ^0.10.4
+  tflite_flutter_helper: ^0.3.1
+  
+  # Audio & Video
+  audioplayers: ^6.0.0
+  video_player: ^2.8.6
 
-  # Permissions
-  permission_handler: ^11.1.0
+  # Permissions & Device
+  permission_handler: ^11.3.1
+  device_info_plus: ^10.1.0
+  package_info_plus: ^8.0.0
 
-  # Utils
-  intl: ^0.18.1
-  url_launcher: ^6.2.1
-  package_info_plus: ^4.2.0
-  device_info_plus: ^9.1.1
+  # Utils & Tools
+  intl: ^0.19.0
+  url_launcher: ^6.3.0
   equatable: ^2.0.5
-  uuid: ^4.2.1
-  share_plus: ^7.2.2
+  uuid: ^4.4.0
+  share_plus: ^9.0.0
+  logger: ^2.3.0
+  pretty_dio_logger: ^1.4.0
 
   # Charts & Data Visualization
-  fl_chart: ^0.65.0
+  fl_chart: ^0.68.0
+  syncfusion_flutter_charts: ^25.2.7
+  pie_chart: ^5.4.0
 
   # Calendar & DateTime
-  table_calendar: ^3.0.9
+  table_calendar: ^3.1.2
+  flutter_calendar_carousel: ^2.4.3
 
   # Environment Variables
   flutter_dotenv: ^5.1.0
 
   # Notifications
-  flutter_local_notifications: ^16.3.2
+  flutter_local_notifications: ^17.2.1+2
+  awesome_notifications: ^0.9.3+1
 
-  # Weather & API Integration
+  # Weather & Location Services
   weather: ^3.1.1
-  json_annotation: ^4.8.1
+  location: ^6.0.2
+
+  # Forms & Input
+  reactive_forms: ^17.0.1
+  flutter_form_builder: ^9.2.1
+  form_builder_validators: ^10.0.1
+
+  # File Handling
+  file_picker: ^8.0.3
+  open_file: ^3.3.2
+  printing: ^5.12.0
+  pdf: ^3.10.8
+
+  # Sensors & Hardware
+  sensors_plus: ^5.0.1
+  battery_plus: ^6.0.1
+  vibration: ^1.8.4
+
+  # Serialization
+  json_annotation: ^4.9.0
+  freezed_annotation: ^2.4.1
+
+  # Caching & Performance
+  flutter_cache_manager: ^3.3.1
 
 dev_dependencies:
   flutter_test:
@@ -94,45 +140,162 @@ dev_dependencies:
     sdk: flutter
 
   # Linting & Code Quality
-  flutter_lints: ^3.0.1
+  flutter_lints: ^4.0.0
+  dart_code_metrics: ^5.7.6
 
-  # Build Tools
-  build_runner: ^2.4.7
-  json_serializable: ^6.7.1
-  flutter_gen: ^5.4.0
+  # Build Tools & Code Generation
+  build_runner: ^2.4.9
+  json_serializable: ^6.8.0
+  freezed: ^2.5.2
+  flutter_gen: ^5.6.0
+  hive_generator: ^2.0.1
 
-  # Testing
-  test: ^1.24.9
-  mockito: ^5.4.2
+  # Testing & Mocking
+  test: ^1.25.2
+  mockito: ^5.4.4
+  bloc_test: ^9.1.7
+  network_image_mock: ^2.1.1
+  golden_toolkit: ^0.15.0
+
+  # Performance & Analysis
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.4.0
+
+# Flutter Launcher Icons Configuration
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/images/app_icon.png"
+    background_color: "#hexcode"
+    theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "assets/images/app_icon.png"
+    icon_size: 48
+  macos:
+    generate: true
+    image_path: "assets/images/app_icon.png"
+
+# Native Splash Screen Configuration
+flutter_native_splash:
+  color: "#42a5f5"
+  image: assets/images/splash_logo.png
+  branding: assets/images/branding.png
+  color_dark: "#042a49"
+  image_dark: assets/images/splash_logo_dark.png
+  branding_dark: assets/images/branding_dark.png
+  android_12:
+    image: assets/images/splash_logo_android12.png
+    icon_background_color: "#42a5f5"
+    image_dark: assets/images/splash_logo_android12_dark.png
+    icon_background_color_dark: "#042a49"
+  web: false
 
 flutter:
   uses-material-design: true
 
+  # Assets Configuration
   assets:
+    # Images
     - assets/images/
+    - assets/images/onboarding/
+    - assets/images/backgrounds/
+    - assets/images/placeholders/
+    
+    # Icons (organized by category)
     - assets/images/icons/
     - assets/images/icons/weather/
     - assets/images/icons/crops/
     - assets/images/icons/tools/
     - assets/images/icons/diseases/
+    - assets/images/icons/fertilizers/
+    - assets/images/icons/pests/
+    - assets/images/icons/navigation/
+    
+    # ML Models & Data
     - assets/models/
+    - assets/models/disease_detection/
+    - assets/models/crop_prediction/
     - assets/labels/
     - assets/data/
-    - assets/fonts/
+    - assets/data/crops/
+    - assets/data/weather/
+    - assets/data/diseases/
+    
+    # Animations
+    - assets/animations/
+    - assets/animations/lottie/
+    
+    # Configuration
     - .env
+    - .env.production
+    - .env.staging
+    
+    # Documentation
+    - assets/docs/
+    - assets/docs/user_guide/
 
+  # Fonts Configuration
   fonts:
+    # Primary Font Family
     - family: Roboto
       fonts:
-        - asset: assets/fonts/Roboto/Roboto-Regular.ttf
-        - asset: assets/fonts/Roboto/Roboto-Bold.ttf
-          weight: 700
+        - asset: assets/fonts/Roboto/Roboto-Thin.ttf
+          weight: 100
         - asset: assets/fonts/Roboto/Roboto-Light.ttf
           weight: 300
+        - asset: assets/fonts/Roboto/Roboto-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Roboto/Roboto-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Roboto/Roboto-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Roboto/Roboto-Black.ttf
+          weight: 900
+
+    # Secondary Font Family
     - family: OpenSans
       fonts:
-        - asset: assets/fonts/OpenSans/OpenSans-Regular.ttf
-        - asset: assets/fonts/OpenSans/OpenSans-Bold.ttf
-          weight: 700
         - asset: assets/fonts/OpenSans/OpenSans-Light.ttf
           weight: 300
+        - asset: assets/fonts/OpenSans/OpenSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/OpenSans/OpenSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/OpenSans/OpenSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/OpenSans/OpenSans-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/OpenSans/OpenSans-ExtraBold.ttf
+          weight: 800
+
+    # Icon Fonts (if using custom icons)
+    - family: AgriIcons
+      fonts:
+        - asset: assets/fonts/AgriIcons.ttf
+
+# Dependency Overrides (if needed)
+dependency_overrides:
+  # Add any specific version overrides here if conflicts arise
+  
+# Flutter Gen Configuration
+flutter_gen:
+  output: lib/gen/
+  line_length: 80
+  integrations:
+    flutter_svg: true
+    flare_flutter: true
+    rive: true
+    lottie: true
+
+# Additional Configuration for specific packages
+flutter_intl:
+  enabled: true
+  class_name: S
+  main_locale: en
+  arb_dir: lib/l10n
+  output_dir: lib/generated

@@ -9,7 +9,9 @@ class UserModel {
   final String? location;
   final String? farmSize;
   final List<String> cropTypes;
+  final String? experience; // New field added
   final String? profilePicture;
+  final String? imageUrl; // New field added (alternative to profilePicture)
   final bool isVerified;
   final String language;
   final bool notificationsEnabled;
@@ -28,7 +30,9 @@ class UserModel {
     this.location,
     this.farmSize,
     this.cropTypes = const [],
+    this.experience, // New parameter added
     this.profilePicture,
+    this.imageUrl, // New parameter added
     this.isVerified = false,
     this.language = 'en',
     this.notificationsEnabled = true,
@@ -48,7 +52,9 @@ class UserModel {
     String? location,
     String? farmSize,
     List<String>? cropTypes,
+    String? experience, // New parameter in copyWith
     String? profilePicture,
+    String? imageUrl, // New parameter in copyWith
     bool? isVerified,
     String? language,
     bool? notificationsEnabled,
@@ -67,7 +73,9 @@ class UserModel {
       location: location ?? this.location,
       farmSize: farmSize ?? this.farmSize,
       cropTypes: cropTypes ?? this.cropTypes,
+      experience: experience ?? this.experience, // New field in copyWith
       profilePicture: profilePicture ?? this.profilePicture,
+      imageUrl: imageUrl ?? this.imageUrl, // New field in copyWith
       isVerified: isVerified ?? this.isVerified,
       language: language ?? this.language,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
@@ -89,7 +97,9 @@ class UserModel {
       'location': location,
       'farmSize': farmSize,
       'cropTypes': cropTypes,
+      'experience': experience, // New field in toMap
       'profilePicture': profilePicture,
+      'imageUrl': imageUrl, // New field in toMap
       'isVerified': isVerified,
       'language': language,
       'notificationsEnabled': notificationsEnabled,
@@ -115,7 +125,9 @@ class UserModel {
               (map['cropTypes'] as List<dynamic>).map((dynamic x) => x.toString())
             )
           : <String>[],
+      experience: map['experience']?.toString(), // New field in fromMap
       profilePicture: map['profilePicture']?.toString(),
+      imageUrl: map['imageUrl']?.toString(), // New field in fromMap
       isVerified: (map['isVerified'] as bool?) ?? false,
       language: map['language']?.toString() ?? 'en',
       notificationsEnabled: (map['notificationsEnabled'] as bool?) ?? true,
@@ -157,7 +169,9 @@ class UserModel {
         other.location == location &&
         other.farmSize == farmSize &&
         listEquals(other.cropTypes, cropTypes) &&
+        other.experience == experience && // New field in equality check
         other.profilePicture == profilePicture &&
+        other.imageUrl == imageUrl && // New field in equality check
         other.isVerified == isVerified &&
         other.language == language &&
         other.notificationsEnabled == notificationsEnabled &&
@@ -179,7 +193,9 @@ class UserModel {
       location,
       farmSize,
       Object.hashAll(cropTypes),
+      experience, // New field in hashCode
       profilePicture,
+      imageUrl, // New field in hashCode
       isVerified,
       language,
       notificationsEnabled,

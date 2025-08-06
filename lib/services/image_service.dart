@@ -1,259 +1,458 @@
+// All imports should be at the top
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 
-/// Service class for handling image operations including picking, compression,
-/// resizing, and other image manipulations.
+/// Service class for handling image operations
 class ImageService {
-  ImageService._internal();
+  /// Constructor
+  const ImageService();
   
-  /// Singleton instance
-  factory ImageService() => _instance;
-  static final ImageService _instance = ImageService._internal();
+  /// Camera image source
+  static const String camera = 'camera';
+  
+  /// Gallery image source
+  static const String gallery = 'gallery';
+  
+  /// JPEG format
+  static const String jpeg = 'jpeg';
+  
+  /// PNG format
+  static const String png = 'png';
+  
+  /// High image quality setting
+  static const int highQuality = 100;
+  
+  /// Medium image quality setting
+  static const int mediumQuality = 70;
+  
+  /// Low image quality setting
+  static const int lowQuality = 30;
+  
+  /// Maximum allowed file size in bytes
+  static const int maxFileSize = 5 * 1024 * 1024; // 5MB
+  
+  /// Default image width for resizing
+  static const int defaultWidth = 800;
+  
+  /// Default image height for resizing
+  static const int defaultHeight = 600;
 
-  final ImagePicker _picker = ImagePicker();
+  /// Convert map to JSON string with proper type casting
+  String toJson(Map<String, dynamic> data) => jsonEncode({
+    'id': data['id']?.toString() ?? '',
+    'name': data['name']?.toString() ?? '',
+    'path': data['path']?.toString() ?? '',
+    'description': data['description']?.toString() ?? '',
+    'category': data['category']?.toString(),
+    'location': data['location']?.toString(),
+    'tags': (data['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+    'uploadDate': data['uploadDate']?.toString(),
+    'modifiedDate': data['modifiedDate']?.toString(),
+    'isPrivate': data['isPrivate'] == true,
+  });
 
+  /// Create ImageData from JSON with proper type casting
+  static ImageData fromJson(Map<String, dynamic> json) => ImageData(
+    id: json['id']?.toString() ?? '',
+    name: json['name']?.toString() ?? '',
+    path: json['path']?.toString() ?? '',
+    description: json['description']?.toString() ?? '',
+    category: json['category']?.toString(),
+    location: json['location']?.toString(),
+    tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+    uploadDate: json['uploadDate']?.toString(),
+    modifiedDate: json['modifiedDate']?.toString(),
+    isPrivate: json['isPrivate'] == true,
+  );
+}
+
+/// Image data model
+class ImageData {
+  /// Constructor
+  const ImageData({
+    required this.id,
+    required this.name,
+    required this.path,
+    required this.description,
+    this.category,
+    this.location,
+    this.tags = const [],
+    this.uploadDate,
+    this.modifiedDate,
+    this.isPrivate = false,
+  });
+
+  /// Unique identifier for the image
+  final String id;
+  
+  /// Name of the image
+  final String name;
+  
+  /// File path of the image
+  final String path;
+  
+  /// Description of the image
+  final String description;
+  
+  /// Category of the image
+  final String? category;
+  
+  /// Location where image was taken
+  final String? location;
+  
+  /// Tags associated with the image
+  final List<String> tags;
+  
+  /// Date when image was uploaded
+  final String? uploadDate;
+  
+  /// Date when image was last modified
+  final String? modifiedDate;
+  
+  /// Whether the image is private
+  final bool isPrivate;
+
+  /// Create ImageData with updated values
+  ImageData copyWith({
+    String? id,
+    String? name,
+    String? path,
+    String? description,
+    String? category,
+    String? location,
+    List<String>? tags,
+    String? uploadDate,
+    String? modifiedDate,
+    bool? isPrivate,
+  }) => ImageData(
+    id: id ?? this.id,
+    name: name ?? this.name,
+    path: path ?? this.path,
+    description: description ?? this.description,
+    category: category ?? this.category,
+    location: location ?? this.location,
+    tags: tags ?? this.tags,
+    uploadDate: uploadDate ?? this.uploadDate,
+    modifiedDate: modifiedDate ?? this.modifiedDate,
+    isPrivate: isPrivate ?? this.isPrivate,
+  );
+}
+
+/// Image picker service
+class ImagePickerService {
+  static final ImagePicker _picker = ImagePicker();
+  
   /// Pick image from camera
-  Future<File?> pickImageFromCamera() async {
+  static Future<XFile?> pickFromCamera() async {
     try {
-      final image = await _picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
-      );
-      
-      if (image != null) {
-        return File(image.path);
-      }
-      return null;
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      return await _picker.pickImage(source: ImageSource.camera);
     } catch (e) {
-      debugPrint('Error picking image from camera: $e');
+      if (kDebugMode) {
+        debugPrint('Error picking from camera: $e');
+      }
       return null;
     }
   }
 
   /// Pick image from gallery
-  Future<File?> pickImageFromGallery() async {
+  static Future<XFile?> pickFromGallery() async {
     try {
-      final image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      return await _picker.pickImage(source: ImageSource.gallery);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error picking from gallery: $e');
+      }
+      return null;
+    }
+  }
+
+  /// Pick multiple images
+  static Future<List<XFile>?> pickMultiple() async {
+    try {
+      return await _picker.pickMultipleMedia();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Error picking multiple images: $e');
+      }
+      return null;
+    }
+  }
+}
+
+/// Response model for image operations
+class ImageResponse {
+  /// Constructor
+  const ImageResponse({
+    required this.success,
+    required this.statusCode,
+    this.data,
+    this.error,
+    this.metadata,
+  });
+
+  /// Whether the operation was successful
+  final bool success;
+  
+  /// HTTP status code
+  final int statusCode;
+  
+  /// Image data if operation was successful
+  final ImageData? data;
+  
+  /// Error message if operation failed
+  final String? error;
+  
+  /// Additional response data
+  final Map<String, dynamic>? metadata;
+
+  /// Create successful response
+  factory ImageResponse.success({
+    required ImageData data,
+    int statusCode = 200,
+    Map<String, dynamic>? metadata,
+  }) => ImageResponse(
+    success: true,
+    statusCode: statusCode,
+    data: data,
+    metadata: metadata,
+  );
+
+  /// Create error response
+  factory ImageResponse.error({
+    required String error,
+    int statusCode = 400,
+    Map<String, dynamic>? metadata,
+  }) => ImageResponse(
+    success: false,
+    statusCode: statusCode,
+    error: error,
+    metadata: metadata,
+  );
+}
+
+/// Network service for image operations
+class NetworkService {
+  /// Upload image to server
+  static Future<ImageResponse> uploadImage({
+    required File imageFile,
+    String? description,
+    Map<String, String>? headers,
+  }) async {
+    try {
+      // Simulate network delay
+      await Future<void>.delayed(const Duration(seconds: 1));
+      
+      // Mock successful upload
+      return ImageResponse.success(
+        data: ImageData(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: imageFile.path.split('/').last,
+          path: imageFile.path,
+          description: description ?? '',
+          uploadDate: DateTime.now().toIso8601String(),
+        ),
       );
-      
-      if (image != null) {
-        return File(image.path);
-      }
-      return null;
     } catch (e) {
-      debugPrint('Error picking image from gallery: $e');
-      return null;
-    }
-  }
-
-  /// Pick multiple images from gallery
-  Future<List<File>> pickMultipleImages() async {
-    try {
-      final images = await _picker.pickMultiImage(
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
+      return ImageResponse.error(
+        error: 'Upload failed: $e',
+        statusCode: 500,
       );
-      
-      return images.map((image) => File(image.path)).toList();
-    } catch (e) {
-      debugPrint('Error picking multiple images: $e');
-      return [];
     }
   }
+}
 
-  /// Compress image to reduce file size
-  Future<File?> compressImage(File imageFile, {int quality = 85}) async {
+/// Constants for image operations
+class ImageConstants {
+  /// Maximum image width
+  static const double maxWidth = 1920;
+  
+  /// Maximum image height
+  static const double maxHeight = 1080;
+  
+  /// Default compression quality
+  static const double compressionQuality = 0.8;
+  
+  /// Supported image formats
+  static const List<String> supportedFormats = ['jpg', 'jpeg', 'png', 'gif'];
+  
+  /// Maximum file size in MB
+  static const double maxFileSizeMB = 10;
+  
+  /// Cache directory name
+  static const String cacheDirectory = 'image_cache';
+  
+  /// Thumbnail directory name
+  static const String thumbnailDirectory = 'thumbnails';
+  
+  /// Upload timeout in seconds
+  static const int uploadTimeoutSeconds = 30;
+  
+  /// Default image quality
+  static const int defaultQuality = 85;
+  
+  /// Thumbnail size
+  static const int thumbnailSize = 150;
+}
+
+/// Image upload widget
+class ImageUploadWidget extends StatelessWidget {
+  /// Constructor
+  const ImageUploadWidget({
+    super.key,
+    this.onImageSelected,
+    this.showProgress = false,
+  });
+
+  /// Callback when image is selected
+  final void Function(ImageData)? onImageSelected;
+  
+  /// Whether to show upload progress
+  final bool showProgress;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      children: [
+        ElevatedButton.icon(
+          onPressed: () => _pickImage(context),
+          icon: const Icon(Icons.camera_alt),
+          label: const Text('Select Image'),
+        ),
+        if (showProgress) const LinearProgressIndicator(),
+      ],
+    ),
+  );
+
+  Future<void> _pickImage(BuildContext context) async {
+    final image = await ImagePickerService.pickFromGallery();
+    if (image != null) {
+      final imageData = ImageData(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: image.name,
+        path: image.path,
+        description: '',
+      );
+      onImageSelected?.call(imageData);
+    }
+  }
+}
+
+/// Image cache service
+class ImageCacheService {
+  /// Cache an image file
+  static Future<String?> cacheImage(File imageFile) async {
     try {
-      final imageBytes = await imageFile.readAsBytes();
-      final image = img.decodeImage(imageBytes);
+      final directory = await getApplicationDocumentsDirectory();
+      final cacheDir = Directory('${directory.path}/${ImageConstants.cacheDirectory}');
       
-      if (image == null) return null;
-
-      // Resize if image is too large
-      img.Image resized = image;
-      if (image.width > 1024 || image.height > 1024) {
-        resized = img.copyResize(
-          image,
-          width: image.width > image.height ? 1024 : null,
-          height: image.height > image.width ? 1024 : null,
-        );
+      if (!cacheDir.existsSync()) {
+        cacheDir.createSync(recursive: true);
       }
-
-      final compressedBytes = img.encodeJpg(resized, quality: quality);
       
-      // Save compressed image
-      final tempDir = await getTemporaryDirectory();
-      final fileName = 'compressed_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final compressedFile = File(path.join(tempDir.path, fileName));
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${imageFile.uri.pathSegments.last}';
+      final cachedFile = File('${cacheDir.path}/$fileName');
       
-      await compressedFile.writeAsBytes(compressedBytes);
-      return compressedFile;
+      await imageFile.copy(cachedFile.path);
+      return cachedFile.path;
     } catch (e) {
-      debugPrint('Error compressing image: $e');
+      if (kDebugMode) {
+        debugPrint('Error caching image: $e');
+      }
       return null;
     }
   }
 
-  /// Resize image to specific dimensions
-  Future<File?> resizeImage(File imageFile, int width, int height) async {
+  /// Clear image cache
+  static Future<void> clearCache() async {
     try {
-      final imageBytes = await imageFile.readAsBytes();
-      final image = img.decodeImage(imageBytes);
+      final directory = await getApplicationDocumentsDirectory();
+      final cacheDir = Directory('${directory.path}/${ImageConstants.cacheDirectory}');
       
-      if (image == null) return null;
-
-      final resized = img.copyResize(image, width: width, height: height);
-      final resizedBytes = img.encodeJpg(resized);
-      
-      final tempDir = await getTemporaryDirectory();
-      final fileName = 'resized_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final resizedFile = File(path.join(tempDir.path, fileName));
-      
-      await resizedFile.writeAsBytes(resizedBytes);
-      return resizedFile;
+      if (cacheDir.existsSync()) {
+        cacheDir.deleteSync(recursive: true);
+      }
     } catch (e) {
-      debugPrint('Error resizing image: $e');
-      return null;
+      if (kDebugMode) {
+        debugPrint('Error clearing cache: $e');
+      }
     }
   }
+}
 
-  /// Save image to app documents directory
-  Future<File?> saveImageToDocuments(File imageFile, String fileName) async {
+/// Image validation utility
+class ImageValidator {
+  /// Validate image file
+  static Future<bool> validateImage(File imageFile) async {
     try {
-      final appDocDir = await getApplicationDocumentsDirectory();
-      final imagePath = path.join(appDocDir.path, 'images');
-      final imageDir = Directory(imagePath);
-      
-      if (!imageDir.existsSync()) {
-        await imageDir.create(recursive: true);
+      // Check if file exists
+      if (!imageFile.existsSync()) {
+        return false;
       }
       
-      final savedFile = File(path.join(imagePath, fileName));
-      await imageFile.copy(savedFile.path);
+      // Check file size
+      final fileStat = imageFile.statSync();
+      if (fileStat.size > ImageConstants.maxFileSizeMB * 1024 * 1024) {
+        return false;
+      }
       
-      return savedFile;
+      // Check file extension
+      final extension = imageFile.path.split('.').last.toLowerCase();
+      return ImageConstants.supportedFormats.contains(extension);
     } catch (e) {
-      debugPrint('Error saving image: $e');
-      return null;
-    }
-  }
-
-  /// Delete image file
-  Future<bool> deleteImage(File imageFile) async {
-    try {
-      if (imageFile.existsSync()) {
-        await imageFile.delete();
-        return true;
+      if (kDebugMode) {
+        debugPrint('Error validating image: $e');
       }
       return false;
-    } catch (e) {
-      debugPrint('Error deleting image: $e');
-      return false;
     }
   }
 
-  /// Get image size in bytes
-  Future<int> getImageSize(File imageFile) async {
+  /// Get image file size in MB
+  static Future<double> getFileSizeMB(File file) async {
     try {
-      return await imageFile.length();
+      final fileStat = file.statSync();
+      return fileStat.size / (1024 * 1024);
     } catch (e) {
-      debugPrint('Error getting image size: $e');
+      if (kDebugMode) {
+        debugPrint('Error getting file size: $e');
+      }
       return 0;
     }
   }
+}
 
-  /// Convert image to base64 string
-  Future<String?> imageToBase64(File imageFile) async {
-    try {
-      final imageBytes = await imageFile.readAsBytes();
-      return base64Encode(imageBytes);
-    } catch (e) {
-      debugPrint('Error converting image to base64: $e');
-      return null;
-    }
-  }
+/// Progress callback widget
+class ProgressCallback extends StatefulWidget {
+  /// Constructor
+  const ProgressCallback({super.key});
 
-  /// Crop image to square aspect ratio
-  Future<File?> cropToSquare(File imageFile) async {
-    try {
-      final imageBytes = await imageFile.readAsBytes();
-      final image = img.decodeImage(imageBytes);
-      
-      if (image == null) return null;
+  @override
+  State<ProgressCallback> createState() => _ProgressCallbackState();
+}
 
-      final size = image.width < image.height ? image.width : image.height;
-      final x = (image.width - size) ~/ 2;
-      final y = (image.height - size) ~/ 2;
-      
-      final cropped = img.copyCrop(image, x: x, y: y, width: size, height: size);
-      final croppedBytes = img.encodeJpg(cropped);
-      
-      final tempDir = await getTemporaryDirectory();
-      final fileName = 'cropped_${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final croppedFile = File(path.join(tempDir.path, fileName));
-      
-      await croppedFile.writeAsBytes(croppedBytes);
-      return croppedFile;
-    } catch (e) {
-      debugPrint('Error cropping image: $e');
-      return null;
-    }
-  }
+class _ProgressCallbackState extends State<ProgressCallback> {
+  double _progress = 0;
 
-  /// Clean up temporary images
-  Future<void> cleanupTempImages() async {
-    try {
-      final tempDir = await getTemporaryDirectory();
-      final files = tempDir.listSync();
-      
-      for (final file in files) {
-        if (file is File && 
-            (file.path.contains('compressed_') || 
-             file.path.contains('resized_') || 
-             file.path.contains('cropped_'))) {
-          await file.delete();
-        }
-      }
-    } catch (e) {
-      debugPrint('Error cleaning temp images: $e');
-    }
-  }
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      LinearProgressIndicator(value: _progress),
+      Text('Progress: ${(_progress * 100).toStringAsFixed(1)}%'),
+    ],
+  );
 
-  /// Validate image file
-  bool isValidImageFile(File file) {
-    final extension = path.extension(file.path).toLowerCase();
-    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp'].contains(extension);
-  }
-
-  /// Get image dimensions
-  Future<Map<String, int>?> getImageDimensions(File imageFile) async {
-    try {
-      final imageBytes = await imageFile.readAsBytes();
-      final image = img.decodeImage(imageBytes);
-      
-      if (image == null) return null;
-      
-      return {
-        'width': image.width,
-        'height': image.height,
-      };
-    } catch (e) {
-      debugPrint('Error getting image dimensions: $e');
-      return null;
+  /// Update progress
+  void updateProgress(double progress) {
+    if (mounted) {
+      setState(() {
+        _progress = progress;
+      });
     }
   }
 }

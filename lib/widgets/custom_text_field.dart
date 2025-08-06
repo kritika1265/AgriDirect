@@ -1,5 +1,14 @@
+// All imports must be at the top
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 class CustomTextField extends StatelessWidget {
   final String? label;
@@ -12,6 +21,7 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final String? suffixText;
   final int? maxLines;
   final int? maxLength;
   final bool enabled;
@@ -34,6 +44,7 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.prefixIcon,
     this.suffixIcon,
+    this.suffixText,
     this.maxLines = 1,
     this.maxLength,
     this.enabled = true,
@@ -77,6 +88,7 @@ class CustomTextField extends StatelessWidget {
           onTap: onTap,
           decoration: InputDecoration(
             hintText: hint,
+            suffixText: suffixText,
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             filled: true,
@@ -98,6 +110,10 @@ class CustomTextField extends StatelessWidget {
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Colors.red),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.grey.shade300),
             ),
           ),
         ),

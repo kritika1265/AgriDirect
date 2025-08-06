@@ -1,25 +1,45 @@
 // lib/screens/smart_connect_screen.dart
 import 'package:flutter/material.dart';
+import '../utils/colors.dart';
 import '../widgets/custom_app_bar.dart';
-import '../widgets/custom_card.dart';
 import '../widgets/custom_button.dart';
+import '../widgets/custom_card.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/loading_widget.dart';
-import '../utils/colors.dart';
-import '../utils/constants.dart';
 
+/// Represents an expert available for consultation
 class Expert {
+  /// Unique identifier for the expert
   final String id;
+  
+  /// Expert's full name
   final String name;
+  
+  /// Expert's area of specialization
   final String specialization;
+  
+  /// Years of experience as a string
   final String experience;
+  
+  /// Average rating from consultations
   final double rating;
+  
+  /// Total number of consultations completed
   final int totalConsultations;
+  
+  /// URL or path to expert's profile image
   final String imageUrl;
+  
+  /// Whether the expert is currently online
   final bool isOnline;
+  
+  /// Fee per consultation in rupees
   final int consultationFee;
+  
+  /// List of languages the expert speaks
   final List<String> languages;
 
+  /// Constructor for Expert class
   Expert({
     required this.id,
     required this.name,
@@ -34,18 +54,39 @@ class Expert {
   });
 }
 
+/// Represents a community post/question
 class CommunityPost {
+  /// Unique identifier for the post
   final String id;
+  
+  /// Name of the post author
   final String authorName;
+  
+  /// Location of the author
   final String authorLocation;
+  
+  /// Title of the post
   final String title;
+  
+  /// Main content of the post
   final String content;
+  
+  /// When the post was created
   final DateTime timestamp;
+  
+  /// Number of likes received
   final int likes;
+  
+  /// Number of replies received
   final int replies;
+  
+  /// Category/topic of the post
   final String category;
+  
+  /// List of image URLs attached to the post
   final List<String> images;
 
+  /// Constructor for CommunityPost class
   CommunityPost({
     required this.id,
     required this.authorName,
@@ -60,8 +101,10 @@ class CommunityPost {
   });
 }
 
+/// Screen that provides smart connectivity features including expert consultation and community
 class SmartConnectScreen extends StatefulWidget {
-  const SmartConnectScreen({Key? key}) : super(key: key);
+  /// Constructor for SmartConnectScreen
+  const SmartConnectScreen({super.key});
 
   @override
   State<SmartConnectScreen> createState() => _SmartConnectScreenState();
@@ -180,12 +223,12 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
   }
 
   Widget _buildTabBar() {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -209,14 +252,12 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _experts.length,
-      itemBuilder: (context, index) {
-        return _buildExpertCard(_experts[index]);
-      },
+      itemBuilder: (context, index) => _buildExpertCard(_experts[index]),
     );
   }
 
   Widget _buildCommunityTab() {
-    List<CommunityPost> filteredPosts = _selectedCategory == 'All'
+    final filteredPosts = _selectedCategory == 'All'
         ? _communityPosts
         : _communityPosts.where((post) => post.category == _selectedCategory).toList();
 
@@ -256,9 +297,7 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: filteredPosts.length,
-                  itemBuilder: (context, index) {
-                    return _buildCommunityPostCard(filteredPosts[index]);
-                  },
+                  itemBuilder: (context, index) => _buildCommunityPostCard(filteredPosts[index]),
                 ),
         ),
       ],
@@ -275,10 +314,10 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
           children: [
             Row(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 20,
-                  backgroundColor: Colors.grey[300],
-                  child: const Icon(Icons.person, size: 24, color: Colors.grey),
+                  backgroundColor: Colors.grey,
+                  child: Icon(Icons.person, size: 24, color: Colors.white),
                 ),
                 const SizedBox(width: 12),
                 Column(
@@ -328,17 +367,15 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
                   scrollDirection: Axis.horizontal,
                   itemCount: post.images.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, idx) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        post.images[idx],
-                        width: 120,
-                        height: 120,
-                        fit: BoxFit.cover,
-                      ),
-                    );
-                  },
+                  itemBuilder: (context, idx) => ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      post.images[idx],
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -356,7 +393,7 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryColor.withOpacity(0.1),
+                    color: AppColors.primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -399,10 +436,10 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
               children: [
                 Stack(
                   children: [
-                    CircleAvatar(
+                    const CircleAvatar(
                       radius: 30,
-                      backgroundColor: Colors.grey[300],
-                      child: const Icon(Icons.person, size: 40, color: Colors.grey),
+                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.person, size: 40, color: Colors.white),
                     ),
                     if (expert.isOnline)
                       Positioned(
@@ -523,57 +560,99 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
                   ),
                 ),
                 const SizedBox(width: 12),
-                                Expanded(
-                                  child: CustomButton(
-                                    text: expert.isOnline ? 'Consult Now' : 'Schedule',
-                                    onPressed: () => _consult
-                // Add the missing _buildAskQuestionTab method at the end of the class
-                
-                  Widget _buildAskQuestionTab() {
-                    return Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Ask a Question',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          CustomTextField(
-                            controller: _questionController,
-                            hintText: 'Type your question here...',
-                            maxLines: 5,
-                          ),
-                          const SizedBox(height: 16),
-                          _isLoading
-                              ? const LoadingWidget()
-                              : CustomButton(
-                                  text: 'Submit',
-                                  onPressed: _submitQuestion,
-                                  backgroundColor: AppColors.primaryColor,
-                                  textColor: Colors.white,
-                                ),
-                        ],
-                      ),
-                    );
-                  }
-                
-                  void _submitQuestion() {
-                    setState(() {
-                      _isLoading = true;
-                    });
-                    // Simulate a network call
-                    Future.delayed(const Duration(seconds: 2), () {
-                      setState(() {
-                        _isLoading = false;
-                        _questionController.clear();
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Your question has been submitted!')),
-                      );
-                    });
-                  }
+                Expanded(
+                  child: CustomButton(
+                    text: expert.isOnline ? 'Consult Now' : 'Schedule',
+                    onPressed: () => _consultExpert(expert),
+                    backgroundColor: AppColors.primaryColor,
+                    textColor: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAskQuestionTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Ask a Question',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 16),
+          CustomTextField(
+            controller: _questionController,
+            placeholder: 'Type your question here...',
+            maxLines: 5,
+          ),
+          const SizedBox(height: 16),
+          if (_isLoading)
+            const LoadingWidget()
+          else
+            CustomButton(
+              text: 'Submit',
+              onPressed: _submitQuestion,
+              backgroundColor: AppColors.primaryColor,
+              textColor: Colors.white,
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _submitQuestion() {
+    if (!mounted) {
+      return;
+    }
+    
+    setState(() {
+      _isLoading = true;
+    });
+    
+    // Simulate a network call
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) {
+        return;
+      }
+      
+      setState(() {
+        _isLoading = false;
+        _questionController.clear();
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Your question has been submitted!')),
+      );
+    });
+  }
+
+  void _viewExpertProfile(Expert expert) {
+    // Navigate to expert profile page
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Viewing profile of ${expert.name}')),
+    );
+  }
+
+  void _consultExpert(Expert expert) {
+    // Handle consultation booking
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          expert.isOnline 
+            ? 'Starting consultation with ${expert.name}'
+            : 'Scheduling consultation with ${expert.name}'
+        )
+      ),
+    );
+  }
+}

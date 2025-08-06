@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_app_bar.dart';
-import '../widgets/loading_widget.dart';
 import '../utils/colors.dart';
 import '../utils/constants.dart';
+import '../widgets/custom_app_bar.dart';
+import '../widgets/loading_widget.dart';
 
+/// A screen that displays marketplace items for buying and selling agricultural products
 class MarketplaceScreen extends StatefulWidget {
-  const MarketplaceScreen({Key? key}) : super(key: key);
+  /// Creates a MarketplaceScreen
+  const MarketplaceScreen({super.key});
 
   @override
   State<MarketplaceScreen> createState() => _MarketplaceScreenState();
@@ -38,14 +40,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
     setState(() => _isLoading = true);
     
     // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(seconds: 1));
     
     _allItems = [
       MarketplaceItem(
         id: '1',
         title: 'Organic Wheat - Premium Quality',
         description: 'Fresh organic wheat harvested from pesticide-free farms',
-        price: 2450.0,
+        price: 2450,
         unit: 'per quintal',
         category: 'Grains',
         location: 'Anand, Gujarat',
@@ -61,7 +63,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
         id: '2',
         title: 'Looking for Cotton Seeds',
         description: 'Need high-quality cotton seeds for 10 acres farming',
-        price: 800.0,
+        price: 800,
         unit: 'per kg',
         category: 'Seeds',
         location: 'Bharuch, Gujarat',
@@ -77,7 +79,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
         id: '3',
         title: 'Fresh Tomatoes - Direct from Farm',
         description: 'Farm fresh tomatoes, perfect for wholesale buyers',
-        price: 25.0,
+        price: 25,
         unit: 'per kg',
         category: 'Vegetables',
         location: 'Vadodara, Gujarat',
@@ -162,7 +164,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: AppConstants.marketplaceCategories.map((category) {
+              children: AppConstants.marketplaceCategories.map<Widget>((String category) {
                 final isSelected = _selectedCategory == category;
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
@@ -175,7 +177,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
                         _filterItems();
                       });
                     },
-                    selectedColor: AppColors.primaryColor.withOpacity(0.2),
+                    selectedColor: AppColors.primaryColor.withValues(alpha: 0.2),
                     labelStyle: TextStyle(
                       color: isSelected ? AppColors.primaryColor : AppColors.textSecondary,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -245,8 +247,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
     );
   }
 
-  Widget _buildMarketplaceCard(MarketplaceItem item) {
-    return Card(
+  Widget _buildMarketplaceCard(MarketplaceItem item) => Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -266,8 +267,8 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: item.type == MarketplaceItemType.sell 
-                          ? Colors.green.withOpacity(0.1)
-                          : Colors.blue.withOpacity(0.1),
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.blue.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -286,7 +287,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.1),
+                        color: Colors.orange.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
@@ -411,7 +412,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
                       children: [
                         CircleAvatar(
                           radius: 16,
-                          backgroundColor: AppColors.primaryColor.withOpacity(0.1),
+                          backgroundColor: AppColors.primaryColor.withValues(alpha: 0.1),
                           child: Icon(
                             Icons.person,
                             color: AppColors.primaryColor,
@@ -528,48 +529,45 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
         ),
       ),
     );
-  }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.store,
-            size: 64,
-            color: Colors.grey,
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'No items found',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+  Widget _buildEmptyState() => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.store,
+              size: 64,
               color: Colors.grey,
             ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Try adjusting your search or filters',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
+            const SizedBox(height: 16),
+            const Text(
+              'No items found',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _showAddItemDialog,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryColor,
-              foregroundColor: Colors.white,
+            const SizedBox(height: 8),
+            const Text(
+              'Try adjusting your search or filters',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
             ),
-            child: const Text('Post Your First Item'),
-          ),
-        ],
-      ),
-    );
-  }
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _showAddItemDialog,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Post Your First Item'),
+            ),
+          ],
+        ),
+      );
 
   String _formatTimeAgo(DateTime dateTime) {
     final now = DateTime.now();
@@ -585,7 +583,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
   }
 
   void _showFilterDialog() {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Filter Items'),
@@ -597,13 +595,11 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
             DropdownButton<String>(
               value: _selectedCategory,
               isExpanded: true,
-              items: AppConstants.marketplaceCategories.map((category) {
-                return DropdownMenuItem(
+              items: AppConstants.marketplaceCategories.map<DropdownMenuItem<String>>((String category) => DropdownMenuItem(
                   value: category,
                   child: Text(category),
-                );
-              }).toList(),
-              onChanged: (value) {
+                )).toList(),
+              onChanged: (String? value) {
                 setState(() {
                   _selectedCategory = value!;
                 });
@@ -616,13 +612,11 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
             DropdownButton<String>(
               value: _selectedLocation,
               isExpanded: true,
-              items: AppConstants.locations.map((location) {
-                return DropdownMenuItem(
+              items: AppConstants.locations.map<DropdownMenuItem<String>>((String location) => DropdownMenuItem(
                   value: location,
                   child: Text(location),
-                );
-              }).toList(),
-              onChanged: (value) {
+                )).toList(),
+              onChanged: (String? value) {
                 setState(() {
                   _selectedLocation = value!;
                 });
@@ -681,24 +675,46 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with SingleTicker
   }
 }
 
-enum MarketplaceItemType { sell, buy }
+/// Enum for marketplace item types
+enum MarketplaceItemType { 
+  /// Item is for sale
+  sell, 
+  /// Item is wanted/needed
+  buy 
+}
 
+/// Model class for marketplace items
 class MarketplaceItem {
+  /// Unique identifier for the item
   final String id;
+  /// Title of the item
   final String title;
+  /// Description of the item
   final String description;
+  /// Price of the item
   final double price;
+  /// Unit of measurement
   final String unit;
+  /// Category of the item
   final String category;
+  /// Location of the seller
   final String location;
+  /// Name of the seller
   final String sellerName;
+  /// Rating of the seller
   final double sellerRating;
+  /// URL of the item image
   final String imageUrl;
+  /// Whether the item is organic
   final bool isOrganic;
+  /// Quantity available
   final String quantity;
+  /// Date when the item was posted
   final DateTime postedDate;
+  /// Type of the marketplace item
   final MarketplaceItemType type;
 
+  /// Creates a MarketplaceItem
   MarketplaceItem({
     required this.id,
     required this.title,

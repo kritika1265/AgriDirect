@@ -97,6 +97,41 @@ class FirebaseService {
     }
   }
 
+  /// Updates user data in Firestore (NEW METHOD)
+  Future<void> updateUserData(String uid, Map<String, dynamic> userData) async {
+    try {
+      // Add server timestamp for updates
+      final dataWithTimestamp = {
+        ...userData,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      await _firestore
+          .collection(_usersCollection)
+          .doc(uid)
+          .update(dataWithTimestamp);
+    } catch (e) {
+      print('Error updating user data: $e');
+      // If document doesn't exist, create it instead
+      if (e.toString().contains('No document to update')) {
+        await createUserData(uid, userData);
+      } else {
+        throw FirebaseServiceException('Failed to update user data: ${e.toString()}');
+      }
+    }
+  }
+
+  /// Updates user profile using UserModel (NEW CONVENIENCE METHOD)
+  Future<void> updateUserProfile(UserModel userModel) async {
+    try {
+      final userMap = userModel.toMap();
+      await updateUserData(userModel.id, userMap);
+    } catch (e) {
+      print('Error updating user profile: $e');
+      throw FirebaseServiceException('Failed to update user profile: ${e.toString()}');
+    }
+  }
+
   /// Creates or updates user data
   Future<void> createOrUpdateUser(UserModel userModel) async {
     try {
@@ -128,6 +163,24 @@ class FirebaseService {
     } catch (e) {
       print('Error getting user by ID: $e');
       throw FirebaseServiceException('Failed to get user: ${e.toString()}');
+    }
+  }
+
+  /// Updates specific user fields (NEW CONVENIENCE METHOD)
+  Future<void> updateUserFields(String uid, Map<String, dynamic> fields) async {
+    try {
+      final updateData = {
+        ...fields,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      await _firestore
+          .collection(_usersCollection)
+          .doc(uid)
+          .update(updateData);
+    } catch (e) {
+      print('Error updating user fields: $e');
+      throw FirebaseServiceException('Failed to update user fields: ${e.toString()}');
     }
   }
 

@@ -1,3 +1,4 @@
+// lib/models/weather_model.dart
 class WeatherModel {
   final String location;
   final double temperature;
@@ -16,6 +17,8 @@ class WeatherModel {
   final List<HourlyWeather> hourlyForecast;
   final List<DailyWeather> dailyForecast;
   final DateTime lastUpdated;
+  final DateTime timestamp; // For compatibility with existing screen
+  final double rainfall; // For agricultural insights
 
   const WeatherModel({
     required this.location,
@@ -35,7 +38,9 @@ class WeatherModel {
     required this.hourlyForecast,
     required this.dailyForecast,
     required this.lastUpdated,
-  });
+    DateTime? timestamp,
+    this.rainfall = 0.0,
+  }) : timestamp = timestamp ?? lastUpdated;
 
   factory WeatherModel.fromMap(Map<String, dynamic> map) {
     return WeatherModel(
@@ -60,8 +65,13 @@ class WeatherModel {
           ?.map((e) => DailyWeather.fromMap(e as Map<String, dynamic>))
           .toList() ?? [],
       lastUpdated: DateTime.tryParse(map['lastUpdated']?.toString() ?? '') ?? DateTime.now(),
+      timestamp: DateTime.tryParse(map['timestamp']?.toString() ?? ''),
+      rainfall: (map['rainfall'] as num?)?.toDouble() ?? 0.0,
     );
   }
+
+  // Legacy fromJson method for backward compatibility
+  factory WeatherModel.fromJson(Map<String, dynamic> json) => WeatherModel.fromMap(json);
 
   Map<String, dynamic> toMap() {
     return {
@@ -82,8 +92,13 @@ class WeatherModel {
       'hourlyForecast': hourlyForecast.map((e) => e.toMap()).toList(),
       'dailyForecast': dailyForecast.map((e) => e.toMap()).toList(),
       'lastUpdated': lastUpdated.toIso8601String(),
+      'timestamp': timestamp.toIso8601String(),
+      'rainfall': rainfall,
     };
   }
+
+  // Legacy toJson method for backward compatibility
+  Map<String, dynamic> toJson() => toMap();
 
   WeatherModel copyWith({
     String? location,
@@ -103,6 +118,8 @@ class WeatherModel {
     List<HourlyWeather>? hourlyForecast,
     List<DailyWeather>? dailyForecast,
     DateTime? lastUpdated,
+    DateTime? timestamp,
+    double? rainfall,
   }) {
     return WeatherModel(
       location: location ?? this.location,
@@ -122,6 +139,8 @@ class WeatherModel {
       hourlyForecast: hourlyForecast ?? this.hourlyForecast,
       dailyForecast: dailyForecast ?? this.dailyForecast,
       lastUpdated: lastUpdated ?? this.lastUpdated,
+      timestamp: timestamp ?? this.timestamp,
+      rainfall: rainfall ?? this.rainfall,
     );
   }
 
