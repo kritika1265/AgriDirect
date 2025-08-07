@@ -13,125 +13,117 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # UI & Icons
-  cupertino_icons: ^1.0.6
-  flutter_svg: ^2.0.10+1
-  lottie: ^3.1.2
-  flutter_spinkit: ^5.2.0
-  shimmer: ^3.0.0
+  # Core UI and Animation Dependencies
   animated_text_kit: ^4.2.2
+  flutter_spinkit: ^5.2.1
+  shimmer: ^3.0.0
+  lottie: ^3.1.2
+  flutter_svg: ^2.0.10+1
+  cupertino_icons: ^1.0.8
 
   # State Management
+  flutter_bloc: ^9.1.1
+  hydrated_bloc: ^10.1.1
   provider: ^6.1.2
-  flutter_bloc: ^8.1.6
-  hydrated_bloc: ^9.1.5
+  equatable: ^2.0.5
 
   # Navigation
-  go_router: ^14.2.0
+  go_router: ^16.1.0
 
-  # Firebase
-  firebase_core: ^2.32.0
-  firebase_auth: ^4.20.0
-  cloud_firestore: ^4.17.5
-  firebase_storage: ^11.7.7
-  firebase_messaging: ^14.9.4
-  firebase_analytics: ^10.10.7
-  firebase_crashlytics: ^3.5.7
-  firebase_remote_config: ^4.4.6
-
-  # Networking
-  http: ^1.2.2
-  dio: ^5.4.3+1
-  connectivity_plus: ^6.0.3
-  internet_connection_checker: ^1.0.0+1
-  retry: ^3.1.2
-
-  # Local Storage & Database
+  # Storage and Caching
   shared_preferences: ^2.2.3
-  sqflite: ^2.3.3+1
-  path_provider: ^2.1.3
-  path: ^1.9.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
+  flutter_cache_manager: ^3.3.2
+  cached_network_image: ^3.4.1
 
-  # Location & Maps
-  geolocator: ^12.0.0
-  geocoding: ^3.0.0
-  google_maps_flutter: ^2.6.1
-  flutter_polyline_points: ^2.0.1
+  # Firebase Services
+  firebase_core: ^4.0.0
+  firebase_auth: ^6.0.0
+  cloud_firestore: ^6.0.0
+  firebase_storage: ^13.0.0
+  firebase_messaging: ^16.0.0
+  firebase_analytics: ^12.0.0
+  firebase_crashlytics: ^5.0.0
+  firebase_remote_config: ^6.0.0
 
-  # Camera & Image Processing
+  # ML and AI Dependencies - Updated versions
+  tflite_flutter: ^0.11.0
+  image: ^4.0.17
+  camera: ^0.11.2
+  path_provider: ^2.0.15
+
+  # Location and Maps
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
+  google_maps_flutter: ^2.7.0
+  flutter_polyline_points: ^3.0.1
+  location: ^8.0.1
+
+  # Media and File Handling
   image_picker: ^1.1.2
-  camera: ^0.10.6
-  image: ^4.2.0
-  image_cropper: ^5.0.1
-  cached_network_image: ^3.3.1
+  image_cropper: ^9.1.0
+  file_picker: ^10.2.1
   photo_view: ^0.15.0
+  video_player: ^2.9.1
 
-  # ML & AI
-  tflite_flutter: ^0.10.4
-  tflite_flutter_helper: ^0.3.1
-  
-  # Audio & Video
-  audioplayers: ^6.0.0
-  video_player: ^2.8.6
+  # Sharing and External Apps
+  share_plus: ^11.0.0  # Updated to latest stable version
+  url_launcher: ^6.3.1
+  open_file: ^3.5.7
 
-  # Permissions & Device
-  permission_handler: ^11.3.1
-  device_info_plus: ^10.1.0
-  package_info_plus: ^8.0.0
+  # Forms and Validation
+  flutter_form_builder: ^10.1.0
+  form_builder_validators: ^11.0.0
+  reactive_forms: ^18.1.1
 
-  # Utils & Tools
-  intl: ^0.19.0
-  url_launcher: ^6.3.0
-  equatable: ^2.0.5
-  uuid: ^4.4.0
-  share_plus: ^9.0.0
-  logger: ^2.3.0
-  pretty_dio_logger: ^1.4.0
-
-  # Charts & Data Visualization
-  fl_chart: ^0.68.0
-  syncfusion_flutter_charts: ^25.2.7
+  # Charts and Data Visualization
+  fl_chart: ^1.0.0
+  syncfusion_flutter_charts: ^30.1.42
   pie_chart: ^5.4.0
 
-  # Calendar & DateTime
+  # Calendar and Date Handling
   table_calendar: ^3.1.2
   flutter_calendar_carousel: ^2.4.3
+  intl: ^0.20.2
 
-  # Environment Variables
-  flutter_dotenv: ^5.1.0
+  # Network and HTTP
+  dio: ^5.7.0
+  http: ^1.2.2
+  retry: ^3.1.2
+  pretty_dio_logger: ^1.4.0
+  connectivity_plus: ^6.0.5
+  internet_connection_checker: ^3.0.1
+
+  # Device and System
+  device_info_plus: ^11.5.0
+  package_info_plus: ^8.0.2
+  battery_plus: ^6.0.2
+  sensors_plus: ^6.0.1
+  permission_handler: ^12.0.1
+  vibration: ^3.1.3
 
   # Notifications
-  flutter_local_notifications: ^17.2.1+2
-  awesome_notifications: ^0.9.3+1
+  flutter_local_notifications: ^19.4.0
+  awesome_notifications: ^0.10.1
 
-  # Weather & Location Services
+  # Audio
+  audioplayers: ^6.1.0
+
+  # Weather
   weather: ^3.1.1
-  location: ^6.0.2
 
-  # Forms & Input
-  reactive_forms: ^17.0.1
-  flutter_form_builder: ^9.2.1
-  form_builder_validators: ^10.0.1
+  # PDF and Document
+  pdf: ^3.11.1
+  printing: ^5.13.2
 
-  # File Handling
-  file_picker: ^8.0.3
-  open_file: ^3.3.2
-  printing: ^5.12.0
-  pdf: ^3.10.8
-
-  # Sensors & Hardware
-  sensors_plus: ^5.0.1
-  battery_plus: ^6.0.1
-  vibration: ^1.8.4
-
-  # Serialization
+  # Utilities
+  logger: ^2.4.0
+  uuid: ^4.5.1
+  path: ^1.9.0
+  flutter_dotenv: ^5.1.0
+  freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
-  freezed_annotation: ^2.4.1
-
-  # Caching & Performance
-  flutter_cache_manager: ^3.3.1
 
 dev_dependencies:
   flutter_test:
@@ -139,27 +131,31 @@ dev_dependencies:
   integration_test:
     sdk: flutter
 
-  # Linting & Code Quality
-  flutter_lints: ^4.0.0
-  dart_code_metrics: ^5.7.6
-
-  # Build Tools & Code Generation
-  build_runner: ^2.4.9
+  # Code Generation and Build Tools
+  build_runner: ^2.4.12
+  freezed: ^3.0.0-0.0.dev
   json_serializable: ^6.8.0
-  freezed: ^2.5.2
-  flutter_gen: ^5.6.0
   hive_generator: ^2.0.1
+  flutter_gen: ^5.7.0
 
-  # Testing & Mocking
-  test: ^1.25.2
+  # Testing
+  bloc_test: ^10.0.0
   mockito: ^5.4.4
-  bloc_test: ^9.1.7
-  network_image_mock: ^2.1.1
+  test: ^1.25.8
   golden_toolkit: ^0.15.0
+  network_image_mock: ^2.1.1
 
-  # Performance & Analysis
-  flutter_launcher_icons: ^0.13.1
-  flutter_native_splash: ^2.4.0
+  # Linting and Code Quality
+  flutter_lints: ^6.0.0
+
+  # UI Generation
+  flutter_native_splash: ^2.4.1
+
+# Dependency Overrides (if needed)
+dependency_overrides:
+  # Force compatible versions
+  meta: ^1.15.0
+  web: ^1.1.0
 
 # Flutter Launcher Icons Configuration
 flutter_launcher_icons:
@@ -170,8 +166,8 @@ flutter_launcher_icons:
   web:
     generate: true
     image_path: "assets/images/app_icon.png"
-    background_color: "#hexcode"
-    theme_color: "#hexcode"
+    background_color: "#4CAF50"
+    theme_color: "#2E7D32"
   windows:
     generate: true
     image_path: "assets/images/app_icon.png"
@@ -182,17 +178,17 @@ flutter_launcher_icons:
 
 # Native Splash Screen Configuration
 flutter_native_splash:
-  color: "#42a5f5"
+  color: "#4CAF50"
   image: assets/images/splash_logo.png
   branding: assets/images/branding.png
-  color_dark: "#042a49"
+  color_dark: "#1B5E20"
   image_dark: assets/images/splash_logo_dark.png
   branding_dark: assets/images/branding_dark.png
   android_12:
     image: assets/images/splash_logo_android12.png
-    icon_background_color: "#42a5f5"
+    icon_background_color: "#4CAF50"
     image_dark: assets/images/splash_logo_android12_dark.png
-    icon_background_color_dark: "#042a49"
+    icon_background_color_dark: "#1B5E20"
   web: false
 
 flutter:
@@ -205,7 +201,7 @@ flutter:
     - assets/images/onboarding/
     - assets/images/backgrounds/
     - assets/images/placeholders/
-    
+
     # Icons (organized by category)
     - assets/images/icons/
     - assets/images/icons/weather/
@@ -215,73 +211,104 @@ flutter:
     - assets/images/icons/fertilizers/
     - assets/images/icons/pests/
     - assets/images/icons/navigation/
-    
-    # ML Models & Data
+
+    # ML Models & Data - Complete Structure
     - assets/models/
     - assets/models/disease_detection/
     - assets/models/crop_prediction/
+    
+    # Individual ML Model Files
+    - assets/models/plant_disease_model.tflite
+    - assets/models/crop_type_model.tflite
+    - assets/models/growth_stage_model.tflite
+    - assets/models/crop_yield_model.tflite
+    - assets/models/soil_type_model.tflite
+    - assets/models/soil_nutrient_model.tflite
+    - assets/models/soil_moisture_model.tflite
+    - assets/models/soil_ph_model.tflite
+    - assets/models/pest_detection_model.tflite
+    - assets/models/beneficial_insects_model.tflite
+    - assets/models/pest_damage_model.tflite
+
+    # Labels and Classification Files
     - assets/labels/
+    - assets/models/disease_labels.txt
+    - assets/models/crop_type_labels.txt
+    - assets/models/growth_stage_labels.txt
+    - assets/models/soil_type_labels.txt
+    - assets/models/pest_labels.txt
+    - assets/models/beneficial_labels.txt
+    - assets/models/damage_labels.txt
+
+    # Additional Data Files
     - assets/data/
     - assets/data/crops/
     - assets/data/weather/
     - assets/data/diseases/
-    
+    - assets/data/fertilizers/
+    - assets/data/pesticides/
+    - assets/data/soil_types/
+    - assets/data/growth_stages/
+
     # Animations
     - assets/animations/
     - assets/animations/lottie/
-    
-    # Configuration
+
+    # Configuration Files
     - .env
     - .env.production
     - .env.staging
-    
+
     # Documentation
     - assets/docs/
     - assets/docs/user_guide/
+    - assets/docs/ml_models/
 
   # Fonts Configuration
   fonts:
-    # Primary Font Family
-    - family: Roboto
+    # Primary Font Family - Modern and Clean
+    - family: Inter
       fonts:
-        - asset: assets/fonts/Roboto/Roboto-Thin.ttf
+        - asset: assets/fonts/Inter/Inter-Thin.ttf
           weight: 100
-        - asset: assets/fonts/Roboto/Roboto-Light.ttf
+        - asset: assets/fonts/Inter/Inter-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Inter/Inter-Light.ttf
           weight: 300
-        - asset: assets/fonts/Roboto/Roboto-Regular.ttf
+        - asset: assets/fonts/Inter/Inter-Regular.ttf
           weight: 400
-        - asset: assets/fonts/Roboto/Roboto-Medium.ttf
+        - asset: assets/fonts/Inter/Inter-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Roboto/Roboto-Bold.ttf
+        - asset: assets/fonts/Inter/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter/Inter-Bold.ttf
           weight: 700
-        - asset: assets/fonts/Roboto/Roboto-Black.ttf
+        - asset: assets/fonts/Inter/Inter-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Inter/Inter-Black.ttf
           weight: 900
 
-    # Secondary Font Family
-    - family: OpenSans
+    # Secondary Font Family - For Headers
+    - family: Poppins
       fonts:
-        - asset: assets/fonts/OpenSans/OpenSans-Light.ttf
+        - asset: assets/fonts/Poppins/Poppins-Light.ttf
           weight: 300
-        - asset: assets/fonts/OpenSans/OpenSans-Regular.ttf
+        - asset: assets/fonts/Poppins/Poppins-Regular.ttf
           weight: 400
-        - asset: assets/fonts/OpenSans/OpenSans-Medium.ttf
+        - asset: assets/fonts/Poppins/Poppins-Medium.ttf
           weight: 500
-        - asset: assets/fonts/OpenSans/OpenSans-SemiBold.ttf
+        - asset: assets/fonts/Poppins/Poppins-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/OpenSans/OpenSans-Bold.ttf
+        - asset: assets/fonts/Poppins/Poppins-Bold.ttf
           weight: 700
-        - asset: assets/fonts/OpenSans/OpenSans-ExtraBold.ttf
+        - asset: assets/fonts/Poppins/Poppins-ExtraBold.ttf
           weight: 800
 
-    # Icon Fonts (if using custom icons)
+    # Custom Icon Font
     - family: AgriIcons
       fonts:
         - asset: assets/fonts/AgriIcons.ttf
 
-# Dependency Overrides (if needed)
-dependency_overrides:
-  # Add any specific version overrides here if conflicts arise
-  
 # Flutter Gen Configuration
 flutter_gen:
   output: lib/gen/
@@ -292,10 +319,11 @@ flutter_gen:
     rive: true
     lottie: true
 
-# Additional Configuration for specific packages
+# Internationalization Configuration
 flutter_intl:
   enabled: true
   class_name: S
   main_locale: en
   arb_dir: lib/l10n
   output_dir: lib/generated
+  use_deferred_loading: false

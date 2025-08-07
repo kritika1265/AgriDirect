@@ -9,6 +9,20 @@ import '../widgets/loading_widget.dart';
 
 /// Represents an expert available for consultation
 class Expert {
+  /// Constructor for Expert class
+  Expert({
+    required this.id,
+    required this.name,
+    required this.specialization,
+    required this.experience,
+    required this.rating,
+    required this.totalConsultations,
+    required this.imageUrl,
+    required this.isOnline,
+    required this.consultationFee,
+    required this.languages,
+  });
+
   /// Unique identifier for the expert
   final String id;
   
@@ -38,24 +52,24 @@ class Expert {
   
   /// List of languages the expert speaks
   final List<String> languages;
-
-  /// Constructor for Expert class
-  Expert({
-    required this.id,
-    required this.name,
-    required this.specialization,
-    required this.experience,
-    required this.rating,
-    required this.totalConsultations,
-    required this.imageUrl,
-    required this.isOnline,
-    required this.consultationFee,
-    required this.languages,
-  });
 }
 
 /// Represents a community post/question
 class CommunityPost {
+  /// Constructor for CommunityPost class
+  CommunityPost({
+    required this.id,
+    required this.authorName,
+    required this.authorLocation,
+    required this.title,
+    required this.content,
+    required this.timestamp,
+    required this.likes,
+    required this.replies,
+    required this.category,
+    required this.images,
+  });
+
   /// Unique identifier for the post
   final String id;
   
@@ -85,20 +99,6 @@ class CommunityPost {
   
   /// List of image URLs attached to the post
   final List<String> images;
-
-  /// Constructor for CommunityPost class
-  CommunityPost({
-    required this.id,
-    required this.authorName,
-    required this.authorLocation,
-    required this.title,
-    required this.content,
-    required this.timestamp,
-    required this.likes,
-    required this.replies,
-    required this.category,
-    required this.images,
-  });
 }
 
 /// Screen that provides smart connectivity features including expert consultation and community
@@ -248,13 +248,11 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
     );
   }
 
-  Widget _buildExpertsTab() {
-    return ListView.builder(
+  Widget _buildExpertsTab() => ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: _experts.length,
       itemBuilder: (context, index) => _buildExpertCard(_experts[index]),
     );
-  }
 
   Widget _buildCommunityTab() {
     final filteredPosts = _selectedCategory == 'All'
@@ -304,8 +302,7 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
     );
   }
 
-  Widget _buildCommunityPostCard(CommunityPost post) {
-    return CustomCard(
+  Widget _buildCommunityPostCard(CommunityPost post) => CustomCard(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -411,7 +408,6 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
         ),
       ),
     );
-  }
 
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
@@ -425,8 +421,7 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
     }
   }
 
-  Widget _buildExpertCard(Expert expert) {
-    return CustomCard(
+  Widget _buildExpertCard(Expert expert) => CustomCard(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -445,7 +440,7 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
                       Positioned(
                         bottom: 0,
                         right: 0,
-                        child: Container(
+                        child:                         Container(
                           width: 16,
                           height: 16,
                           decoration: BoxDecoration(
@@ -574,10 +569,8 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
         ),
       ),
     );
-  }
 
-  Widget _buildAskQuestionTab() {
-    return Padding(
+  Widget _buildAskQuestionTab() => Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -592,7 +585,7 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
           const SizedBox(height: 16),
           CustomTextField(
             controller: _questionController,
-            placeholder: 'Type your question here...',
+            hint: 'Type your question here...',
             maxLines: 5,
           ),
           const SizedBox(height: 16),
@@ -608,7 +601,6 @@ class _SmartConnectScreenState extends State<SmartConnectScreen> with SingleTick
         ],
       ),
     );
-  }
 
   void _submitQuestion() {
     if (!mounted) {

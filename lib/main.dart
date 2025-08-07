@@ -1,20 +1,19 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 
 import 'config/app_config.dart';
 import 'config/firebase_config.dart';
-import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/connectivity_provider.dart';
 import 'providers/ml_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/weather_provider.dart';
 import 'services/notification_service.dart';
-import 'utils/app_router.dart';
+
 import 'utils/colors.dart';
 
 void main() async {
@@ -22,7 +21,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Load environment variables first
-  await dotenv.load(fileName: ".env");
+  await dotenv.load();
   
   // Set up error handling for the app
   _setupErrorHandling();
@@ -66,11 +65,13 @@ Future<void> _initializeApp() async {
 Future<void> _initializeFirebase() async {
   try {
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+      // Remove DefaultFirebaseOptions.currentPlatform if firebase_options.dart doesn't exist
+      // You need to run `flutterfire configure` to generate firebase_options.dart
     );
     
     // Initialize Firebase config instance
-    await FirebaseConfig().initialize();
+    final firebaseConfig = FirebaseConfig();
+    await firebaseConfig.initialize();
     
     if (kDebugMode) {
       print('✅ Firebase initialized successfully');
@@ -87,7 +88,8 @@ Future<void> _initializeFirebase() async {
 Future<void> _initializeServices() async {
   try {
     // Initialize notifications
-    await NotificationService.initialize();
+    final notificationService = NotificationService();
+    await notificationService.initialize();
     
     if (kDebugMode) {
       print('✅ Services initialized successfully');
@@ -171,16 +173,17 @@ void _handleInitializationError(Object error, StackTrace stackTrace) {
 
 /// Error screen shown when app fails to initialize
 class InitializationErrorScreen extends StatelessWidget {
-  final String error;
-  
+  /// Creates an initialization error screen
   const InitializationErrorScreen({
-    super.key,
     required this.error,
+    super.key,
   });
 
+  /// The error message to display
+  final String error;
+
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       backgroundColor: Colors.red.shade50,
       body: SafeArea(
         child: Padding(
@@ -266,16 +269,15 @@ class InitializationErrorScreen extends StatelessWidget {
         ),
       ),
     );
-  }
 }
 
 /// Main application widget
 class AgriDirectApp extends StatelessWidget {
+  /// Creates the main application widget
   const AgriDirectApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
+  Widget build(BuildContext context) => MultiProvider(
       providers: [
         ChangeNotifierProvider(
           create: (_) => AuthProvider(),
@@ -293,38 +295,34 @@ class AgriDirectApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MLProvider()),
       ],
       child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
-          return MaterialApp.router(
+        builder: (context, themeProvider, child) => MaterialApp(
             title: AppConfig.appName,
             debugShowCheckedModeBanner: false,
             theme: _buildTheme(themeProvider.isDarkMode),
-            routerConfig: AppRouter().router,
+            // Replace AppRouter().router with your actual router implementation
+            home: const Placeholder(), // Replace with your home screen
             builder: (context, child) {
               // Handle app-level errors
-              ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
-                return _buildErrorWidget(errorDetails);
-              };
+              ErrorWidget.builder = (FlutterErrorDetails errorDetails) =>
+                  _buildErrorWidget(errorDetails);
               
               return MediaQuery(
                 data: MediaQuery.of(context).copyWith(
                   textScaler: TextScaler.linear(
                     MediaQuery.textScalerOf(context)
-                        .scale(1.0)
+                        .scale(1)
                         .clamp(0.8, 1.2),
                   ),
                 ),
                 child: child!,
               );
             },
-          );
-        },
+          ),
       ),
     );
-  }
 
   /// Build custom error widget for runtime errors
-  Widget _buildErrorWidget(FlutterErrorDetails errorDetails) {
-    return Material(
+  Widget _buildErrorWidget(FlutterErrorDetails errorDetails) => Material(
       child: Container(
         color: Colors.red.shade50,
         padding: const EdgeInsets.all(16),
@@ -360,7 +358,6 @@ class AgriDirectApp extends StatelessWidget {
         ),
       ),
     );
-  }
 
   /// Build app theme
   ThemeData _buildTheme(bool isDarkMode) {
@@ -371,7 +368,6 @@ class AgriDirectApp extends StatelessWidget {
           )
         : ColorScheme.fromSeed(
             seedColor: AppColors.primary,
-            brightness: Brightness.light,
           );
 
     return ThemeData(
@@ -381,7 +377,6 @@ class AgriDirectApp extends StatelessWidget {
       
       // App Bar Theme
       appBarTheme: AppBarTheme(
-        elevation: 0,
         centerTitle: true,
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
@@ -418,16 +413,12 @@ class AgriDirectApp extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
-        margin: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
-        ),
       ),
       
       // Input Decoration Theme
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -443,7 +434,6 @@ class AgriDirectApp extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
             color: colorScheme.error,
-            width: 1,
           ),
         ),
         focusedErrorBorder: OutlineInputBorder(
@@ -464,7 +454,7 @@ class AgriDirectApp extends StatelessWidget {
         elevation: 8,
         backgroundColor: colorScheme.surface,
         selectedItemColor: colorScheme.primary,
-        unselectedItemColor: colorScheme.onSurface.withOpacity(0.6),
+        unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: const TextStyle(
           fontSize: 12,
@@ -485,7 +475,7 @@ class AgriDirectApp extends StatelessWidget {
       ),
       
       // Dialog Theme
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         elevation: 8,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -498,7 +488,6 @@ class AgriDirectApp extends StatelessWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
-        margin: const EdgeInsets.all(16),
       ),
     );
   }
