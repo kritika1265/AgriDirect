@@ -1,8 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import '../models/user_model.dart' as models; // Added alias to resolve ambiguous import
+import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../services/image_service.dart'; // This now includes ImagePickerService, NetworkService, etc.
 import '../utils/colors.dart';
@@ -70,7 +69,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final imageSource = await _showImageSourceDialog();
       if (imageSource == null) return;
       
-      setState(() => _isLoading = true);
+      setState(() {
+        _isLoading = true;
+      });
       
       XFile? pickedImage;
       if (imageSource == ImageSource.camera) {
@@ -85,7 +86,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         // Validate the image
         final isValid = await ImageValidator.validateImage(imageFile);
         if (!isValid) {
-          setState(() => _isLoading = false);
+          setState(() {
+            _isLoading = false;
+          });
           _showSnackBar('Invalid image file. Please select a valid image (max ${ImageConstants.maxFileSizeMB}MB)');
           return;
         }
@@ -106,54 +109,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
             });
             _showSnackBar('Profile image updated successfully!');
           } else {
-            setState(() => _isLoading = false);
+            setState(() {
+              _isLoading = false;
+            });
             _showSnackBar('Failed to upload image: ${response.error ?? 'Unknown error'}');
           }
         } else {
-          setState(() => _isLoading = false);
+          setState(() {
+            _isLoading = false;
+          });
           _showSnackBar('Failed to process image');
         }
       } else {
-        setState(() => _isLoading = false);
+        setState(() {
+          _isLoading = false;
+        });
       }
     } catch (e) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+      });
       _showSnackBar('Failed to update profile image: $e');
     }
   }
 
-  Future<ImageSource?> _showImageSourceDialog() async {
-    return showDialog<ImageSource>(
+  Future<ImageSource?> _showImageSourceDialog() => showDialog<ImageSource>(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select Image Source'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Camera'),
-                onTap: () => Navigator.of(context).pop(ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo_library),
-                title: const Text('Gallery'),
-                onTap: () => Navigator.of(context).pop(ImageSource.gallery),
-              ),
-            ],
-          ),
-        );
-      },
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Select Image Source'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Camera'),
+              onTap: () => Navigator.of(context).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Gallery'),
+              onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
     );
-  }
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
     
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+    });
     
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -175,7 +184,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         updatedAt: DateTime.now(),
       );
       
-      await authProvider.updateUser(updatedUser);
+      // Update user profile using the correct method from AuthProvider
+      await authProvider.updateUserProfile(updatedUser);
       
       setState(() {
         _isEditing = false;
@@ -184,7 +194,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       
       _showSnackBar('Profile updated successfully!');
     } catch (e) {
-      setState(() => _isLoading = false);
+      setState(() {
+        _isLoading = false;
+      });
       _showSnackBar('Failed to update profile: $e');
     }
   }
@@ -207,14 +219,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (!_isEditing)
               IconButton(
                 icon: const Icon(Icons.edit),
-                onPressed: () => setState(() => _isEditing = true),
+                onPressed: () {
+                  setState(() {
+                    _isEditing = true;
+                  });
+                },
               ),
           ],
         ),
         body: _isLoading
             ? const LoadingWidget()
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -294,7 +310,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   if (user?.isVerified == true)
-                    const Row( // Added const
+                    const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
@@ -412,7 +428,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Text(experience),
                   )).toList(),
               onChanged: _isEditing
-                  ? (value) => setState(() => _selectedExperience = value!)
+                  ? (value) => setState(() {
+                      _selectedExperience = value!;
+                    })
                   : null,
             ),
           ),
@@ -425,7 +443,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: CustomButton(
               text: 'Cancel',
               onPressed: () {
-                setState(() => _isEditing = false);
+                setState(() {
+                  _isEditing = false;
+                });
                 _loadUserProfile(); // Reset form fields
               },
             ),
@@ -448,7 +468,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1), // Changed withValues to withOpacity
+              color: Colors.grey.withValues(alpha: 0.1),
               spreadRadius: 1,
               blurRadius: 4,
               offset: const Offset(0, 2),

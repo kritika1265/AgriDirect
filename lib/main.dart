@@ -16,9 +16,29 @@ import 'providers/weather_provider.dart';
 import 'services/notification_service.dart';
 import 'utils/colors.dart';
 
+// Import all screens
+import 'screens/splash_screen.dart';
+import 'screens/auth_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/profile_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/weather_screen.dart';
+import 'screens/crop_calendar_screen.dart';
+import 'screens/crop_prediction_screen.dart';
+import 'screens/disease_detection_screen.dart';
+import 'screens/marketplace_screen.dart';
+import 'screens/rent_tools_screen.dart';
+import 'screens/smart_connect_screen.dart';
+import 'screens/feed_screen.dart';
+import 'screens/help_screen.dart';
+
 void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
+  
+  if (kDebugMode) {
+    print('🚀 Starting AgriDirect App...');
+  }
   
   // Load environment variables first
   await _loadEnvironmentVariables();
@@ -30,10 +50,18 @@ void main() async {
     // Initialize the application
     await _initializeApp();
     
+    if (kDebugMode) {
+      print('✅ App initialization completed successfully');
+    }
+    
     // Run the app
     runApp(const AgriDirectApp());
   } catch (e, stackTrace) {
     // Handle initialization errors
+    if (kDebugMode) {
+      print('❌ Critical initialization error: $e');
+      print('Stack trace: $stackTrace');
+    }
     _handleInitializationError(e, stackTrace);
   }
 }
@@ -43,11 +71,11 @@ Future<void> _loadEnvironmentVariables() async {
   try {
     await dotenv.load(fileName: '.env');
     if (kDebugMode) {
-      print('Environment variables loaded successfully');
+      print('✅ Environment variables loaded successfully');
     }
   } catch (e) {
     if (kDebugMode) {
-      print('Warning: Could not load .env file: $e');
+      print('⚠️ Warning: Could not load .env file: $e');
       print('App will use default configuration');
     }
     // Don't throw error - app can work without .env file
@@ -57,6 +85,10 @@ Future<void> _loadEnvironmentVariables() async {
 /// Initialize all app dependencies
 Future<void> _initializeApp() async {
   try {
+    if (kDebugMode) {
+      print('🔧 Initializing app dependencies...');
+    }
+    
     // Initialize Firebase
     await _initializeFirebase();
     
@@ -67,11 +99,11 @@ Future<void> _initializeApp() async {
     await _setupSystemUI();
     
     if (kDebugMode) {
-      print('App initialization completed successfully');
+      print('✅ All app dependencies initialized successfully');
     }
   } catch (e) {
     if (kDebugMode) {
-      print('App initialization failed: $e');
+      print('❌ App initialization failed: $e');
     }
     rethrow;
   }
@@ -80,11 +112,22 @@ Future<void> _initializeApp() async {
 /// Initialize Firebase with proper error handling
 Future<void> _initializeFirebase() async {
   try {
+    if (kDebugMode) {
+      print('🔥 Initializing Firebase...');
+    }
+    
     // Initialize Firebase with platform-specific options
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
+      if (kDebugMode) {
+        print('✅ Firebase app initialized');
+      }
+    } else {
+      if (kDebugMode) {
+        print('✅ Firebase already initialized');
+      }
     }
     
     // Initialize Firebase config instance
@@ -92,14 +135,15 @@ Future<void> _initializeFirebase() async {
     await firebaseConfig.initialize();
     
     if (kDebugMode) {
-      print('Firebase initialized successfully');
+      print('✅ Firebase services initialized successfully');
       print('Available services: ${firebaseConfig.availableServices}');
+      print('Is initialized: ${firebaseConfig.isInitialized}');
     }
   } catch (e) {
     if (kDebugMode) {
-      print('Firebase initialization failed: $e');
-      print('Tip: Run "flutterfire configure" to set up Firebase properly');
-      print('Continuing without Firebase - some features may be limited');
+      print('❌ Firebase initialization failed: $e');
+      print('💡 Tip: Run "flutterfire configure" to set up Firebase properly');
+      print('📱 App will continue without Firebase - some features may be limited');
     }
     
     // Don't throw error if Firebase fails - app can work offline
@@ -109,6 +153,10 @@ Future<void> _initializeFirebase() async {
 /// Initialize other services
 Future<void> _initializeServices() async {
   try {
+    if (kDebugMode) {
+      print('🛠️ Initializing services...');
+    }
+    
     // Initialize notifications only if Firebase is available
     final firebaseConfig = FirebaseConfig();
     if (firebaseConfig.isInitialized && firebaseConfig.messaging != null) {
@@ -116,16 +164,16 @@ Future<void> _initializeServices() async {
         final notificationService = NotificationService();
         await notificationService.initialize();
         if (kDebugMode) {
-          print('Notification service initialized successfully');
+          print('✅ Notification service initialized successfully');
         }
       } catch (e) {
         if (kDebugMode) {
-          print('Notifications service failed to initialize: $e');
+          print('⚠️ Notifications service failed to initialize: $e');
         }
       }
     } else {
       if (kDebugMode) {
-        print('Skipping notification service - Firebase messaging not available');
+        print('⚠️ Skipping notification service - Firebase messaging not available');
       }
     }
     
@@ -134,11 +182,11 @@ Future<void> _initializeServices() async {
     // await _initializeCameraService();
     
     if (kDebugMode) {
-      print('Services initialization completed');
+      print('✅ Services initialization completed');
     }
   } catch (e) {
     if (kDebugMode) {
-      print('Warning: Some services failed to initialize: $e');
+      print('⚠️ Warning: Some services failed to initialize: $e');
     }
     // Don't throw error - app can work without some services
   }
@@ -147,6 +195,10 @@ Future<void> _initializeServices() async {
 /// Set up system UI preferences
 Future<void> _setupSystemUI() async {
   try {
+    if (kDebugMode) {
+      print('🎨 Setting up system UI...');
+    }
+    
     // Set preferred orientations
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
@@ -165,11 +217,11 @@ Future<void> _setupSystemUI() async {
     );
     
     if (kDebugMode) {
-      print('System UI configured successfully');
+      print('✅ System UI configured successfully');
     }
   } catch (e) {
     if (kDebugMode) {
-      print('Warning: System UI setup failed: $e');
+      print('⚠️ Warning: System UI setup failed: $e');
     }
     // Don't throw error - app can work without custom UI settings
   }
@@ -177,44 +229,64 @@ Future<void> _setupSystemUI() async {
 
 /// Set up global error handling
 void _setupErrorHandling() {
+  if (kDebugMode) {
+    print('🛡️ Setting up error handling...');
+  }
+  
   // Handle Flutter framework errors
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
     
     if (kDebugMode) {
-      print('Flutter Error: ${details.exception}');
-      print('StackTrace: ${details.stack}');
+      print('❌ Flutter Error: ${details.exception}');
+      print('📍 StackTrace: ${details.stack}');
     }
     
     // Report to Firebase Crashlytics if available
-    final firebaseConfig = FirebaseConfig();
-    if (firebaseConfig.isInitialized && firebaseConfig.crashlytics != null) {
-      firebaseConfig.recordError(details.exception, details.stack);
+    try {
+      final firebaseConfig = FirebaseConfig();
+      if (firebaseConfig.isInitialized && firebaseConfig.crashlytics != null) {
+        firebaseConfig.recordError(details.exception, details.stack);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('⚠️ Failed to report error to Crashlytics: $e');
+      }
     }
   };
   
   // Handle other errors
   PlatformDispatcher.instance.onError = (error, stack) {
     if (kDebugMode) {
-      print('Platform Error: $error');
-      print('StackTrace: $stack');
+      print('❌ Platform Error: $error');
+      print('📍 StackTrace: $stack');
     }
     
     // Report to Firebase Crashlytics if available
-    final firebaseConfig = FirebaseConfig();
-    if (firebaseConfig.isInitialized && firebaseConfig.crashlytics != null) {
-      firebaseConfig.recordError(error, stack);
+    try {
+      final firebaseConfig = FirebaseConfig();
+      if (firebaseConfig.isInitialized && firebaseConfig.crashlytics != null) {
+        firebaseConfig.recordError(error, stack);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('⚠️ Failed to report error to Crashlytics: $e');
+      }
     }
     
     return true;
   };
+  
+  if (kDebugMode) {
+    print('✅ Error handling configured');
+  }
 }
 
 /// Handle initialization errors
 void _handleInitializationError(Object error, StackTrace stackTrace) {
   if (kDebugMode) {
-    print('Critical initialization error: $error');
-    print('StackTrace: $stackTrace');
+    print('💥 Critical initialization error: $error');
+    print('📍 StackTrace: $stackTrace');
   }
   
   // Run a minimal error app
@@ -363,73 +435,216 @@ class AgriDirectApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kDebugMode) {
+      print('🎯 Building AgriDirectApp...');
+    }
+    
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => AuthProvider(),
+          create: (context) {
+            if (kDebugMode) {
+              print('🔐 Creating AuthProvider...');
+            }
+            return AuthProvider();
+          },
           lazy: false, // Initialize immediately
         ),
         ChangeNotifierProvider(
-          create: (_) => ThemeProvider(),
+          create: (context) {
+            if (kDebugMode) {
+              print('🎨 Creating ThemeProvider...');
+            }
+            return ThemeProvider();
+          },
           lazy: false, // Initialize immediately for theme
         ),
         ChangeNotifierProvider(
-          create: (_) => ConnectivityProvider(),
+          create: (context) {
+            if (kDebugMode) {
+              print('📡 Creating ConnectivityProvider...');
+            }
+            return ConnectivityProvider();
+          },
           lazy: false, // Initialize immediately for connectivity
         ),
-        ChangeNotifierProvider(create: (_) => WeatherProvider()),
-        ChangeNotifierProvider(create: (_) => MLProvider()),
+        ChangeNotifierProvider(
+          create: (context) {
+            if (kDebugMode) {
+              print('🌤️ Creating WeatherProvider...');
+            }
+            return WeatherProvider();
+          },
+        ),
+        ChangeNotifierProvider(
+          create: (context) {
+            if (kDebugMode) {
+              print('🤖 Creating MLProvider...');
+            }
+            return MLProvider();
+          },
+        ),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, child) {
-          return MaterialApp(
-            title: AppConfig.appName,
-            debugShowCheckedModeBanner: false,
-            theme: _buildTheme(false),
-            darkTheme: _buildTheme(true),
-            themeMode: themeProvider.isDarkMode 
-                ? ThemeMode.dark 
-                : ThemeMode.light,
-            
-            // Home screen - replace with your actual router/home screen
-            home: const _AppHome(),
-            
-            // Global app configurations
-            builder: (context, child) {
-              // Handle app-level errors
-              ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
-                return _buildErrorWidget(errorDetails);
-              };
+      child: Builder(
+        builder: (context) {
+          if (kDebugMode) {
+            print('🏗️ Building MaterialApp with providers...');
+          }
+          
+          return Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              if (kDebugMode) {
+                print('🎨 ThemeProvider consumed, isDarkMode: ${themeProvider.isDarkMode}');
+              }
               
-              // Handle text scaling and accessibility
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  textScaler: TextScaler.linear(
-                    MediaQuery.textScalerOf(context)
-                        .scale(1.0)
-                        .clamp(0.8, 1.3),
-                  ),
+              return MaterialApp(
+                title: AppConfig.appName,
+                debugShowCheckedModeBanner: false,
+                theme: _buildTheme(false),
+                darkTheme: _buildTheme(true),
+                themeMode: themeProvider.isDarkMode 
+                    ? ThemeMode.dark 
+                    : ThemeMode.light,
+                
+                // App routing logic
+                home: Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    if (kDebugMode) {
+                      print('🔐 AuthProvider state: isLoading=${authProvider.isLoading}, isAuthenticated=${authProvider.isAuthenticated}');
+                    }
+                    
+                    // Show splash screen while checking auth state
+                    if (authProvider.isLoading) {
+                      return const SplashScreen();
+                    }
+                    
+                    // Navigate based on authentication state
+                    if (authProvider.isAuthenticated) {
+                      return const HomeScreen();
+                    } else {
+                      return const AuthScreen();
+                    }
+                  },
                 ),
-                child: child!,
-              );
-            },
-            
-            // Locale settings
-            supportedLocales: const [
-              Locale('en', 'US'),
-              Locale('hi', 'IN'), // Hindi support for Indian farmers
-              Locale('gu', 'IN'), // Gujarati support
-            ],
-            
-            // Route handling
-            onUnknownRoute: (settings) {
-              return MaterialPageRoute(
-                builder: (context) => const _NotFoundScreen(),
+                
+                // Define all app routes
+                routes: {
+                  '/splash': (context) => const SplashScreen(),
+                  '/auth': (context) => const AuthScreen(),
+                  '/home': (context) => const HomeScreen(),
+                  '/profile': (context) => const ProfileScreen(),
+                  '/settings': (context) => const SettingsScreen(),
+                  '/weather': (context) => const WeatherScreen(),
+                  '/crop-calendar': (context) => const CropCalendarScreen(),
+                  '/crop-prediction': (context) => const CropPredictionScreen(),
+                  '/disease-detection': (context) => const DiseaseDetectionScreen(),
+                  '/marketplace': (context) => const MarketplaceScreen(),
+                  '/rent-tools': (context) => const RentToolsScreen(),
+                  '/smart-connect': (context) => const SmartConnectScreen(),
+                  '/feed': (context) => const FeedScreen(),
+                  '/help': (context) => const HelpScreen(),
+                },
+                
+                // Global app configurations
+                builder: (context, child) {
+                  // Handle app-level errors
+                  ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+                    if (kDebugMode) {
+                      print('❌ Building error widget for: ${errorDetails.exception}');
+                    }
+                    return _buildErrorWidget(errorDetails);
+                  };
+                  
+                  // Handle text scaling and accessibility
+                  return MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                      textScaler: TextScaler.linear(
+                        MediaQuery.textScalerOf(context)
+                            .scale(1.0)
+                            .clamp(0.8, 1.3),
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
+                
+                // Locale settings
+                supportedLocales: const [
+                  Locale('en', 'US'),
+                  Locale('hi', 'IN'), // Hindi support for Indian farmers
+                  Locale('gu', 'IN'), // Gujarati support
+                ],
+                
+                // Route handling
+                onGenerateRoute: (RouteSettings settings) {
+                  if (kDebugMode) {
+                    print('📍 Generating route for: ${settings.name}');
+                  }
+                  
+                  // Handle dynamic routes with parameters
+                  switch (settings.name) {
+                    case '/profile':
+                      return _createRoute(const ProfileScreen());
+                    case '/settings':
+                      return _createRoute(const SettingsScreen());
+                    case '/weather':
+                      return _createRoute(const WeatherScreen());
+                    case '/crop-calendar':
+                      return _createRoute(const CropCalendarScreen());
+                    case '/crop-prediction':
+                      return _createRoute(const CropPredictionScreen());
+                    case '/disease-detection':
+                      return _createRoute(const DiseaseDetectionScreen());
+                    case '/marketplace':
+                      return _createRoute(const MarketplaceScreen());
+                    case '/rent-tools':
+                      return _createRoute(const RentToolsScreen());
+                    case '/smart-connect':
+                      return _createRoute(const SmartConnectScreen());
+                    case '/feed':
+                      return _createRoute(const FeedScreen());
+                    case '/help':
+                      return _createRoute(const HelpScreen());
+                    default:
+                      return null;
+                  }
+                },
+                
+                onUnknownRoute: (settings) {
+                  if (kDebugMode) {
+                    print('❓ Unknown route: ${settings.name}');
+                  }
+                  return MaterialPageRoute(
+                    builder: (context) => const _NotFoundScreen(),
+                  );
+                },
               );
             },
           );
         },
       ),
+    );
+  }
+
+  /// Create custom page route with animation
+  PageRoute _createRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        const curve = Curves.easeInOutCubic;
+
+        var tween = Tween(begin: begin, end: end).chain(
+          CurveTween(curve: curve),
+        );
+
+        return SlideTransition(
+          position: animation.drive(tween),
+          child: child,
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
     );
   }
 
@@ -540,33 +755,6 @@ class AgriDirectApp extends StatelessWidget {
         ),
       ),
       
-      // Outlined Button Theme
-      outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 12,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          side: BorderSide(color: colorScheme.primary),
-        ),
-      ),
-      
-      // Text Button Theme
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 8,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-      ),
-      
       // Card Theme
       cardTheme: CardThemeData(
         elevation: 2,
@@ -595,19 +783,6 @@ class AgriDirectApp extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(
             color: colorScheme.primary,
-            width: 2,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.error,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.error,
             width: 2,
           ),
         ),
@@ -678,63 +853,6 @@ class AgriDirectApp extends StatelessWidget {
   }
 }
 
-/// Placeholder home screen - replace with your actual home screen
-class _AppHome extends StatelessWidget {
-  const _AppHome();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('AgriDirect'),
-        actions: [
-          Consumer<ConnectivityProvider>(
-            builder: (context, connectivity, child) {
-              return Icon(
-                connectivity.isConnected 
-                    ? Icons.cloud_done 
-                    : Icons.cloud_off,
-                color: connectivity.isConnected 
-                    ? Colors.green 
-                    : Colors.red,
-              );
-            },
-          ),
-          const SizedBox(width: 16),
-        ],
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.agriculture,
-              size: 100,
-              color: Colors.green,
-            ),
-            SizedBox(height: 24),
-            Text(
-              'Welcome to AgriDirect',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Your smart farming companion',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /// Not found screen for unknown routes
 class _NotFoundScreen extends StatelessWidget {
   const _NotFoundScreen();
@@ -744,30 +862,48 @@ class _NotFoundScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Page Not Found'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pushReplacementNamed('/home'),
+        ),
       ),
-      body: const Center(
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.error_outline,
               size: 100,
-              color: Colors.grey,
+              color: Colors.grey.shade400,
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             Text(
               '404 - Page Not Found',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
+                color: Colors.grey.shade700,
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'The page you are looking for does not exist.',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey,
+                color: Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.of(context).pushReplacementNamed('/home'),
+              icon: const Icon(Icons.home),
+              label: const Text('Go to Home'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
               ),
             ),
           ],

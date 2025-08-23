@@ -1,389 +1,574 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
-import '../widgets/custom_button.dart';
-import '../widgets/custom_text_field.dart';
-import '../widgets/loading_widget.dart';
-import '../utils/colors.dart';
-import '../utils/validators.dart';
 
-/// Authentication screen for phone number and OTP verification
 class AuthScreen extends StatefulWidget {
-  /// Creates an AuthScreen widget
-  const AuthScreen({super.key});
+  const AuthScreen({Key? key}) : super(key: key);
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends State<AuthScreen> with TickerProviderStateMixin {
-  final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
-  final _otpController = TextEditingController();
+class _AuthScreenState extends State<AuthScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final _loginFormKey = GlobalKey<FormState>();
+  final _registerFormKey = GlobalKey<FormState>();
   
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
+  // Login controllers
+  final TextEditingController _loginEmailController = TextEditingController();
+  final TextEditingController _loginPasswordController = TextEditingController();
   
-  bool _isOtpSent = false;
-  int _resendTimer = 60;
-  bool _canResend = false;
-  Timer? _timer;
+  // Register controllers
+  final TextEditingController _registerNameController = TextEditingController();
+  final TextEditingController _registerEmailController = TextEditingController();
+  final TextEditingController _registerPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
+  
+  bool _isLoginPasswordVisible = false;
+  bool _isRegisterPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _setupAnimations();
-  }
-
-  void _setupAnimations() {
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0,
-      end: 1,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0, 0.6, curve: Curves.easeOut),
-    ));
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.3, 1, curve: Curves.easeOut),
-    ));
-    
-    _animationController.forward();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
-    _animationController.dispose();
-    _phoneController.dispose();
-    _otpController.dispose();
+    _tabController.dispose();
+    _loginEmailController.dispose();
+    _loginPasswordController.dispose();
+    _registerNameController.dispose();
+    _registerEmailController.dispose();
+    _registerPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _startResendTimer() {
-    setState(() {
-      _resendTimer = 60;
-      _canResend = false;
-    });
-    
-    _countdown();
-  }
-
-  void _countdown() {
-    _timer?.cancel(); // Cancel any existing timer
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (mounted && _resendTimer > 0) {
-        setState(() {
-          _resendTimer--;
-        });
-      } else {
-        timer.cancel();
-        if (mounted) {
-          setState(() {
-            _canResend = true;
-          });
-        }
-      }
-    });
-  }
-
   @override
-  Widget build(BuildContext context) => Scaffold(
-    body: DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: AppColors.primaryGradient,
-      ),
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) => FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 60),
-                    _buildLogo(),
-                    const SizedBox(height: 60),
-                    _buildAuthForm(),
-                  ],
-                ),
-              ),
-            ),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF4CAF50),
+              Color(0xFF2E7D32),
+            ],
           ),
         ),
-      ),
-    ),
-  );
-
-  Widget _buildLogo() => Center(
-    child: Column(
-      children: [
-        Container(
-          width: 120,
-          height: 120,
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(top: 20),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildTabBar(),
+                      Expanded(
+                        child: TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _buildLoginTab(),
+                            _buildRegisterTab(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
-          child: const Icon(
-            Icons.agriculture,
-            size: 60,
-            color: AppColors.primary,
-          ),
         ),
-        const SizedBox(height: 24),
-        const Text(
-          'AgriDirect',
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textOnPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Smart Farming Solutions',
-          style: TextStyle(
-            fontSize: 16,
-            color: AppColors.textOnPrimary.withValues(alpha: 0.8),
-          ),
-        ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 
-  Widget _buildAuthForm() => Consumer<AuthProvider>(
-    builder: (context, authProvider, child) => Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+      child: Column(
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.agriculture,
+              size: 40,
+              color: Color(0xFF4CAF50),
+            ),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'AgriDirect',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const Text(
+            'Your Gateway to Smart Farming',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white70,
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          color: const Color(0xFF4CAF50),
+          borderRadius: BorderRadius.circular(25),
+        ),
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.grey[600],
+        labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+        tabs: const [
+          Tab(text: 'Login'),
+          Tab(text: 'Register'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
       child: Form(
-        key: _formKey,
+        key: _loginFormKey,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              _isOtpSent ? 'Verify OTP' : 'Welcome Back',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-              textAlign: TextAlign.center,
+            const SizedBox(height: 20),
+            _buildTextField(
+              controller: _loginEmailController,
+              label: 'Email',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              validator: _validateEmail,
             ),
-            const SizedBox(height: 8),
-            Text(
-              _isOtpSent
-                  ? 'Enter the OTP sent to ${_phoneController.text}'
-                  : 'Enter your phone number to continue',
-              style: const TextStyle(
-                fontSize: 14,
-                color: AppColors.textSecondary,
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _loginPasswordController,
+              label: 'Password',
+              icon: Icons.lock_outline,
+              obscureText: !_isLoginPasswordVisible,
+              validator: _validatePassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _isLoginPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isLoginPasswordVisible = !_isLoginPasswordVisible;
+                  });
+                },
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
-            if (!_isOtpSent) ...[
-              TextFormField(
-                controller: _phoneController,
-                decoration: const InputDecoration(
-                  labelText: 'Phone Number',
-                  hintText: '+91 9876543210',
-                  prefixIcon: Icon(Icons.phone),
-                ),
-                keyboardType: TextInputType.phone,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(10),
-                ],
-                validator: Validators.validatePhoneNumber,
-              ),
-            ] else ...[
-              TextFormField(
-                controller: _otpController,
-                decoration: const InputDecoration(
-                  labelText: 'OTP',
-                  hintText: 'Enter 6-digit OTP',
-                  prefixIcon: Icon(Icons.security),
-                ),
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(6),
-                ],
-                validator: Validators.validateOTP,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _isOtpSent = false;
-                        _otpController.clear();
-                        _timer?.cancel();
-                        _canResend = false;
-                      });
-                    },
-                    child: const Text('Change Number'),
-                  ),
-                  TextButton(
-                    onPressed: _canResend ? () => _resendOTP() : null,
-                    child: Text(
-                      _canResend ? 'Resend OTP' : 'Resend in ${_resendTimer}s',
-                    ),
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 24),
-            if (authProvider.errorMessage != null) ...[
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.error.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: AppColors.error,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        authProvider.errorMessage!,
-                        style: const TextStyle(
-                          color: AppColors.error,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: _showForgotPasswordDialog,
+                child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(color: Color(0xFF4CAF50)),
                 ),
               ),
-              const SizedBox(height: 16),
-            ],
-            ElevatedButton(
-              onPressed: authProvider.isLoading ? null : () => _handleAuth(),
-              child: authProvider.isLoading
-                  ? const CircularProgressIndicator()
-                  : Text(_isOtpSent ? 'Verify OTP' : 'Send OTP'),
             ),
-            if (_isOtpSent) ...[
-              const SizedBox(height: 16),
-              OutlinedButton(
-                onPressed: authProvider.isLoading
-                    ? null
-                    : () {
-                        setState(() {
-                          _isOtpSent = false;
-                          _otpController.clear();
-                          _timer?.cancel();
-                          _canResend = false;
-                        });
-                      },
-                child: const Text('Back'),
-              ),
-            ],
+            const SizedBox(height: 20),
+            _buildActionButton(
+              text: 'Login',
+              onPressed: _handleLogin,
+            ),
+            const SizedBox(height: 30),
+            _buildSocialLogin(),
           ],
         ),
       ),
-    ),
-  );
+    );
+  }
 
-  Future<void> _handleAuth() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
+  Widget _buildRegisterTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Form(
+        key: _registerFormKey,
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            _buildTextField(
+              controller: _registerNameController,
+              label: 'Full Name',
+              icon: Icons.person_outline,
+              validator: _validateName,
+            ),
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _registerEmailController,
+              label: 'Email',
+              icon: Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+              validator: _validateEmail,
+            ),
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _registerPasswordController,
+              label: 'Password',
+              icon: Icons.lock_outline,
+              obscureText: !_isRegisterPasswordVisible,
+              validator: _validatePassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _isRegisterPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isRegisterPasswordVisible = !_isRegisterPasswordVisible;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildTextField(
+              controller: _confirmPasswordController,
+              label: 'Confirm Password',
+              icon: Icons.lock_outline,
+              obscureText: !_isConfirmPasswordVisible,
+              validator: _validateConfirmPassword,
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: 30),
+            _buildActionButton(
+              text: 'Create Account',
+              onPressed: _handleRegister,
+            ),
+            const SizedBox(height: 30),
+            _buildSocialLogin(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+    Widget? suffixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: const Color(0xFF4CAF50)),
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.grey[300]!),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.grey[50],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required String text,
+    required VoidCallback onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF4CAF50),
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          elevation: 3,
+        ),
+        child: _isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : Text(
+                text,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _buildSocialLogin() {
+    return Column(
+      children: [
+        const Row(
+          children: [
+            Expanded(child: Divider()),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text('or continue with'),
+            ),
+            Expanded(child: Divider()),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildSocialButton(
+              icon: Icons.g_mobiledata,
+              label: 'Google',
+              onPressed: _handleGoogleLogin,
+            ),
+            _buildSocialButton(
+              icon: Icons.facebook,
+              label: 'Facebook',
+              onPressed: _handleFacebookLogin,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSocialButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 20),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+    );
+  }
+
+  // Validation methods
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your email';
     }
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
 
-    final authProvider = context.read<AuthProvider>();
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your password';
+    }
+    if (value.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return null;
+  }
 
-    if (!_isOtpSent) {
-      // Send OTP
-      final phoneNumber = '+91${_phoneController.text.trim()}';
-      final success = await authProvider.sendOTP(phoneNumber);
+  String? _validateName(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your full name';
+    }
+    if (value.length < 2) {
+      return 'Name must be at least 2 characters';
+    }
+    return null;
+  }
+
+  String? _validateConfirmPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please confirm your password';
+    }
+    if (value != _registerPasswordController.text) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
+  // Action methods
+  Future<void> _handleLogin() async {
+    if (_loginFormKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
       
-      if (success) {
-        setState(() {
-          _isOtpSent = true;
-        });
-        _startResendTimer();
+      try {
+        // Simulate API call
+        await Future.delayed(const Duration(seconds: 2));
+        
+        // TODO: Implement actual login logic here
+        // Example: await AuthService.login(_loginEmailController.text, _loginPasswordController.text);
         
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('OTP sent successfully!'),
-              backgroundColor: AppColors.success,
-            ),
-          );
+          _showSuccessSnackBar('Login successful!');
+          // Navigate to home screen
+          // Navigator.of(context).pushReplacementNamed('/home');
         }
-      }
-    } else {
-      // Verify OTP
-      final otp = _otpController.text.trim();
-      final phoneNumber = '+91${_phoneController.text.trim()}';
-      final success = await authProvider.verifyOTP(otp, phoneNumber);
-      
-      if (success && mounted) {
-        await Navigator.pushReplacementNamed(context, '/home');
+      } catch (e) {
+        if (mounted) {
+          _showErrorSnackBar('Login failed. Please try again.');
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     }
   }
 
-  Future<void> _resendOTP() async {
-    final authProvider = context.read<AuthProvider>();
-    final phoneNumber = '+91${_phoneController.text.trim()}';
-    
-    final success = await authProvider.sendOTP(phoneNumber);
-    
-    if (success) {
-      _startResendTimer();
+  Future<void> _handleRegister() async {
+    if (_registerFormKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
       
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('OTP resent successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
+      try {
+        // Simulate API call
+        await Future.delayed(const Duration(seconds: 2));
+        
+        // TODO: Implement actual registration logic here
+        // Example: await AuthService.register(name, email, password);
+        
+        if (mounted) {
+          _showSuccessSnackBar('Account created successfully!');
+          // Switch to login tab or navigate to home
+          _tabController.animateTo(0);
+        }
+      } catch (e) {
+        if (mounted) {
+          _showErrorSnackBar('Registration failed. Please try again.');
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
       }
     }
+  }
+
+  void _handleGoogleLogin() {
+    // TODO: Implement Google login
+    _showInfoSnackBar('Google login will be implemented');
+  }
+
+  void _handleFacebookLogin() {
+    // TODO: Implement Facebook login
+    _showInfoSnackBar('Facebook login will be implemented');
+  }
+
+  void _showForgotPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Forgot Password'),
+        content: const Text(
+          'Enter your email address and we\'ll send you a link to reset your password.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _showInfoSnackBar('Password reset link sent to your email');
+            },
+            child: const Text('Send Link'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  void _showInfoSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.blue,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }

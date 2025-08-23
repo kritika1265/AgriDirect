@@ -1,5 +1,6 @@
 import 'dart:developer' as developer;
-import 'dart:io';
+import 'dart:io' show File;
+import 'dart:typed_data' show Uint8List;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
@@ -123,29 +124,19 @@ class FirebaseConfig {
         return;
       }
 
-      _auth = FirebaseAuth.instance;
-      _firestore = FirebaseFirestore.instance;
-      _storage = FirebaseStorage.instance;
-      _messaging = FirebaseMessaging.instance;
-      _analytics = FirebaseAnalytics.instance;
-      _crashlytics = FirebaseCrashlytics.instance;
+      // Initialize core services available on all platforms
+      await _initializeAuth();
+      await _initializeFirestore();
+      await _initializeStorage();
+      await _initializeAnalytics();
 
-      // Enable offline persistence for Firestore (only for mobile)
-      if (!kIsWeb && _firestore != null) {
-        try {
-          const settings = Settings(
-            persistenceEnabled: true,
-            cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-          );
-          _firestore!.settings = settings;
-        } catch (e) {
-          developer.log('⚠️ Warning: Could not enable Firestore offline persistence: $e');
-        }
+      // Initialize platform-specific services
+      if (!kIsWeb) {
+        await _initializeMessaging();
+        await _initializeCrashlytics();
+      } else {
+        developer.log('ℹ️ Running on web - skipping FCM and Crashlytics');
       }
-
-      await _configureMessaging();
-      await _configureAnalytics();
-      await _configureCrashlytics();
 
       _isInitialized = true;
       developer.log('✅ Firebase services initialized successfully');
@@ -156,14 +147,72 @@ class FirebaseConfig {
     }
   }
 
-  /// Configure push notifications (FCM)
-  Future<void> _configureMessaging() async {
-    if (_messaging == null || kIsWeb) {
-      developer.log('⚠️ Skipping FCM configuration (not available or web platform)');
+  /// Initialize Firebase Authentication
+  Future<void> _initializeAuth() async {
+    try {
+      _auth = FirebaseAuth.instance;
+      
+      if (kIsWeb) {
+        // Web-specific auth configuration
+        await _auth!.setPersistence(Persistence.LOCAL);
+      }
+      
+      developer.log('✅ Firebase Auth configured');
+    } catch (e) {
+      developer.log('⚠️ Error configuring Firebase Auth: $e');
+    }
+  }
+
+  /// Initialize Cloud Firestore
+  Future<void> _initializeFirestore() async {
+    try {
+      _firestore = FirebaseFirestore.instance;
+
+      // Enable offline persistence for mobile only
+      if (!kIsWeb) {
+        try {
+          const settings = Settings(
+            persistenceEnabled: true,
+            cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+          );
+          _firestore!.settings = settings;
+          developer.log('✅ Firestore offline persistence enabled');
+        } catch (e) {
+          developer.log('⚠️ Warning: Could not enable Firestore offline persistence: $e');
+        }
+      } else {
+        // Web-specific Firestore settings
+        const settings = Settings(
+          persistenceEnabled: false,
+        );
+        _firestore!.settings = settings;
+        developer.log('✅ Firestore configured for web');
+      }
+    } catch (e) {
+      developer.log('⚠️ Error configuring Firestore: $e');
+    }
+  }
+
+  /// Initialize Firebase Storage
+  Future<void> _initializeStorage() async {
+    try {
+      _storage = FirebaseStorage.instance;
+      developer.log('✅ Firebase Storage configured');
+    } catch (e) {
+      developer.log('⚠️ Error configuring Firebase Storage: $e');
+    }
+  }
+
+  /// Configure push notifications (FCM) - Mobile only
+  Future<void> _initializeMessaging() async {
+    if (kIsWeb) {
+      developer.log('⚠️ Skipping FCM - not supported on web');
       return;
     }
 
     try {
+      _messaging = FirebaseMessaging.instance;
+      
       final settings = await _messaging!.requestPermission(
         alert: true,
         badge: true,
@@ -174,8 +223,11 @@ class FirebaseConfig {
         developer.log('✅ User granted notification permission');
 
         final token = await _messaging!.getToken();
-        developer.log('FCM Token: $token');
+        if (token != null) {
+          developer.log('FCM Token: ${token.substring(0, 20)}...');
+        }
 
+        // Set up message handlers
         FirebaseMessaging.onMessage.listen((RemoteMessage message) {
           developer.log('Received foreground message: ${message.messageId}');
         });
@@ -186,7 +238,7 @@ class FirebaseConfig {
           developer.log('Message clicked: ${message.messageId}');
         });
       } else {
-        developer.log('User declined or has not accepted notification permission');
+        developer.log('⚠️ User declined or has not accepted notification permission');
       }
     } catch (e) {
       developer.log('⚠️ Error configuring Firebase Messaging: $e');
@@ -194,29 +246,33 @@ class FirebaseConfig {
   }
 
   /// Enable and customize Firebase Analytics
-  Future<void> _configureAnalytics() async {
-    if (_analytics == null) {
-      return;
-    }
-
+  Future<void> _initializeAnalytics() async {
     try {
+      _analytics = FirebaseAnalytics.instance;
+      
       await _analytics!.setAnalyticsCollectionEnabled(true);
       await _analytics!.setUserProperty(name: 'app_type', value: 'agriculture');
-      developer.log('✅ Firebase Analytics configured');
+      
+      if (kIsWeb) {
+        developer.log('✅ Firebase Analytics configured for web');
+      } else {
+        developer.log('✅ Firebase Analytics configured for mobile');
+      }
     } catch (e) {
       developer.log('⚠️ Error configuring Firebase Analytics: $e');
     }
   }
 
-  /// Enable Firebase Crashlytics for error tracking
-  Future<void> _configureCrashlytics() async {
-    if (_crashlytics == null || kIsWeb) {
-      developer.log('⚠️ Skipping Crashlytics configuration (not available or web platform)');
+  /// Enable Firebase Crashlytics for error tracking - Mobile only
+  Future<void> _initializeCrashlytics() async {
+    if (kIsWeb) {
+      developer.log('⚠️ Skipping Crashlytics - not supported on web');
       return;
     }
 
     try {
-      await _crashlytics!.setCrashlyticsCollectionEnabled(true);
+      _crashlytics = FirebaseCrashlytics.instance;
+      await _crashlytics!.setCrashlyticsCollectionEnabled(!kDebugMode);
       developer.log('✅ Firebase Crashlytics configured');
     } catch (e) {
       developer.log('⚠️ Error configuring Firebase Crashlytics: $e');
@@ -272,8 +328,8 @@ class FirebaseConfig {
     return _storage!.ref().child(path);
   }
 
-  /// Upload a file and return the download URL
-  Future<String?> uploadFile(String path, File file) async {
+  /// Upload a file and return the download URL - Handle both web and mobile
+  Future<String?> uploadFile(String path, dynamic file) async {
     if (_storage == null) {
       developer.log('⚠️ Firebase Storage not available');
       return null;
@@ -281,7 +337,24 @@ class FirebaseConfig {
 
     try {
       final ref = _storage!.ref().child(path);
-      final uploadTask = ref.putFile(file);
+      UploadTask uploadTask;
+
+      if (kIsWeb) {
+        // For web, file should be Uint8List
+        if (file is Uint8List) {
+          uploadTask = ref.putData(file);
+        } else {
+          throw ArgumentError('Web file upload requires Uint8List');
+        }
+      } else {
+        // For mobile, file should be File
+        if (file is File) {
+          uploadTask = ref.putFile(file);
+        } else {
+          throw ArgumentError('Mobile file upload requires File object');
+        }
+      }
+      
       final snapshot = await uploadTask;
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
@@ -336,9 +409,13 @@ class FirebaseConfig {
     }
   }
 
-  /// Report a caught error to Crashlytics
+  /// Report a caught error to Crashlytics (Mobile only)
   Future<void> recordError(dynamic exception, StackTrace? stackTrace) async {
     if (_crashlytics == null) {
+      if (kIsWeb) {
+        // On web, just log to console
+        developer.log('Web Error: $exception\nStack: $stackTrace');
+      }
       return;
     }
 
@@ -349,7 +426,7 @@ class FirebaseConfig {
     }
   }
 
-  /// Set the user identifier for Crashlytics tracking
+  /// Set the user identifier for Crashlytics tracking (Mobile only)
   Future<void> setUserIdentifier(String userId) async {
     if (_crashlytics == null) {
       return;
@@ -362,7 +439,7 @@ class FirebaseConfig {
     }
   }
 
-  /// Get FCM token for push notifications
+  /// Get FCM token for push notifications (Mobile only)
   Future<String?> getFCMToken() async {
     if (_messaging == null || kIsWeb) {
       return null;
@@ -376,7 +453,7 @@ class FirebaseConfig {
     }
   }
 
-  /// Subscribe to FCM topic
+  /// Subscribe to FCM topic (Mobile only)
   Future<void> subscribeToTopic(String topic) async {
     if (_messaging == null || kIsWeb) {
       return;
@@ -390,7 +467,7 @@ class FirebaseConfig {
     }
   }
 
-  /// Unsubscribe from FCM topic
+  /// Unsubscribe from FCM topic (Mobile only)
   Future<void> unsubscribeFromTopic(String topic) async {
     if (_messaging == null || kIsWeb) {
       return;
@@ -458,8 +535,8 @@ class FirebaseConfig {
     return _firestore!.collection(usersCollection).doc(userId).snapshots();
   }
 
-  /// Upload image with compression and metadata
-  Future<String?> uploadImage(String path, File imageFile, {
+  /// Upload image with compression and metadata - Platform agnostic
+  Future<String?> uploadImage(String path, dynamic imageFile, {
     Map<String, String>? metadata,
   }) async {
     if (_storage == null) {
@@ -469,14 +546,28 @@ class FirebaseConfig {
 
     try {
       final ref = _storage!.ref().child(path);
+      UploadTask uploadTask;
       
-      final uploadTask = ref.putFile(
-        imageFile,
-        SettableMetadata(
-          contentType: 'image/jpeg',
-          customMetadata: metadata,
-        ),
+      final settableMetadata = SettableMetadata(
+        contentType: 'image/jpeg',
+        customMetadata: metadata,
       );
+
+      if (kIsWeb) {
+        // For web, imageFile should be Uint8List
+        if (imageFile is Uint8List) {
+          uploadTask = ref.putData(imageFile, settableMetadata);
+        } else {
+          throw ArgumentError('Web image upload requires Uint8List');
+        }
+      } else {
+        // For mobile, imageFile should be File
+        if (imageFile is File) {
+          uploadTask = ref.putFile(imageFile, settableMetadata);
+        } else {
+          throw ArgumentError('Mobile image upload requires File object');
+        }
+      }
       
       final snapshot = await uploadTask;
       final downloadUrl = await snapshot.ref.getDownloadURL();
@@ -645,8 +736,12 @@ class FirebaseConfig {
   }
 }
 
-/// Background FCM message handler (must be top-level)
+/// Background FCM message handler (must be top-level) - Mobile only
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  if (kIsWeb) {
+    return; // Skip on web
+  }
+  
   // Only initialize if not already initialized
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp();
@@ -686,7 +781,7 @@ class FirebaseConstants {
   /// Maximum page size for pagination
   static const int maxPageSize = 100;
 
-  /// FCM topic names for agriculture app
+  /// FCM topic names for agriculture app (Mobile only)
   static const String weatherAlertsTopic = 'weather_alerts';
   
   /// Crop updates topic
@@ -770,11 +865,11 @@ extension FirebaseConfigExtensions on FirebaseConfig {
       case 'storage':
         return _storage != null;
       case 'messaging':
-        return _messaging != null;
+        return !kIsWeb && _messaging != null;
       case 'analytics':
         return _analytics != null;
       case 'crashlytics':
-        return _crashlytics != null;
+        return !kIsWeb && _crashlytics != null;
       default:
         return false;
     }
@@ -783,24 +878,18 @@ extension FirebaseConfigExtensions on FirebaseConfig {
   /// Get all available services
   List<String> get availableServices {
     final services = <String>[];
-    if (_auth != null) {
-      services.add('auth');
-    }
-    if (_firestore != null) {
-      services.add('firestore');
-    }
-    if (_storage != null) {
-      services.add('storage');
-    }
-    if (_messaging != null) {
-      services.add('messaging');
-    }
-    if (_analytics != null) {
-      services.add('analytics');
-    }
-    if (_crashlytics != null) {
-      services.add('crashlytics');
-    }
+    if (_auth != null) services.add('auth');
+    if (_firestore != null) services.add('firestore');
+    if (_storage != null) services.add('storage');
+    if (!kIsWeb && _messaging != null) services.add('messaging');
+    if (_analytics != null) services.add('analytics');
+    if (!kIsWeb && _crashlytics != null) services.add('crashlytics');
     return services;
   }
+
+  /// Platform-specific initialization check
+  bool get isWebPlatform => kIsWeb;
+  
+  /// Check if mobile-specific features are available
+  bool get hasMobileFeatures => !kIsWeb && (_messaging != null || _crashlytics != null);
 }
