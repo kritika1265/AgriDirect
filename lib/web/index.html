@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriDirect - Your Gateway to Smart Farming</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-tractor"></i>
+            </div>
+            <h1 class="app-title">AgriDirect</h1>
+            <p class="app-subtitle">Your Gateway to Smart Farming</p>
+        </div>
+
+        <!-- Authentication Container -->
+        <div class="auth-container">
+            <!-- Toggle Buttons -->
+            <div class="auth-toggle">
+                <div class="toggle-slider"></div>
+                <button class="toggle-btn active" id="loginToggle">Login</button>
+                <button class="toggle-btn" id="registerToggle">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form class="auth-form" id="loginForm">
+                <div class="input-group">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" placeholder="Email Address" required>
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" placeholder="Password" required>
+                    <i class="fas fa-eye toggle-password" onclick="togglePassword(this)"></i>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox">
+                        <span class="checkmark"></span>
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-password">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="auth-btn">
+                    <span>Login</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form class="auth-form hidden" id="registerForm">
+                <div class="input-group">
+                    <i class="fas fa-user input-icon"></i>
+                    <input type="text" placeholder="Full Name" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-envelope input-icon"></i>
+                    <input type="email" placeholder="Email Address" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-phone input-icon"></i>
+                    <input type="tel" placeholder="Phone Number" required>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-map-marker-alt input-icon"></i>
+                    <select required>
+                        <option value="">Select State</option>
+                        <option value="gujarat">Gujarat</option>
+                        <option value="maharashtra">Maharashtra</option>
+                        <option value="punjab">Punjab</option>
+                        <option value="haryana">Haryana</option>
+                        <option value="rajasthan">Rajasthan</option>
+                        <option value="uttar-pradesh">Uttar Pradesh</option>
+                        <option value="bihar">Bihar</option>
+                        <option value="west-bengal">West Bengal</option>
+                        <option value="madhya-pradesh">Madhya Pradesh</option>
+                        <option value="karnataka">Karnataka</option>
+                        <option value="andhra-pradesh">Andhra Pradesh</option>
+                        <option value="telangana">Telangana</option>
+                        <option value="tamil-nadu">Tamil Nadu</option>
+                        <option value="kerala">Kerala</option>
+                        <option value="odisha">Odisha</option>
+                        <option value="assam">Assam</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-seedling input-icon"></i>
+                    <select required>
+                        <option value="">Farm Type</option>
+                        <option value="crop-farming">Crop Farming</option>
+                        <option value="dairy-farming">Dairy Farming</option>
+                        <option value="poultry-farming">Poultry Farming</option>
+                        <option value="organic-farming">Organic Farming</option>
+                        <option value="horticulture">Horticulture</option>
+                        <option value="aquaculture">Aquaculture</option>
+                        <option value="mixed-farming">Mixed Farming</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" placeholder="Password" required>
+                    <i class="fas fa-eye toggle-password" onclick="togglePassword(this)"></i>
+                </div>
+
+                <div class="input-group">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input type="password" placeholder="Confirm Password" required>
+                    <i class="fas fa-eye toggle-password" onclick="togglePassword(this)"></i>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" required>
+                        <span class="checkmark"></span>
+                        I agree to Terms & Conditions
+                    </label>
+                </div>
+
+                <button type="submit" class="auth-btn">
+                    <span>Create Account</span>
+                    <i class="fas fa-user-plus"></i>
+                </button>
+            </form>
+
+            <!-- Social Login -->
+            <div class="social-login">
+                <div class="divider">
+                    <span>Or continue with</span>
+                </div>
+                <div class="social-buttons">
+                    <button class="social-btn google">
+                        <i class="fab fa-google"></i>
+                    </button>
+                    <button class="social-btn facebook">
+                        <i class="fab fa-facebook-f"></i>
+                    </button>
+                    <button class="social-btn apple">
+                        <i class="fab fa-apple"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay hidden" id="loadingOverlay">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Setting up your farming dashboard...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay hidden" id="successModal">
+        <div class="modal">
+            <div class="modal-icon success">
+                <i class="fas fa-check"></i>
+            </div>
+            <h3>Welcome to AgriDirect!</h3>
+            <p>Your account has been created successfully. Redirecting to dashboard...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

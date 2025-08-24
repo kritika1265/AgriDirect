@@ -1,28 +1,21 @@
-import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
+// utils/colors.dart
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as img;
-import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
-import 'package:provider/provider.dart';
 
-/// App color constants for agriculture-themed application
+/// Enhanced App color constants for agriculture-themed application
 class AppColors {
   AppColors._(); // Private constructor to prevent instantiation
   
   // Primary Colors - Green theme for agriculture
   static const Color primary = Color(0xFF2E7D32); // Deep green
   static const Color primaryColor = Color(0xFF4CAF50); // Green (alias for compatibility)
-  static const Color primaryLight = Color(0xFF4CAF50); // Light green
-  static const Color primaryDark = Color(0xFF1B5E20); // Dark green
+  static const Color primaryLight = Color(0xFF60AD5E);
+  static const Color primaryDark = Color(0xFF005005);
   
   // Secondary Colors - Earth tones
-  static const Color secondary = Color(0xFF8BC34A); // Light green
+  static const Color secondary = Color(0xFFFF8F00); // Orange
   static const Color secondaryColor = Color(0xFF2196F3); // Blue (for compatibility)
-  static const Color secondaryLight = Color(0xFFAED581); // Very light green
-  static const Color secondaryDark = Color(0xFF689F38); // Medium green
+  static const Color secondaryLight = Color(0xFFFFBF47);
+  static const Color secondaryDark = Color(0xFFC56000);
   
   // Accent Colors
   static const Color accent = Color(0xFFFF9800); // Orange for highlights
@@ -36,33 +29,49 @@ class AppColors {
   static const Color backgroundDark = Color(0xFF121212); // Dark background
   static const Color surface = Color(0xFFFFFFFF); // White surface
   static const Color surfaceColor = Color(0xFFFFFFFF); // White surface (alias for compatibility)
+  static const Color surfaceVariant = Color(0xFFF0F0F0);
   static const Color surfaceDark = Color(0xFF1E1E1E); // Dark surface
   static const Color cardBackground = Color(0xFFFFFFFF); // Card background
   
   // Text Colors
   static const Color textPrimary = Color(0xFF212121); // Dark gray
   static const Color textSecondary = Color(0xFF757575); // Medium gray
+  static const Color textTertiary = Color(0xFF9E9E9E);
   static const Color textLight = Color(0xFFBDBDBD); // Light gray
   static const Color textHint = Color(0xFF9E9E9E); // Hint text
   static const Color textOnPrimary = Color(0xFFFFFFFF); // White on primary
-  static const Color textOnSecondary = Color(0xFF000000); // Black on secondary
+  static const Color textOnSecondary = Color(0xFFFFFFFF); // White on secondary
   
   // Status Colors
   static const Color success = Color(0xFF4CAF50); // Green
   static const Color warning = Color(0xFFFF9800); // Orange
-  static const Color error = Color(0xFFF44336); // Red
+  static const Color error = Color(0xFFE53935); // Red
   static const Color info = Color(0xFF2196F3); // Blue
   
   // Border Colors
   static const Color border = Color(0xFFE0E0E0); // Light border
-  static const Color borderLight = Color(0xFFE0E0E0); // Light border
+  static const Color borderLight = Color(0xFFEEEEEE); // Light border
   static const Color borderDark = Color(0xFFBDBDBD); // Dark border
   
   // Shadow Colors
-  static const Color shadow = Color(0x1F000000); // Black with opacity
-  static const Color shadowLight = Color(0x1A000000); // Light shadow
+  static const Color shadow = Color(0x1A000000); // Black with opacity
+  static const Color shadowLight = Color(0x0D000000); // Light shadow
   static const Color shadowDark = Color(0x33000000); // Dark shadow
   static const Color overlay = Color(0x80000000); // Black with 50% opacity
+  
+  // Card Colors
+  static const Color card = Color(0xFFFFFFFF);
+  static const Color cardElevated = Color(0xFFFFFFFF);
+  
+  // Input Colors
+  static const Color inputBackground = Color(0xFFFAFAFA);
+  static const Color inputBorder = Color(0xFFE0E0E0);
+  static const Color inputFocused = Color(0xFF2E7D32);
+  
+  // Button Colors
+  static const Color buttonPrimary = Color(0xFF2E7D32);
+  static const Color buttonSecondary = Color(0xFFE0E0E0);
+  static const Color buttonDisabled = Color(0xFFBDBDBD);
   
   // Disabled Colors
   static const Color disabled = Color(0xFFBDBDBD); // Gray
@@ -71,6 +80,12 @@ class AppColors {
   
   // Transparent Colors
   static const Color transparent = Colors.transparent;
+  
+  // Agriculture Specific Colors
+  static const Color cropGreen = Color(0xFF8BC34A);
+  static const Color soilBrown = Color(0xFF8D6E63);
+  static const Color skyBlue = Color(0xFF87CEEB);
+  static const Color sunYellow = Color(0xFFFFC107);
   
   // Weather Colors
   static const Color sunny = Color(0xFFFFEB3B); // Yellow
@@ -116,17 +131,33 @@ class AppColors {
     Color(0xFF795548), // Brown
   ];
   
-  // Gradient Colors
-  static const LinearGradient primaryGradient = LinearGradient(
+  // Gradient Colors (List format for compatibility)
+  static const List<Color> primaryGradient = [
+    Color(0xFF2E7D32),
+    Color(0xFF388E3C),
+  ];
+  
+  static const List<Color> secondaryGradient = [
+    Color(0xFFFF8F00),
+    Color(0xFFFFA726),
+  ];
+  
+  static const List<Color> backgroundGradient = [
+    Color(0xFFF1F8E9),
+    Color(0xFFE8F5E8),
+  ];
+  
+  // Enhanced Gradient Colors (LinearGradient format)
+  static const LinearGradient primaryGradientLinear = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [primaryLight, primary, primaryDark],
+    colors: [Color(0xFF60AD5E), Color(0xFF2E7D32), Color(0xFF005005)],
   );
   
-  static const LinearGradient secondaryGradient = LinearGradient(
+  static const LinearGradient secondaryGradientLinear = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [secondaryLight, secondary, secondaryDark],
+    colors: [Color(0xFFFFBF47), Color(0xFFFF8F00), Color(0xFFC56000)],
   );
   
   static const LinearGradient sunsetGradient = LinearGradient(
@@ -183,8 +214,19 @@ class AppColors {
     return hslLight.toColor();
   }
   
-  // Theme-specific colors
-  static ColorScheme lightColorScheme = const ColorScheme.light(
+  // Theme Color Scheme (Enhanced)
+  static ColorScheme get lightColorScheme => ColorScheme.fromSeed(
+    seedColor: primary,
+    brightness: Brightness.light,
+  );
+  
+  static ColorScheme get darkColorScheme => ColorScheme.fromSeed(
+    seedColor: primary,
+    brightness: Brightness.dark,
+  );
+  
+  // Alternative theme-specific colors with manual definition
+  static ColorScheme get customLightColorScheme => const ColorScheme.light(
     primary: primary,
     onPrimary: textOnPrimary,
     secondary: secondary,
@@ -197,7 +239,7 @@ class AppColors {
     onError: textOnPrimary,
   );
   
-  static ColorScheme darkColorScheme = const ColorScheme.dark(
+  static ColorScheme get customDarkColorScheme => const ColorScheme.dark(
     primary: primaryLight,
     onPrimary: textPrimary,
     secondary: secondaryLight,

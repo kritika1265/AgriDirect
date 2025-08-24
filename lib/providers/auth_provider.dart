@@ -1,5 +1,5 @@
 // providers/auth_provider.dart
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -34,8 +34,12 @@ class AuthProvider extends ChangeNotifier {
   String? _verificationId;
   
   // OTP related
+  Timer? _otpTimer;
   int _otpCountdown = 0;
   bool _canResendOtp = true;
+
+  // Stream subscription
+  StreamSubscription<User?>? _authStateSubscription;
 
   /// Initialize authentication provider
   AuthProvider() {
@@ -61,7 +65,7 @@ class AuthProvider extends ChangeNotifier {
   bool get canResendOtp => _canResendOtp;
 
   void _initializeAuth() {
-    _authService.authStateChanges.listen((User? user) async {
+    _authStateSubscription = _authService.authStateChanges.listen((User? user) async {
       if (user != null) {
         await _loadUserData(user);
       } else {
@@ -86,7 +90,7 @@ class AuthProvider extends ChangeNotifier {
         
         _setStatus(AuthStatus.authenticated);
       } else {
-        // Create new user profile
+        // Create new user profile for existing Firebase Auth users
         _user = UserModel(
           id: firebaseUser.uid,
           phoneNumber: firebaseUser.phoneNumber ?? '',
@@ -95,6 +99,7 @@ class AuthProvider extends ChangeNotifier {
           profilePicture: firebaseUser.photoURL,
           createdAt: DateTime.now(),
           lastLoginAt: DateTime.now(),
+          isVerified: firebaseUser.emailVerified,
         );
         
         await _firebaseService.createUserData(_user!.id, _user!.toMap());
@@ -131,7 +136,7 @@ class AuthProvider extends ChangeNotifier {
       _setError('Failed to sign in');
       return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError(_getAuthErrorMessage(e));
       return false;
     } finally {
       _setLoading(false);
@@ -157,34 +162,46 @@ class AuthProvider extends ChangeNotifier {
       );
 
       if (userCredential?.user != null) {
+        // Send email verification
+        await userCredential!.user!.sendEmailVerification();
+
         // Create user profile with additional data
-        final userData = <String, dynamic>{
-          'id': userCredential!.user!.uid,
-          'email': email,
-          'name': name,
-          'userType': userType.name,
-          'createdAt': DateTime.now().toIso8601String(),
-          'lastLoginAt': DateTime.now().toIso8601String(),
-          'isVerified': false,
-          'phoneNumber': '',
-          'language': 'en',
-          'notificationsEnabled': true,
-          'weatherAlertsEnabled': true,
-          'cropRemindersEnabled': true,
-          'preferences': <String, dynamic>{},
-          'cropTypes': <String>[],
-          'serviceCategories': <String>[],
-          'businessDocuments': <String>[],
-          'verificationStatus': VerificationStatus.pending.name,
-          'rating': 0.0,
-          'totalTransactions': 0,
-          'isActiveVendor': false,
-          ...?additionalData,
-        };
+        final userData = UserModel(
+          id: userCredential.user!.uid,
+          email: email,
+          name: name,
+          phoneNumber: '',
+          userType: userType,
+          createdAt: DateTime.now(),
+          lastLoginAt: DateTime.now(),
+          isVerified: false, // Email verification required
+          language: 'en',
+          notificationsEnabled: true,
+          weatherAlertsEnabled: true,
+          cropRemindersEnabled: true,
+          preferences: {},
+          cropTypes: (additionalData?['cropTypes'] as List<dynamic>?)?.cast<String>() ?? [],
+          serviceCategories: (additionalData?['serviceCategories'] as List<dynamic>?)?.cast<String>() ?? [],
+          businessDocuments: [],
+          verificationStatus: VerificationStatus.pending,
+          rating: 0,
+          totalTransactions: 0,
+          isActiveVendor: false,
+          // Additional fields from additionalData
+          location: additionalData?['location'] as String?,
+          farmSize: additionalData?['farmSize'] as String?,
+          experience: additionalData?['experience'] as String?,
+          businessName: additionalData?['businessName'] as String?,
+          businessAddress: additionalData?['businessAddress'] as String?,
+          businessPhone: additionalData?['businessPhone'] as String?,
+          businessEmail: additionalData?['businessEmail'] as String?,
+          businessRegistrationNumber: additionalData?['businessRegistrationNumber'] as String?,
+          businessDescription: additionalData?['businessDescription'] as String?,
+        );
 
         await _firebaseService.createUserData(
           userCredential.user!.uid,
-          userData,
+          userData.toMap(),
         );
         
         return true;
@@ -193,7 +210,7 @@ class AuthProvider extends ChangeNotifier {
       _setError('Failed to register');
       return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError(_getAuthErrorMessage(e));
       return false;
     } finally {
       _setLoading(false);
@@ -209,7 +226,7 @@ class AuthProvider extends ChangeNotifier {
       await _authService.sendPasswordResetEmail(email);
       return true;
     } catch (e) {
-      _setError(e.toString());
+      _setError(_getAuthErrorMessage(e));
       return false;
     } finally {
       _setLoading(false);
@@ -224,24 +241,25 @@ class AuthProvider extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
+      final completePhoneNumber = phoneNumber.startsWith('+') ? phoneNumber : '+91$phoneNumber';
+
       await _authService.sendOTP(
-        phoneNumber: phoneNumber,
+        phoneNumber: completePhoneNumber,
         onCodeSent: (String verificationId) {
           _verificationId = verificationId;
-          _startOtpCountdown();
-          notifyListeners();
+          _startOtpTimer();
         },
         onError: (String error) {
           _setError(error);
         },
         onAutoVerified: (UserCredential userCredential) {
-          // Auto verification successful
+          // Auto verification successful - will be handled by auth state listener
         },
       );
       
       return true;
     } catch (e) {
-      _setError(e.toString());
+      _setError(_getAuthErrorMessage(e));
       return false;
     } finally {
       _setLoading(false);
@@ -273,40 +291,50 @@ class AuthProvider extends ChangeNotifier {
         
         if (!existsInFirestore) {
           // Create new user profile
-          final userData = <String, dynamic>{
-            'id': user.uid,
-            'phoneNumber': user.phoneNumber ?? '',
-            'name': name ?? '',
-            'email': '',
-            'userType': userType.name,
-            'createdAt': DateTime.now().toIso8601String(),
-            'lastLoginAt': DateTime.now().toIso8601String(),
-            'isVerified': false,
-            'language': 'en',
-            'notificationsEnabled': true,
-            'weatherAlertsEnabled': true,
-            'cropRemindersEnabled': true,
-            'preferences': <String, dynamic>{},
-            'cropTypes': <String>[],
-            'serviceCategories': <String>[],
-            'businessDocuments': <String>[],
-            'verificationStatus': VerificationStatus.pending.name,
-            'rating': 0.0,
-            'totalTransactions': 0,
-            'isActiveVendor': false,
-            ...?additionalData,
-          };
+          final userData = UserModel(
+            id: user.uid,
+            phoneNumber: user.phoneNumber ?? '',
+            name: name ?? '',
+            email: '',
+            userType: userType,
+            createdAt: DateTime.now(),
+            lastLoginAt: DateTime.now(),
+            isVerified: true, // Phone is verified
+            language: 'en',
+            notificationsEnabled: true,
+            weatherAlertsEnabled: true,
+            cropRemindersEnabled: true,
+            preferences: {},
+            cropTypes: (additionalData?['cropTypes'] as List<dynamic>?)?.cast<String>() ?? [],
+            serviceCategories: (additionalData?['serviceCategories'] as List<dynamic>?)?.cast<String>() ?? [],
+            businessDocuments: [],
+            verificationStatus: VerificationStatus.pending,
+            rating: 0,
+            totalTransactions: 0,
+            isActiveVendor: false,
+            // Additional fields from additionalData
+            location: additionalData?['location'] as String?,
+            farmSize: additionalData?['farmSize'] as String?,
+            experience: additionalData?['experience'] as String?,
+            businessName: additionalData?['businessName'] as String?,
+            businessAddress: additionalData?['businessAddress'] as String?,
+            businessPhone: additionalData?['businessPhone'] as String?,
+            businessEmail: additionalData?['businessEmail'] as String?,
+            businessRegistrationNumber: additionalData?['businessRegistrationNumber'] as String?,
+            businessDescription: additionalData?['businessDescription'] as String?,
+          );
 
-          await _firebaseService.createUserData(user.uid, userData);
+          await _firebaseService.createUserData(user.uid, userData.toMap());
         }
         
+        _stopOtpTimer();
         return true;
       }
       
       _setError('Invalid OTP');
       return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError(_getAuthErrorMessage(e));
       return false;
     } finally {
       _setLoading(false);
@@ -341,31 +369,31 @@ class AuthProvider extends ChangeNotifier {
         
         if (!existsInFirestore) {
           // Create new user profile
-          final userData = <String, dynamic>{
-            'id': user.uid,
-            'name': user.displayName ?? '',
-            'email': user.email ?? '',
-            'phoneNumber': user.phoneNumber ?? '',
-            'profilePicture': user.photoURL,
-            'userType': UserType.farmer.name,
-            'createdAt': DateTime.now().toIso8601String(),
-            'lastLoginAt': DateTime.now().toIso8601String(),
-            'isVerified': user.emailVerified,
-            'language': 'en',
-            'notificationsEnabled': true,
-            'weatherAlertsEnabled': true,
-            'cropRemindersEnabled': true,
-            'preferences': <String, dynamic>{},
-            'cropTypes': <String>[],
-            'serviceCategories': <String>[],
-            'businessDocuments': <String>[],
-            'verificationStatus': VerificationStatus.pending.name,
-            'rating': 0.0,
-            'totalTransactions': 0,
-            'isActiveVendor': false,
-          };
+          final userData = UserModel(
+            id: user.uid,
+            name: user.displayName ?? '',
+            email: user.email ?? '',
+            phoneNumber: user.phoneNumber ?? '',
+            profilePicture: user.photoURL,
+            userType: UserType.farmer,
+            createdAt: DateTime.now(),
+            lastLoginAt: DateTime.now(),
+            isVerified: user.emailVerified,
+            language: 'en',
+            notificationsEnabled: true,
+            weatherAlertsEnabled: true,
+            cropRemindersEnabled: true,
+            preferences: {},
+            cropTypes: [],
+            serviceCategories: [],
+            businessDocuments: [],
+            verificationStatus: VerificationStatus.pending,
+            rating: 0,
+            totalTransactions: 0,
+            isActiveVendor: false,
+          );
 
-          await _firebaseService.createUserData(user.uid, userData);
+          await _firebaseService.createUserData(user.uid, userData.toMap());
         }
         
         return true;
@@ -373,7 +401,7 @@ class AuthProvider extends ChangeNotifier {
       
       return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError(_getAuthErrorMessage(e));
       return false;
     } finally {
       _setLoading(false);
@@ -457,6 +485,21 @@ class AuthProvider extends ChangeNotifier {
         case 'serviceCategories':
           updatedUser = _user!.copyWith(serviceCategories: value as List<String>);
           break;
+        case 'profilePicture':
+          updatedUser = _user!.copyWith(profilePicture: value as String?);
+          break;
+        case 'notificationsEnabled':
+          updatedUser = _user!.copyWith(notificationsEnabled: value as bool);
+          break;
+        case 'weatherAlertsEnabled':
+          updatedUser = _user!.copyWith(weatherAlertsEnabled: value as bool);
+          break;
+        case 'cropRemindersEnabled':
+          updatedUser = _user!.copyWith(cropRemindersEnabled: value as bool);
+          break;
+        case 'language':
+          updatedUser = _user!.copyWith(language: value as String);
+          break;
         default:
           _setError('Unknown field: $field');
           return false;
@@ -491,7 +534,7 @@ class AuthProvider extends ChangeNotifier {
       
       return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError(_getAuthErrorMessage(e));
       return false;
     } finally {
       _setLoading(false);
@@ -520,7 +563,7 @@ class AuthProvider extends ChangeNotifier {
       
       return false;
     } catch (e) {
-      _setError(e.toString());
+      _setError(_getAuthErrorMessage(e));
       return false;
     } finally {
       _setLoading(false);
@@ -543,7 +586,7 @@ class AuthProvider extends ChangeNotifier {
       
       return true;
     } catch (e) {
-      _setError(e.toString());
+      _setError(_getAuthErrorMessage(e));
       return false;
     } finally {
       _setLoading(false);
@@ -559,7 +602,7 @@ class AuthProvider extends ChangeNotifier {
       await _authService.sendEmailVerification();
       return true;
     } catch (e) {
-      _setError(e.toString());
+      _setError(_getAuthErrorMessage(e));
       return false;
     } finally {
       _setLoading(false);
@@ -590,8 +633,7 @@ class AuthProvider extends ChangeNotifier {
       // Clear local state
       _user = null;
       _verificationId = null;
-      _otpCountdown = 0;
-      _canResendOtp = true;
+      _stopOtpTimer();
       _setStatus(AuthStatus.unauthenticated);
     } catch (e) {
       _setError('Failed to sign out: $e');
@@ -636,25 +678,27 @@ class AuthProvider extends ChangeNotifier {
   // Helper Methods
 
   /// Start OTP countdown timer
-  void _startOtpCountdown() {
+  void _startOtpTimer() {
     _otpCountdown = 60;
     _canResendOtp = false;
     notifyListeners();
 
-    // Start countdown
-    Future.doWhile(() async {
-      await Future<void>.delayed(const Duration(seconds: 1));
+    _otpTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       _otpCountdown--;
-      notifyListeners();
-      
       if (_otpCountdown <= 0) {
         _canResendOtp = true;
-        notifyListeners();
-        return false;
+        timer.cancel();
       }
-      
-      return true;
+      notifyListeners();
     });
+  }
+
+  /// Stop OTP countdown timer
+  void _stopOtpTimer() {
+    _otpTimer?.cancel();
+    _otpTimer = null;
+    _canResendOtp = true;
+    _otpCountdown = 0;
   }
 
   /// Set authentication status
@@ -685,22 +729,91 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Get user-friendly error messages
+  String _getAuthErrorMessage(dynamic error) {
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'weak-password':
+          return 'The password provided is too weak.';
+        case 'email-already-in-use':
+          return 'An account already exists with this email.';
+        case 'invalid-email':
+          return 'The email address is not valid.';
+        case 'user-not-found':
+          return 'No user found with this email.';
+        case 'wrong-password':
+          return 'Wrong password provided.';
+        case 'user-disabled':
+          return 'This user account has been disabled.';
+        case 'too-many-requests':
+          return 'Too many requests. Try again later.';
+        case 'invalid-phone-number':
+          return 'The phone number is not valid.';
+        case 'invalid-verification-code':
+          return 'The verification code is invalid.';
+        case 'invalid-verification-id':
+          return 'The verification ID is invalid.';
+        case 'credential-already-in-use':
+          return 'This credential is already associated with a different user account.';
+        case 'provider-already-linked':
+          return 'This account is already linked with this provider.';
+        case 'requires-recent-login':
+          return 'This operation requires recent authentication. Please log in again.';
+        default:
+          return error.message ?? 'An unknown error occurred.';
+      }
+    }
+    return error.toString();
+  }
+
   // Validation Methods
 
   /// Validate email format
-  bool isValidEmail(String email) => _authService.isValidEmail(email);
+  bool isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
 
-  /// Validate phone number format
-  bool isValidPhoneNumber(String phoneNumber) => _authService.isValidPhoneNumber(phoneNumber);
+  /// Validate phone number format (Indian)
+  bool isValidPhoneNumber(String phoneNumber) {
+    return RegExp(r'^[6-9]\d{9}$').hasMatch(phoneNumber);
+  }
 
   /// Validate password strength
-  bool isValidPassword(String password) => _authService.isValidPassword(password);
+  bool isValidPassword(String password) =>
+      password.length >= 8 &&
+      password.contains(RegExp(r'[A-Z]')) &&
+      password.contains(RegExp(r'[a-z]')) &&
+      password.contains(RegExp(r'[0-9]'));
 
-  /// Get password strength score
-  int getPasswordStrength(String password) => _authService.getPasswordStrength(password);
+  /// Get password strength score (0-5)
+  int getPasswordStrength(String password) {
+    int score = 0;
+    if (password.length >= 8) score++;
+    if (password.contains(RegExp(r'[A-Z]'))) score++;
+    if (password.contains(RegExp(r'[a-z]'))) score++;
+    if (password.contains(RegExp(r'[0-9]'))) score++;
+    if (password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'))) score++;
+    return score;
+  }
 
   /// Get password strength text
-  String getPasswordStrengthText(int score) => _authService.getPasswordStrengthText(score);
+  String getPasswordStrengthText(int score) {
+    switch (score) {
+      case 0:
+      case 1:
+        return 'Very Weak';
+      case 2:
+        return 'Weak';
+      case 3:
+        return 'Fair';
+      case 4:
+        return 'Good';
+      case 5:
+        return 'Strong';
+      default:
+        return 'Very Weak';
+    }
+  }
 
   // Provider Methods
 
@@ -718,6 +831,8 @@ class AuthProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _authStateSubscription?.cancel();
+    _stopOtpTimer();
     _authService.dispose();
     super.dispose();
   }
